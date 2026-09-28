@@ -15,11 +15,13 @@ Las herramientas de `referencia/` son la especificación funcional de la fase 1 
 - Nueva migración: `npx supabase migration new <nombre>`
 - Aplicar migraciones: `npx supabase db push` (enlazado a imtex-dev; producción solo si se pide)
 - Tipos: `npx supabase gen types typescript --linked > crm/src/lib/database.types.ts` (y copia en `web/src/lib/`)
+- Prueba de permisos por rol (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/permisos.sql`. Tabla nueva → añade sus casos en ese fichero.
+- Advisors de seguridad y rendimiento: `npx supabase db advisors --linked --type all`
 
 ## Reglas
 1. Alcance: solo lo de `docs/PLAN.md` §0. Si algo no está, avisa de que es una ampliación antes de hacerlo.
 2. Nada de facturación ni Verifactu: el CRM no emite facturas.
-3. RLS activado en todas las tablas, con permisos vía `public.tiene_permiso(modulo, accion)`. La clave secreta de Supabase nunca va en código del navegador. Registro público desactivado.
+3. RLS activado en todas las tablas, con permisos vía `private.tiene_permiso(modulo, accion)` (esquema no expuesto por la API). La clave secreta de Supabase nunca va en código del navegador. Registro público desactivado.
 4. Cambios de base de datos, siempre con migración en `supabase/migrations`, nunca a mano en el panel. Después, regenera los tipos.
 5. Nombres en español, snake_case y sin tildes. Importes en numeric(12,2).
 6. Los cálculos de presupuestos y control de obra van en funciones puras (`crm/src/lib/calculos`) con tests de Vitest, y deben coincidir al céntimo con `referencia/*.html`.
