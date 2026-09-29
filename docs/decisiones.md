@@ -20,3 +20,10 @@
 | 29/09/2026 | CRM en `gestion.imtexsl.com` | Sin coste de dominio nuevo; solo requiere un CNAME en su DNS |
 | 29/09/2026 | Orden: todo el CRM primero (acceso, presupuestos, control de obra) y después la web. La web se retrasa respecto al calendario de PLAN.md §0 (revisión 12/10, producción 19/10) | Prioridad a los programas funcionales |
 | 29/09/2026 | Tienda online aparcada; la llevará Pedro fuera de este repo | Decisión de Saúl |
+| 29/09/2026 | Supabase Auth con flujo implícito en el CRM | Los enlaces de invitación los genera el servidor y no pueden usar PKCE |
+| 29/09/2026 | `invitar-usuario` con `verify_jwt = false`: la función comprueba la sesión y el permiso `usuarios:editar` | La verificación JWT de la pasarela no es compatible con las claves nuevas de Supabase |
+| 29/09/2026 | Los usuarios no se borran, se desactivan; nadie puede cambiarse su propio rol ni desactivarse | Se conserva quién hizo cada cosa y nadie se queda sin acceso por error |
+| 29/09/2026 | Desplegables y casillas nativos en lugar de Select/Switch de shadcn | En el iPhone abren el selector del sistema y funcionan con React Hook Form sin adaptadores |
+| 29/09/2026 | Los campos numéricos aceptan coma o punto decimal («18,50» o «18.5») | En el móvil en español se escribe con coma |
+| 29/09/2026 | Lint sin `src/components/ui` ni `src/hooks` | Es código que genera y actualiza la CLI de shadcn |
+| 29/09/2026 | PWA (manifest e iconos) pendiente | Necesita el logo de IMTEX |

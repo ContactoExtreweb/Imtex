@@ -17,6 +17,14 @@ Las herramientas de `referencia/` son la especificación funcional de la fase 1 
 - Tipos: `npx supabase gen types typescript --linked > crm/src/lib/database.types.ts` (y copia en `web/src/lib/`)
 - Prueba de permisos por rol (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/permisos.sql`. Tabla nueva → añade sus casos en ese fichero.
 - Advisors de seguridad y rendimiento: `npx supabase db advisors --linked --type all`
+- Edge Functions (sin Docker): `npx supabase functions deploy <nombre> --use-api`
+
+## Puesta en marcha de un proyecto Supabase (dev o producción)
+1. Authentication → Sign In / Providers: desactivar «Allow new users to sign up».
+2. Authentication → URL Configuration: Site URL = URL del CRM; Redirect URLs = `<URL del CRM>/**` (en dev, `http://localhost:5173/**`).
+3. Primer usuario de gerencia: invitarlo desde el panel (Authentication → Users → Invite user) y crearle el perfil:
+   `npx supabase db query --linked "insert into public.perfiles (id, nombre, email, rol) select id, '<Nombre>', email, 'gerencia' from auth.users where email = '<email>'"`
+   El resto se invita desde el CRM (Ajustes → Usuarios).
 
 ## Reglas
 1. Alcance: solo lo de `docs/PLAN.md` §0. Si algo no está, avisa de que es una ampliación antes de hacerlo.
