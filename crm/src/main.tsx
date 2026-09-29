@@ -3,10 +3,12 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, Navigate } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
-import { Inicio, Layout } from '@/components/layout'
+import { ConPermiso, Inicio, Layout } from '@/components/layout'
 import { Toaster } from '@/components/ui/sonner'
 import { ProveedorSesion } from '@/components/proveedor-sesion'
 import { Login, NuevaContrasena, Recuperar } from '@/paginas/acceso'
+import { Clientes } from '@/paginas/clientes'
+import { Obras } from '@/paginas/obras'
 import './index.css'
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } })
@@ -19,6 +21,8 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Inicio /> },
+      { path: 'clientes', element: <ConPermiso modulo="clientes"><Clientes /></ConPermiso> },
+      { path: 'obras', element: <ConPermiso modulo="obras"><Obras /></ConPermiso> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

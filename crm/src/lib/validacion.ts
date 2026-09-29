@@ -22,3 +22,11 @@ export const numero = z.string().transform((s, ctx) => {
 })
 
 export const email = z.string().trim().toLowerCase().pipe(z.email('Email no válido'))
+
+/** Email opcional: vacío → null; si hay algo, tiene que ser un email. */
+export const emailOpcional = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine((s) => s === '' || z.email().safeParse(s).success, 'Email no válido')
+  .transform((s) => s || null)
