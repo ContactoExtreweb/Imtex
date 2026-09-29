@@ -1,10 +1,36 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { createBrowserRouter, Navigate } from 'react-router'
+import { RouterProvider } from 'react-router/dom'
+import { Inicio, Layout } from '@/components/layout'
+import { Toaster } from '@/components/ui/sonner'
+import { ProveedorSesion } from '@/components/proveedor-sesion'
+import { Login, NuevaContrasena, Recuperar } from '@/paginas/acceso'
 import './index.css'
-import App from './App.tsx'
+
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } })
+
+const router = createBrowserRouter([
+  { path: '/login', element: <Login /> },
+  { path: '/recuperar', element: <Recuperar /> },
+  { path: '/nueva-contrasena', element: <NuevaContrasena /> },
+  {
+    element: <Layout />,
+    children: [
+      { index: true, element: <Inicio /> },
+      { path: '*', element: <Navigate to="/" replace /> },
+    ],
+  },
+])
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <ProveedorSesion>
+        <RouterProvider router={router} />
+        <Toaster />
+      </ProveedorSesion>
+    </QueryClientProvider>
   </StrictMode>,
 )

@@ -5,6 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IMTEX · Gestión</title>
+    <script>
+      // Enlaces de invitación o recuperación (también los del panel de Supabase, que van a la raíz):
+      // a la pantalla de elegir contraseña, conservando el token del hash.
+      if (/type=(invite|recovery)|error_code=/.test(location.hash) && location.pathname !== '/nueva-contrasena')
+        history.replaceState(null, '', '/nueva-contrasena' + location.hash)
+    </script>
   </head>
   <body>
     <div id="root"></div>
