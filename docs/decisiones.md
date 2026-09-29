@@ -14,8 +14,7 @@
 | 28/09/2026 | `obras.presupuesto_id` se añade en el prompt 6 | La tabla `presupuestos` aún no existe |
 | 28/09/2026 | Prueba de permisos en SQL (`supabase/pruebas/permisos.sql`), lanzada con `db query --linked` y deshecha al terminar | No necesita claves secretas ni deja usuarios; lo esperado sale de `permisos_rol` |
 
-## Pendiente de validar con IMTEX
-
-- Matriz de permisos de B5 (reunión de arranque).
-- ¿Quién da de alta a los trabajadores? Ahora solo gerencia (módulo `ajustes`).
-- ¿Los operarios meten sus horas? ¿Deben ver su categoría o su tarifa? Ahora no ven tarifas.
+| 29/09/2026 | No hay reunión de arranque: las dudas de PLAN.md A5 se deciden con la propuesta del plan | El presupuesto está aceptado y hay que producir ya |
+| 29/09/2026 | Matriz de permisos: la de B5 tal cual. Trabajadores los da de alta gerencia (`ajustes`); el operario no ve tarifas | Propuesta del plan; se cambia con una migración si IMTEX lo pide |
+| 29/09/2026 | El coste de cada línea se copia al añadirla al presupuesto; los borradores tienen «Actualizar con la base de precios» | Propuesta de B4: un cambio de precios no altera presupuestos enviados |
+| 29/09/2026 | CRM en `gestion.imtexsl.com` | Sin coste de dominio nuevo; solo requiere un CNAME en su DNS |
