@@ -33,7 +33,7 @@ export function useTabla<T extends TablaEditable>(tabla: T, orden: keyof Fila<T>
   const queryClient = useQueryClient()
   const desde = () => supabase.from(tabla) as unknown as Consulta
   const alTerminar = {
-    onError: (error: PostgrestError) => toast.error(mensajeError(error)),
+    onError: (error: Error) => toast.error(mensajeError(error)),
     onSettled: () => queryClient.invalidateQueries({ queryKey: [tabla] }),
   }
 

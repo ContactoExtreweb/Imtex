@@ -1,4 +1,4 @@
-import { createClient, type PostgrestError } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 import type { Database } from './database.types'
 
 export const supabase = createClient<Database>(
@@ -14,7 +14,7 @@ export type Fila<T extends keyof Tablas> = Tablas[T]['Row']
 export type NuevaFila<T extends keyof Tablas> = Tablas[T]['Insert']
 
 /** Mensaje en español para los errores habituales de Postgres. */
-export function mensajeError(error: Pick<PostgrestError, 'code' | 'message'>): string {
+export function mensajeError(error: { code?: string; message: string }): string {
   switch (error.code) {
     case '23503':
       return 'No se puede borrar: hay otros datos que dependen de este registro.'

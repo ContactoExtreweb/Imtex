@@ -7,8 +7,11 @@ import { ConPermiso, Inicio, Layout } from '@/components/layout'
 import { Toaster } from '@/components/ui/sonner'
 import { ProveedorSesion } from '@/components/proveedor-sesion'
 import { Login, NuevaContrasena, Recuperar } from '@/paginas/acceso'
+import { Categorias } from '@/paginas/categorias'
 import { Clientes } from '@/paginas/clientes'
+import { Combustible } from '@/paginas/combustible'
 import { Obras } from '@/paginas/obras'
+import { Trabajadores } from '@/paginas/trabajadores'
 import './index.css'
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } })
@@ -23,6 +26,9 @@ const router = createBrowserRouter([
       { index: true, element: <Inicio /> },
       { path: 'clientes', element: <ConPermiso modulo="clientes"><Clientes /></ConPermiso> },
       { path: 'obras', element: <ConPermiso modulo="obras"><Obras /></ConPermiso> },
+      { path: 'ajustes/categorias', element: <ConPermiso modulo="ajustes"><Categorias /></ConPermiso> },
+      { path: 'ajustes/combustible', element: <ConPermiso modulo="ajustes"><Combustible /></ConPermiso> },
+      { path: 'ajustes/trabajadores', element: <ConPermiso modulo="ajustes"><Trabajadores /></ConPermiso> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
