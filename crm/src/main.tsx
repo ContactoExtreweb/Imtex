@@ -12,6 +12,7 @@ import { Clientes } from '@/paginas/clientes'
 import { Combustible } from '@/paginas/combustible'
 import { Obras } from '@/paginas/obras'
 import { Trabajadores } from '@/paginas/trabajadores'
+import { Usuarios } from '@/paginas/usuarios'
 import './index.css'
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } })
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
       { path: 'ajustes/categorias', element: <ConPermiso modulo="ajustes"><Categorias /></ConPermiso> },
       { path: 'ajustes/combustible', element: <ConPermiso modulo="ajustes"><Combustible /></ConPermiso> },
       { path: 'ajustes/trabajadores', element: <ConPermiso modulo="ajustes"><Trabajadores /></ConPermiso> },
+      { path: 'ajustes/usuarios', element: <ConPermiso modulo="usuarios"><Usuarios /></ConPermiso> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
