@@ -182,32 +182,6 @@ function Menu() {
   )
 }
 
-/** Página de inicio: accesos directos a lo que el usuario puede ver. */
-export function Inicio() {
-  const { perfil } = useSesion()
-  const secciones = useSecciones()
-  return (
-    <div className="mx-auto grid w-full max-w-4xl gap-6 p-4">
-      <h1 className="text-xl font-semibold">Hola, {perfil?.nombre}</h1>
-      {secciones.length === 0 && (
-        <p className="text-sm text-muted-foreground">Todavía no hay apartados disponibles para tu perfil.</p>
-      )}
-      {secciones.map((s) => (
-        <section key={s.titulo ?? 'principal'} className="grid gap-2">
-          {s.titulo && <h2 className="text-sm font-medium text-muted-foreground">{s.titulo}</h2>}
-          <div className="grid gap-2 sm:grid-cols-2">
-            {s.enlaces.map(({ a, texto, icono: Icono }) => (
-              <Link key={a} to={a} className="flex items-center gap-3 rounded-lg border p-4 font-medium hover:bg-muted">
-                <Icono className="size-5 text-marca" /> {texto}
-              </Link>
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
-  )
-}
-
 /** Si el usuario no puede ver el módulo, vuelve al inicio (el RLS tampoco le daría datos). */
 export function ConPermiso({ modulo, children }: { modulo: Modulo; children: ReactNode }) {
   const { puede } = useSesion()

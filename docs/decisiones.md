@@ -40,3 +40,5 @@
 | 01/10/2026 | Los estados no usan el rojo de marca: aceptado y terminada en verde, rechazado en el rojo de error, el resto en neutro | Un estado «aceptado» en rojo se leería como un problema |
 | 01/10/2026 | Campos y botones de 40 px de alto en móvil y 32 px en escritorio (se han tocado `button.tsx` e `input.tsx` de shadcn) | Regla 8: pensado primero para el móvil; 32 px es poco para el dedo |
 | 01/10/2026 | El presupuesto impreso usa el logo y los colores nuevos | La marca nueva sustituye a la de la herramienta antigua |
+| 01/10/2026 | Teléfono de IMTEX: 924 84 12 46 (el de la marca nueva; la plantilla antigua tenía 924 84 42 02) | Confirmado por Saúl |
+| 01/10/2026 | La portada muestra un resumen según los permisos de cada usuario (cifras, obras en ejecución y últimos presupuestos), no un panel escrito a mano por rol | Si cambia la matriz de permisos, la portada cambia sola. Las cifras se cuentan en SQL (regla 7) |

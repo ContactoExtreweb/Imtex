@@ -1,7 +1,8 @@
-import { ArrowLeft, Printer } from 'lucide-react'
+import { ArrowLeft, Globe, Mail, Phone, Printer } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import firma from '@/assets/firma-imtex.png'
+import lema from '@/assets/lema-imtex.png'
 import logoImtex from '@/assets/logo-imtex.png'
 import sellosOca from '@/assets/sellos-oca.png'
 import { Button } from '@/components/ui/button'
@@ -38,12 +39,27 @@ export function PresupuestoImprimir() {
     <>
       <div className="mb-4 flex items-start justify-between gap-6 border-b-2 border-[#131116] pb-3">
         <div>
-          <div className="flex items-center gap-4">
-            <img src={logoImtex} alt={EMPRESA.nombre} className="mb-1 h-[66px] max-w-[280px] object-contain object-left-top" />
-            <img src={sellosOca} alt="Certificaciones OCA ISO 9001 e ISO 14001" className="mb-1 h-[70px] max-w-[210px] object-contain" />
+          {/* Como la tarjeta de IMTEX: logo con su lema, sellos de OCA y contacto con iconos */}
+          <div className="flex items-center gap-5">
+            <div className="grid gap-1.5">
+              <img src={logoImtex} alt={EMPRESA.nombre} className="h-[62px] w-auto justify-self-center" />
+              <img src={lema} alt="Soluciones técnicas para industria y construcción" className="w-[270px]" />
+            </div>
+            <img src={sellosOca} alt="Certificaciones OCA ISO 9001 e ISO 14001" className="h-[72px] w-auto" />
           </div>
-          <p className="whitespace-pre-line text-[10.5px] text-[#64758a]">
-            {[EMPRESA.direccion, EMPRESA.poblacion, `${EMPRESA.telefono} · ${EMPRESA.web}`].join('\n')}
+          <p className="mt-2 text-[10.5px] text-[#64758a]">
+            {EMPRESA.direccion} · {EMPRESA.poblacion}
+          </p>
+          <p className="flex flex-wrap items-center gap-x-3 text-[10.5px] font-medium text-[#131116]">
+            <span className="flex items-center gap-1">
+              <Phone className="size-3 text-[#ff311e]" /> {EMPRESA.telefono}
+            </span>
+            <span className="flex items-center gap-1">
+              <Mail className="size-3 text-[#ff311e]" /> {EMPRESA.email}
+            </span>
+            <span className="flex items-center gap-1">
+              <Globe className="size-3 text-[#ff311e]" /> {EMPRESA.web}
+            </span>
           </p>
         </div>
         <div className="text-right">

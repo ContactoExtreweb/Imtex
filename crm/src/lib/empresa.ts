@@ -6,7 +6,7 @@ export const EMPRESA = {
   cif: "B06256861",
   direccion: "Polígono Industrial Cagancha nº 31",
   poblacion: "Villanueva de la Serena",
-  telefono: "924 84 42 02",
+  telefono: "924 84 12 46",
   email: "imtex@imtexsl.com",
   web: "www.imtexsl.com",
 }
