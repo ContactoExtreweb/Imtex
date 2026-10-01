@@ -71,12 +71,15 @@ export function PaginaListado({
 }
 
 export function FilaListado({
+  antes,
   titulo,
   detalle,
   extra,
   onAbrir,
   onBorrar,
 }: {
+  /** Algo delante del texto (por ejemplo, una miniatura) */
+  antes?: ReactNode
   titulo: ReactNode
   detalle?: ReactNode
   extra?: ReactNode
@@ -85,6 +88,7 @@ export function FilaListado({
 }) {
   return (
     <li className="flex items-center gap-3 px-3 py-2">
+      {antes}
       <button type="button" className="min-w-0 flex-1 py-1 text-left" onClick={onAbrir}>
         <p className="truncate font-medium">{titulo}</p>
         {detalle && <p className="truncate text-sm text-muted-foreground">{detalle}</p>}
@@ -104,6 +108,7 @@ export function DialogoFormulario({
   titulo,
   soloLectura,
   guardando,
+  acciones,
   onSubmit,
   onCerrar,
   children,
@@ -111,6 +116,8 @@ export function DialogoFormulario({
   titulo: string
   soloLectura: boolean
   guardando: boolean
+  /** Botones o enlaces extra en el pie, fuera del formulario (se ven también en solo lectura) */
+  acciones?: ReactNode
   onSubmit: FormEventHandler<HTMLFormElement>
   onCerrar: () => void
   children: ReactNode
@@ -125,11 +132,14 @@ export function DialogoFormulario({
           <fieldset disabled={soloLectura || guardando} className="grid gap-3">
             {children}
           </fieldset>
-          {!soloLectura && (
-            <DialogFooter>
-              <Button type="submit" disabled={guardando}>
-                {guardando ? 'Guardando…' : 'Guardar'}
-              </Button>
+          {(acciones || !soloLectura) && (
+            <DialogFooter className={acciones ? 'sm:justify-between' : undefined}>
+              {acciones && <div>{acciones}</div>}
+              {!soloLectura && (
+                <Button type="submit" disabled={guardando}>
+                  {guardando ? 'Guardando…' : 'Guardar'}
+                </Button>
+              )}
             </DialogFooter>
           )}
         </form>
@@ -140,11 +150,14 @@ export function DialogoFormulario({
 
 export function ConfirmarBorrado({
   nombre,
+  detalle = 'No se puede deshacer.',
   onConfirmar,
   onCerrar,
 }: {
   /** null = cerrado */
   nombre: string | null
+  /** Qué más se borra con ello, si hace falta avisarlo */
+  detalle?: string
   onConfirmar: () => void
   onCerrar: () => void
 }) {
@@ -153,7 +166,7 @@ export function ConfirmarBorrado({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Borrar «{nombre}»?</AlertDialogTitle>
-          <AlertDialogDescription>No se puede deshacer.</AlertDialogDescription>
+          <AlertDialogDescription>{detalle}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>

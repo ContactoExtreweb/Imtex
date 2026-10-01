@@ -1,14 +1,20 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import { Images } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
+import { Link, useNavigate } from 'react-router'
+import { toast } from 'sonner'
 import { z } from 'zod'
 import { Campo, Selector } from '@/components/campo'
 import { ConfirmarBorrado, DialogoFormulario, FilaListado, PaginaListado } from '@/components/listado'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { coincide, euros, numeroATexto } from '@/lib/formato'
+import { crearWebObra, useGaleria } from '@/lib/galeria'
 import { useSesion } from '@/lib/sesion'
-import type { Fila } from '@/lib/supabase'
+import { mensajeError, type Fila } from '@/lib/supabase'
 import { useTabla } from '@/lib/tabla'
 import { numero, obligatorio, opcional } from '@/lib/validacion'
 
@@ -75,6 +81,7 @@ export function Obras() {
         <FormularioObra
           obra={abierto === 'nuevo' ? null : abierto}
           clientes={clientes}
+          acciones={abierto !== 'nuevo' && puede('galeria', 'ver') && <BotonGaleria obra={abierto} />}
           soloLectura={!editable}
           guardando={guardar.isPending}
           onGuardar={(fila) =>
@@ -95,9 +102,46 @@ export function Obras() {
   )
 }
 
+/** En la ficha de una obra: la lleva a la galería de la web, o abre su ficha si ya está. */
+function BotonGaleria({ obra }: { obra: Obra }) {
+  const { puede } = useSesion()
+  const navigate = useNavigate()
+  const galeria = useGaleria()
+  const publicar = useMutation({
+    mutationFn: () =>
+      crearWebObra({
+        obra_id: obra.id,
+        titulo: obra.nombre,
+        ubicacion: obra.localidad,
+        anio: (obra.fecha_fin ?? obra.fecha_inicio)?.slice(0, 4) ?? String(new Date().getFullYear()),
+      }),
+    onSuccess: (webObra) => navigate(`/galeria/${webObra.id}`),
+    onError: (error) => toast.error(mensajeError(error)),
+  })
+
+  if (!galeria.data) return null
+  const enGaleria = galeria.data.find((w) => w.obra_id === obra.id)
+  if (enGaleria) {
+    return (
+      <Button variant="outline" asChild>
+        <Link to={`/galeria/${enGaleria.id}`}>
+          <Images /> Ver en la galería
+        </Link>
+      </Button>
+    )
+  }
+  if (!puede('galeria', 'editar')) return null
+  return (
+    <Button type="button" variant="outline" disabled={publicar.isPending} onClick={() => publicar.mutate()}>
+      <Images /> Publicar en la web
+    </Button>
+  )
+}
+
 function FormularioObra({
   obra,
   clientes,
+  acciones,
   soloLectura,
   guardando,
   onGuardar,
@@ -105,6 +149,7 @@ function FormularioObra({
 }: {
   obra: Obra | null
   clientes: Fila<'clientes'>[]
+  acciones?: ReactNode
   soloLectura: boolean
   guardando: boolean
   onGuardar: (fila: z.output<typeof esquema>) => void
@@ -131,6 +176,7 @@ function FormularioObra({
       titulo={obra ? `${obra.codigo} · ${obra.nombre}` : 'Nueva obra'}
       soloLectura={soloLectura}
       guardando={guardando}
+      acciones={acciones}
       onSubmit={handleSubmit(onGuardar)}
       onCerrar={onCerrar}
     >

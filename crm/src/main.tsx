@@ -12,6 +12,8 @@ import { Clientes } from '@/paginas/clientes'
 import { Combustible } from '@/paginas/combustible'
 import { ControlObra } from '@/paginas/control-obra'
 import { ControlObraFicha } from '@/paginas/control-obra-ficha'
+import { Galeria } from '@/paginas/galeria'
+import { GaleriaFicha } from '@/paginas/galeria-ficha'
 import { Inicio } from '@/paginas/inicio'
 import { Obras } from '@/paginas/obras'
 import { PartidasTipo } from '@/paginas/partidas-tipo'
@@ -46,6 +48,8 @@ const router = createBrowserRouter([
           { path: 'presupuestos/:id', element: <ConPermiso modulo="presupuestos"><Presupuesto /></ConPermiso> },
           { path: 'partidas-tipo', element: <ConPermiso modulo="base_precios"><PartidasTipo /></ConPermiso> },
           { path: 'precios', element: <ConPermiso modulo="base_precios"><Precios /></ConPermiso> },
+          { path: 'galeria', element: <ConPermiso modulo="galeria"><Galeria /></ConPermiso> },
+          { path: 'galeria/:id', element: <ConPermiso modulo="galeria"><GaleriaFicha /></ConPermiso> },
           { path: 'ajustes/categorias', element: <ConPermiso modulo="ajustes"><Categorias /></ConPermiso> },
           { path: 'ajustes/combustible', element: <ConPermiso modulo="ajustes"><Combustible /></ConPermiso> },
           { path: 'ajustes/trabajadores', element: <ConPermiso modulo="ajustes"><Trabajadores /></ConPermiso> },

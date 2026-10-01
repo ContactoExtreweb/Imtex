@@ -6,8 +6,8 @@ Las herramientas de `referencia/` son la especificación funcional de la fase 1 
 Qué está hecho, qué falta y cómo arrancar en otro ordenador: `docs/ESTADO.md` (mantenlo al día al terminar cada bloque).
 
 ## Estructura
-- `web/`: Astro + Tailwind en Netlify. imtexsl.com y `/admin` de la galería.
-- `crm/`: React + Vite + TypeScript en Netlify. Programa de gestión privado (noindex).
+- `web/`: Astro + Tailwind en Netlify. imtexsl.com. La galería de obras se gestiona desde el CRM (no hay `/admin` en la web); la web solo lee lo publicado.
+- `crm/`: React + Vite + TypeScript en Netlify. Programa de gestión privado (noindex), con el panel de la galería de la web.
 - `supabase/`: migraciones, seed y edge functions. Un único proyecto Supabase para web y CRM.
 
 ## Comandos

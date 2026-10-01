@@ -1,6 +1,6 @@
 # Estado del proyecto IMTEX
 
-Actualizado el 01/10/2026. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
+Actualizado el 01/10/2026 (por la noche, desde el PC de casa). Qué está hecho, qué falta y cómo seguir desde otro ordenador.
 El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [decisiones.md](decisiones.md).
 
 ## Dónde está cada cosa
@@ -8,7 +8,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 | Qué | Dónde |
 |---|---|
 | Código | GitHub, `ContactoExtreweb/Imtex` (privado) |
-| Rama con todo el trabajo | **`feat/control-obra`** |
+| Rama con todo el trabajo | **`feat/galeria-crm`** (sale de `feat/control-obra` y la incluye) |
 | `main` | Llega hasta Presupuestos. Control de obra se fusiona cuando Saúl lo pruebe |
 | Base de datos de desarrollo | Supabase, proyecto `imtex-dev`, ref `vrhpxwnzthenjxubagys` (Fráncfort) |
 | Base de datos de producción | Sin crear todavía |
@@ -23,7 +23,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 **2. Base de datos: núcleo** (prompt 2)
 - Roles, matriz de permisos, perfiles, clientes, obras, trabajadores, categorías y tarifas de combustible.
 - RLS en todas las tablas con `private.tiene_permiso(modulo, accion)`.
-- Prueba de permisos por rol: `supabase/pruebas/permisos.sql`. Ahora hace 637 comprobaciones y da 0 fallos.
+- Prueba de permisos por rol: `supabase/pruebas/permisos.sql`. Ahora hace 735 comprobaciones y da 0 fallos.
 
 **3. Acceso al CRM** (prompt 3)
 - Entrar, recuperar contraseña y elegir contraseña desde un enlace de invitación.
@@ -41,7 +41,13 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Los resultados coinciden con `referencia/IMTEX_control_obra.html` usando sus datos de ejemplo.
 - El listado y la portada calculan los totales con la misma función que la ficha, así que no pueden diferir.
 
-**6. Extras pedidos por Saúl**
+**6. Galería de la web desde el CRM.** **Pendiente de que Saúl la pruebe subiendo fotos.**
+- Tablas `web_obras` y `web_fotos`, y bucket `galeria`. Los visitantes de la web solo leen lo publicado.
+- Apartado «Galería web» en el menú y botón «Publicar en la web» en la ficha de cada obra.
+- Ficha con zona para arrastrar fotos, categoría, textos, portada y publicar o despublicar.
+- Las fotos se reducen en el navegador (JPEG de 2.000 px y miniatura). No se hace el `/admin` dentro de la web.
+
+**7. Extras pedidos por Saúl**
 - Identidad de IMTEX: logo, colores, login con la composición de la tarjeta y logo de fondo en escritorio.
 - Portada con resumen según los permisos, accesos y notas rápidas personales.
 
@@ -49,6 +55,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 
 **De Saúl, ahora**
 - Probar Control de obra (los pasos están más abajo) y decir qué falla o qué cambiaría.
+- Probar la galería: Obras → abrir una obra → «Publicar en la web», arrastrar fotos (también desde el móvil), elegir categoría, cambiar la portada, publicar y despublicar. Como encargado no debe verse «Galería web».
 - Decir cuándo se borra la obra de ejemplo `EJEMPLO-OB-2026-01` de dev. Es ficticia e infla las cifras de la portada.
 
 **Del CRM, para ponerlo en producción** (PLAN.md, parte C y hitos H4 y H5)
@@ -62,8 +69,13 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Carga de datos reales: categorías, tarifas, obras en curso y usuarios. Formación y guía rápida por perfil.
 - Contrato de encargado del tratamiento (RGPD) firmado antes de cargar datos personales.
 
-**Web corporativa** (prompts 4 y 5). Es lo siguiente.
-- Galería de obras con panel `/admin` (tablas `web_obras` y `web_fotos`, bucket `galeria`).
+**Ampliaciones aprobadas por Saúl** (fuera de PLAN.md §0; él decide si se facturan)
+- Avisos y resúmenes en la portada del programa, sin correos: obras con margen bajo y obras que se desvían del presupuesto.
+- Cierre de meses por obra y mes, y exportar el informe de la obra a CSV más vista imprimible.
+- Seguimiento comercial de presupuestos (envío por correo, recordatorios y versiones): espera a tener Resend.
+
+**Web corporativa** (prompts 4 y 5).
+- Páginas públicas de la galería (`/obras` y `/obras/[slug]`): leen `web_obras` y `web_fotos`. El panel ya está hecho en el CRM.
 - Diseño, textos de empresa y servicios, las 22 obras, SEO y redirecciones desde Joomla.
 - Va con retraso respecto al presupuesto (revisión el 12/10 y producción el 19/10), porque se decidió hacer antes el CRM.
 - Material que hay que pedir a IMTEX: logo en vector, fotos de obras a buena resolución, datos del Registro Mercantil, email del formulario de contacto y acceso al DNS.
@@ -72,7 +84,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Aparcada. La llevará Pedro, fuera de este repo.
 
 **Fuera del alcance vendido** (se presupuesta aparte si IMTEX lo pide)
-- Que cada operario meta sus propias horas, exportar a CSV, cerrar meses, facturación y Verifactu, modo sin conexión e idiomas.
+- Que cada operario meta sus propias horas, facturación y Verifactu, modo sin conexión e idiomas.
 
 ## Cómo arrancar en otro ordenador
 
@@ -83,7 +95,7 @@ Hace falta Git, Node 22 o superior y Claude Code.
    git clone https://github.com/ContactoExtreweb/Imtex.git
    ```
    ```bash
-   cd Imtex && git checkout feat/control-obra
+   cd Imtex && git checkout feat/galeria-crm
    ```
 2. Instalar dependencias:
    ```bash

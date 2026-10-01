@@ -43,6 +43,14 @@ export const aSlug = (texto: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
 
+/** Primer slug sin usar: «obra», y si ya existe, «obra-2», «obra-3»… */
+export function slugLibre(base: string, ocupados: Iterable<string>): string {
+  const usados = new Set(ocupados)
+  let slug = base
+  for (let n = 2; usados.has(slug); n++) slug = `${base}-${n}`
+  return slug
+}
+
 /** Valor para un campo de formulario: 18.5 → «18,5» */
 export const numeroATexto = (n: number | null | undefined) =>
   n == null ? '' : String(n).replace('.', ',')

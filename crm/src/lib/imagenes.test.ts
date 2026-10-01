@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { aSlug } from './formato'
+import { aSlug, slugLibre } from './formato'
 import { encajar, rutaMiniatura } from './imagenes'
 
 test('encajar reduce el lado largo sin deformar y nunca amplía', () => {
@@ -26,4 +26,10 @@ test('aSlug: minúsculas, sin tildes y con guiones (lo que admite web_obras.slug
     expect(aSlug(texto)).toMatch(admitido)
   }
   expect(aSlug('¡¿?!')).toBe('') // nada aprovechable: quien llama decide qué poner
+})
+
+test('slugLibre no repite direcciones', () => {
+  expect(slugLibre('presa-horcajo', [])).toBe('presa-horcajo')
+  expect(slugLibre('presa-horcajo', ['presa-horcajo'])).toBe('presa-horcajo-2')
+  expect(slugLibre('presa-horcajo', ['presa-horcajo', 'presa-horcajo-2', 'presa-horcajo-4'])).toBe('presa-horcajo-3')
 })
