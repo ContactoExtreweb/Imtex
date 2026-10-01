@@ -3,6 +3,7 @@
 Cliente: IMTEX S.L. (impermeabilizaciones, Villanueva de la Serena).
 Proveedor: FG Digital (marca extreweb). Plan, alcance y especificación: `docs/PLAN.md`.
 Las herramientas de `referencia/` son la especificación funcional de la fase 1 del CRM.
+Qué está hecho, qué falta y cómo arrancar en otro ordenador: `docs/ESTADO.md` (mantenlo al día al terminar cada bloque).
 
 ## Estructura
 - `web/`: Astro + Tailwind en Netlify. imtexsl.com y `/admin` de la galería.
