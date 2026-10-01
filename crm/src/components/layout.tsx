@@ -1,4 +1,17 @@
-import { Fuel, HardHat, House, IdCard, LogOut, Tags, UserCog, Users, type LucideIcon } from 'lucide-react'
+import {
+  BookOpen,
+  FileText,
+  Fuel,
+  HardHat,
+  House,
+  IdCard,
+  Layers,
+  LogOut,
+  Tags,
+  UserCog,
+  Users,
+  type LucideIcon,
+} from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, Navigate, Outlet, useLocation } from 'react-router'
 import { Button } from '@/components/ui/button'
@@ -36,6 +49,14 @@ const SECCIONES: { titulo?: string; enlaces: Enlace[] }[] = [
     ],
   },
   {
+    titulo: 'Presupuestos',
+    enlaces: [
+      { a: '/presupuestos', texto: 'Presupuestos', icono: FileText, modulo: 'presupuestos' },
+      { a: '/partidas-tipo', texto: 'Partidas tipo', icono: Layers, modulo: 'base_precios' },
+      { a: '/precios', texto: 'Base de precios', icono: BookOpen, modulo: 'base_precios' },
+    ],
+  },
+  {
     titulo: 'Ajustes',
     enlaces: [
       { a: '/ajustes/categorias', texto: 'Categorías', icono: Tags, modulo: 'ajustes' },
@@ -59,7 +80,7 @@ function Centrado({ children }: { children: ReactNode }) {
 }
 
 /** Rutas privadas: exige sesión y perfil activo. */
-export function Layout() {
+export function Protegido() {
   const { cargando, session, perfil, salir } = useSesion()
   const location = useLocation()
 
@@ -78,6 +99,11 @@ export function Layout() {
     )
   }
 
+  return <Outlet />
+}
+
+/** Marco con el menú lateral. */
+export function Layout() {
   return (
     <SidebarProvider>
       <Menu />
@@ -100,7 +126,7 @@ function Menu() {
   const secciones = useSecciones()
   const enlace = (a: string, texto: string, Icono: LucideIcon) => (
     <SidebarMenuItem key={a}>
-      <SidebarMenuButton asChild isActive={pathname === a}>
+      <SidebarMenuButton asChild isActive={a === '/' ? pathname === a : pathname.startsWith(a)}>
         <Link to={a} onClick={() => setOpenMobile(false)}>
           <Icono /> {texto}
         </Link>

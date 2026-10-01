@@ -26,3 +26,11 @@
 | 29/09/2026 | Los campos numéricos aceptan coma o punto decimal («18,50» o «18.5») | En el móvil en español se escribe con coma |
 | 29/09/2026 | Lint sin `src/components/ui` ni `src/hooks` | Es código que genera y actualiza la CLI de shadcn |
 | 29/09/2026 | PWA (manifest e iconos) pendiente | Necesita el logo de IMTEX |
+| 01/10/2026 | La migración `presupuestos` carga los 90 precios de la plantilla de IMTEX (las 30 filas vacías se descartan) | Hacen falta también en producción; la plantilla se da por vigente al no haber reunión |
+| 01/10/2026 | Porcentajes por defecto de un presupuesto: 16 % de gastos generales y 35 % de beneficio (B4 decía 13 % y 6 %); carta y condiciones, las de la plantilla | Son los valores que IMTEX tiene configurados en su herramienta |
+| 01/10/2026 | Un presupuesto se guarda entero con la función `guardar_presupuesto` (cabecera, partidas y líneas en una transacción) y solo si es un borrador | Un fallo a medias no puede dejarlo sin partidas; los enviados y aceptados no se tocan |
+| 01/10/2026 | En cada línea del presupuesto se copian código, descripción, unidad y coste; las partidas tipo guardan solo la referencia al precio | Lo decidido el 29/09: los presupuestos no cambian con la base de precios; las plantillas sí usan el precio vigente |
+| 01/10/2026 | Totales del listado con la vista SQL `presupuestos_totales`; dentro del editor, con las funciones de `calculos/presupuesto.ts` | Regla 7 (sumas en SQL). Las dos dan lo mismo con el ejemplo de la herramienta (2.787,70 € de base) |
+| 01/10/2026 | El enlace obra–presupuesto va solo en `obras.presupuesto_id` (B4 lo ponía también en `presupuestos.obra_id`) | Un único sitio que mantener; una obra por presupuesto |
+| 01/10/2026 | El test de cálculos ejecuta las funciones originales sacadas de `referencia/IMTEX_plantilla_presupuestos.html` | Comprueba la igualdad con la herramienta real, no con una copia de sus fórmulas |
+| 01/10/2026 | Los precios usados en partidas tipo no se pueden borrar: se desactivan | Así no se rompen las plantillas |

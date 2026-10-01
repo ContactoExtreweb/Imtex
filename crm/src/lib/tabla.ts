@@ -3,7 +3,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { mensajeError, supabase, type Fila, type NuevaFila } from './supabase'
 
-type TablaEditable = 'clientes' | 'obras' | 'categorias_profesionales' | 'trabajadores' | 'perfiles'
+type TablaEditable =
+  | 'clientes'
+  | 'obras'
+  | 'categorias_profesionales'
+  | 'trabajadores'
+  | 'perfiles'
+  | 'precios'
 type Resultado = PromiseLike<{ error: PostgrestError | null }>
 
 // supabase-js no sabe tipar un nombre de tabla genérico; se usa esta forma mínima por dentro

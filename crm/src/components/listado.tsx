@@ -22,6 +22,7 @@ export function PaginaListado({
   busqueda,
   onBuscar,
   onNuevo,
+  filtros,
   cargando,
   vacio,
   children,
@@ -31,6 +32,8 @@ export function PaginaListado({
   onBuscar: (texto: string) => void
   /** Sin permiso de edición no se pasa y no sale el botón */
   onNuevo?: () => void
+  /** Controles extra junto al buscador (por ejemplo, un desplegable) */
+  filtros?: ReactNode
   cargando: boolean
   vacio: boolean
   children: ReactNode
@@ -45,13 +48,17 @@ export function PaginaListado({
           </Button>
         )}
       </div>
-      <Input
-        type="search"
-        placeholder="Buscar…"
-        aria-label="Buscar"
-        value={busqueda}
-        onChange={(e) => onBuscar(e.target.value)}
-      />
+      <div className="flex flex-wrap gap-2">
+        <Input
+          type="search"
+          placeholder="Buscar…"
+          aria-label="Buscar"
+          className="min-w-40 flex-1"
+          value={busqueda}
+          onChange={(e) => onBuscar(e.target.value)}
+        />
+        {filtros}
+      </div>
       {cargando ? (
         <p className="text-sm text-muted-foreground">Cargando…</p>
       ) : vacio ? (

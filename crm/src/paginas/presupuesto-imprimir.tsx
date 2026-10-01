@@ -1,0 +1,195 @@
+import { ArrowLeft, Printer } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Link, useParams } from 'react-router'
+import firma from '@/assets/firma-imtex.png'
+import logoImtex from '@/assets/logo-imtex.jpg'
+import logoOca from '@/assets/logo-oca.jpg'
+import { Button } from '@/components/ui/button'
+import { partidaCostes, sumaResumen } from '@/lib/calculos/presupuesto'
+import { EMPRESA } from '@/lib/empresa'
+import { euros, fecha } from '@/lib/formato'
+import { usePresupuesto, type PartidaEdicion } from '@/lib/presupuestos'
+import { mensajeError } from '@/lib/supabase'
+import { useTabla } from '@/lib/tabla'
+
+const POR_HOJA = 12 // partidas por hoja, como la herramienta
+const medicion = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 4, useGrouping: 'always' })
+
+/**
+ * Presupuesto para imprimir o guardar como PDF: carta, relación de partidas y condiciones.
+ * Mismo formato que generarInforme() de referencia/IMTEX_plantilla_presupuestos.html.
+ * Las reglas de página (A4, saltos) están en index.css (.hoja).
+ */
+export function PresupuestoImprimir() {
+  const { id } = useParams()
+  const consulta = usePresupuesto(id)
+  const clientes = useTabla('clientes', 'nombre').lista.data ?? []
+
+  if (consulta.isError) return <p className="p-4 text-sm text-destructive">{mensajeError(consulta.error)}</p>
+  if (!consulta.data) return <p className="p-4 text-sm text-muted-foreground">Cargando…</p>
+
+  const p = consulta.data
+  const cliente = clientes.find((c) => c.id === p.cliente_id)?.nombre ?? ''
+  const totales = sumaResumen(p.partidas, p.iva_pct)
+  const grupos: PartidaEdicion[][] = []
+  for (let i = 0; i < p.partidas.length; i += POR_HOJA) grupos.push(p.partidas.slice(i, i + POR_HOJA))
+
+  const cabecera = (
+    <>
+      <div className="mb-4 flex items-start justify-between gap-6 border-b-2 border-[#0f1b2d] pb-3">
+        <div>
+          <div className="flex items-center gap-4">
+            <img src={logoImtex} alt={EMPRESA.nombre} className="mb-1 h-[66px] max-w-[280px] object-contain object-left-top" />
+            <img src={logoOca} alt="Certificaciones OCA 9001/14001" className="mb-1 h-[70px] max-w-[210px] object-contain" />
+          </div>
+          <p className="whitespace-pre-line text-[10.5px] text-[#64758a]">
+            {[EMPRESA.direccion, EMPRESA.poblacion, `${EMPRESA.telefono} · ${EMPRESA.web}`].join('\n')}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-xl font-bold tracking-[2px] text-[#d81e05]">PRESUPUESTO</p>
+          <p className="text-[13px] font-bold text-[#0f1b2d]">Nº {p.codigo || '—'}</p>
+          <p className="text-[11px] text-[#5b6d80]">Fecha: {fecha(p.fecha)}</p>
+        </div>
+      </div>
+      {p.titulo && (
+        <p className="mb-3 border-l-4 border-[#d81e05] bg-[#f6f4f3] px-4 py-3 text-sm font-bold text-[#0f1b2d]">
+          Obra: {p.titulo}
+        </p>
+      )}
+      <div className="mb-4 grid gap-1.5 text-xs text-[#40566d]">
+        <p>
+          <b>Cliente:</b> {cliente || '···'}
+          {p.contacto && ` — ${p.contacto}`}
+        </p>
+        <p>
+          <b>Localidad de la obra:</b> {p.localidad || '···'}
+        </p>
+        <p>
+          <b>Validez de la oferta:</b> {p.validez || '···'}
+          {p.plazo && (
+            <>
+              {' · '}
+              <b>Plazo ejecución:</b> {p.plazo}
+            </>
+          )}
+          {p.forma_pago && (
+            <>
+              {' · '}
+              <b>Forma de pago:</b> {p.forma_pago}
+            </>
+          )}
+        </p>
+      </div>
+    </>
+  )
+
+  return (
+    <div className="min-h-dvh bg-neutral-200 print:bg-white">
+      <div className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background p-3 print:hidden">
+        <Button variant="outline" asChild>
+          <Link to={`/presupuestos/${p.id}`}>
+            <ArrowLeft /> Volver
+          </Link>
+        </Button>
+        <Button onClick={() => window.print()}>
+          <Printer /> Imprimir / Guardar como PDF
+        </Button>
+      </div>
+
+      <div className="mx-auto max-w-[880px] p-4 text-[13px] leading-relaxed text-[#1c2632] print:max-w-none print:p-0">
+        <Hoja>
+          {cabecera}
+          <Seccion>Carta de presentación</Seccion>
+          <p className="my-2 whitespace-pre-wrap text-justify">{p.carta}</p>
+          <div className="mt-8 flex flex-col items-end">
+            <img src={firma} alt={`Firma de ${EMPRESA.nombre}`} className="mb-1 h-[74px] max-w-[250px] object-contain" />
+            <p className="min-w-[150px] border-t border-[#8896a6] pt-1.5 text-center text-[11px] text-[#33465b]">
+              Fdo.: {EMPRESA.nombre}
+            </p>
+          </div>
+        </Hoja>
+
+        {grupos.map((grupo, i) => (
+          <Hoja key={i}>
+            {cabecera}
+            <Seccion>Relación de partidas</Seccion>
+            <table className="tabla-presupuesto w-full border-collapse text-xs">
+              <thead>
+                <tr>
+                  <th className="text-center">Código</th>
+                  <th>Título de la partida</th>
+                  <th className="text-center">Medición</th>
+                  <th className="text-right">PVP (€/Ud.)</th>
+                  <th className="text-right">Importe (€)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {grupo.map((partida) => {
+                  const pvp = partidaCostes(partida).total
+                  const cantidad = partida.cantidad || 1
+                  return (
+                    <tr key={partida.clave}>
+                      <td className="text-center align-top font-bold">{partida.codigo || '—'}</td>
+                      <td>
+                        <span className="font-bold text-[#0f1b2d]">{partida.titulo || '(sin título)'}</span>
+                        <span className="block text-[11px] italic text-[#5b6d80]">{partida.medicion}</span>
+                      </td>
+                      <td className="text-center">{medicion.format(cantidad)}</td>
+                      <td className="text-right">{euros(pvp)}</td>
+                      <td className="text-right font-bold">{euros(pvp * cantidad)}</td>
+                    </tr>
+                  )
+                })}
+                {i === grupos.length - 1 && (
+                  <>
+                    <tr className="total">
+                      <td colSpan={4}>TOTAL (Base Imponible)</td>
+                      <td>{euros(totales.base)}</td>
+                    </tr>
+                    <tr className="iva">
+                      <td colSpan={4}>IVA ({p.iva_pct} %)</td>
+                      <td>{euros(totales.iva)}</td>
+                    </tr>
+                    <tr className="iva final">
+                      <td colSpan={4}>TOTAL PRESUPUESTO (IVA incluido)</td>
+                      <td>{euros(totales.total)}</td>
+                    </tr>
+                  </>
+                )}
+              </tbody>
+            </table>
+          </Hoja>
+        ))}
+
+        <Hoja>
+          {cabecera}
+          <Seccion>Condiciones particulares</Seccion>
+          <p className="whitespace-pre-wrap text-justify leading-[1.85]">{p.condiciones}</p>
+          <div className="mt-10 flex justify-between gap-12 text-center text-[11.5px] text-[#33465b]">
+            <div className="flex w-[42%] flex-col items-center">
+              <img src={firma} alt={`Firma de ${EMPRESA.nombre}`} className="mb-1 h-20 max-w-[260px] object-contain" />
+              <p className="w-full border-t border-[#8896a6] pt-2">Fdo.: {EMPRESA.nombre}</p>
+            </div>
+            <div className="flex w-[42%] flex-col items-center">
+              <div className="mb-1 h-20" />
+              <p className="w-full border-t border-[#8896a6] pt-2">Aceptado por: {cliente}</p>
+            </div>
+          </div>
+        </Hoja>
+      </div>
+    </div>
+  )
+}
+
+function Hoja({ children }: { children: ReactNode }) {
+  return <section className="hoja mb-8 rounded-lg bg-white px-10 py-9 shadow-lg">{children}</section>
+}
+
+function Seccion({ children }: { children: ReactNode }) {
+  return (
+    <h2 className="mb-3 border-b border-[#e4e8ef] pb-1.5 text-sm font-bold uppercase tracking-wide text-[#0f1b2d]">
+      {children}
+    </h2>
+  )
+}
