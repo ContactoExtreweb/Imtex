@@ -148,6 +148,42 @@ export function DialogoFormulario({
   )
 }
 
+/** Pregunta antes de hacer algo que conviene pensar dos veces. */
+export function Confirmar({
+  titulo,
+  detalle,
+  accion,
+  destructiva = false,
+  onConfirmar,
+  onCerrar,
+}: {
+  /** null = cerrado */
+  titulo: string | null
+  detalle: string
+  /** Texto del botón que confirma */
+  accion: string
+  destructiva?: boolean
+  onConfirmar: () => void
+  onCerrar: () => void
+}) {
+  return (
+    <AlertDialog open={titulo !== null} onOpenChange={(abierto) => !abierto && onCerrar()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{titulo}</AlertDialogTitle>
+          <AlertDialogDescription>{detalle}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction variant={destructiva ? 'destructive' : 'default'} onClick={onConfirmar}>
+            {accion}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
 export function ConfirmarBorrado({
   nombre,
   detalle = 'No se puede deshacer.',
@@ -162,19 +198,13 @@ export function ConfirmarBorrado({
   onCerrar: () => void
 }) {
   return (
-    <AlertDialog open={nombre !== null} onOpenChange={(abierto) => !abierto && onCerrar()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>¿Borrar «{nombre}»?</AlertDialogTitle>
-          <AlertDialogDescription>{detalle}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={onConfirmar}>
-            Borrar
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <Confirmar
+      titulo={nombre === null ? null : `¿Borrar «${nombre}»?`}
+      detalle={detalle}
+      accion="Borrar"
+      destructiva
+      onConfirmar={onConfirmar}
+      onCerrar={onCerrar}
+    />
   )
 }

@@ -14,6 +14,7 @@ export type Modulo =
   | 'control_obra'
   | 'partes_horas'
   | 'certificaciones'
+  | 'cierre_meses'
   | 'galeria'
 export type Accion = 'ver' | 'editar'
 

@@ -17,6 +17,7 @@ Qué está hecho, qué falta y cómo arrancar en otro ordenador: `docs/ESTADO.md
 - Aplicar migraciones: `npx supabase db push` (enlazado a imtex-dev; producción solo si se pide)
 - Tipos: `npx supabase gen types typescript --linked > crm/src/lib/database.types.ts` (y copia en `web/src/lib/`)
 - Prueba de permisos por rol (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/permisos.sql`. Tabla nueva → añade sus casos en ese fichero.
+- Prueba del cierre de meses (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/cierre.sql`
 - Advisors de seguridad y rendimiento: `npx supabase db advisors --linked --type all`
 - Edge Functions (sin Docker): `npx supabase functions deploy <nombre> --use-api`
 

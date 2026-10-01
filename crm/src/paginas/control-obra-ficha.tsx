@@ -1,19 +1,42 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Download, Lock, LockOpen, Printer } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { ComparativaObra } from '@/components/comparativa-obra'
 import { GraficosObra } from '@/components/graficos-obra'
 import { HojaApuntes } from '@/components/hoja-apuntes'
+import { Confirmar } from '@/components/listado'
 import { Pestanas } from '@/components/pestanas'
 import { Badge } from '@/components/ui/badge'
-import { etiquetaMes, nivelMargen, type calcularObra } from '@/lib/calculos/control-obra'
-import { COLOR_MARGEN, useControlObra } from '@/lib/control-obra'
+import { Button } from '@/components/ui/button'
+import { etiquetaMes, nivelMargen } from '@/lib/calculos/control-obra'
+import {
+  csvObra,
+  FILAS_ACUMULADOS,
+  FILAS_MATRIZ,
+  indicadoresObra,
+  type Calculo,
+  type FilaMatriz,
+} from '@/lib/calculos/informe-obra'
+import { COLOR_MARGEN, useControlObra, useMesesCerrados } from '@/lib/control-obra'
 import { euros, pct } from '@/lib/formato'
 import { useSesion } from '@/lib/sesion'
 import { mensajeError } from '@/lib/supabase'
 import { useHojas, type IdHoja } from './control-obra-hojas'
 
 type Pestana = 'resumen' | 'graficos' | 'comparativa' | IdHoja
-type Calculo = ReturnType<typeof calcularObra>
+type Cierre = ReturnType<typeof useMesesCerrados>
+
+const SIN_CIERRES: ReadonlySet<string> = new Set()
+
+/** Descarga un texto como archivo. El BOM hace que Excel lea bien las tildes. */
+function descargar(nombre: string, texto: string) {
+  const url = URL.createObjectURL(new Blob(['﻿' + texto], { type: 'text/csv;charset=utf-8' }))
+  const enlace = document.createElement('a')
+  enlace.href = url
+  enlace.download = nombre
+  enlace.click()
+  URL.revokeObjectURL(url)
+}
 
 /** Control de una obra: resumen con la matriz mensual y las hojas de certificaciones y costes. */
 export function ControlObraFicha() {
@@ -21,6 +44,7 @@ export function ControlObraFicha() {
   const { puede } = useSesion()
   const [parametros, setParametros] = useSearchParams()
   const control = useControlObra(id)
+  const cierre = useMesesCerrados(id)
   const hojas = useHojas()
 
   // Cada hoja se enseña solo a quien puede ver su módulo
@@ -48,6 +72,8 @@ export function ControlObraFicha() {
   if (control.isError) return <p className="p-4 text-sm text-destructive">{mensajeError(control.error)}</p>
   if (!control.data || !id) return <p className="p-4 text-sm text-muted-foreground">Cargando…</p>
   const { obra } = control.data
+  const estado = obra.estado === 'terminada' ? 'Terminada' : 'En ejecución'
+  const cerrados = cierre.cerrados ?? SIN_CIERRES
 
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-4 p-4">
@@ -59,9 +85,24 @@ export function ControlObraFicha() {
           <h1 className="mr-auto min-w-0 text-xl font-semibold text-balance">
             {obra.codigo} · {obra.nombre}
           </h1>
-          <Badge variant={obra.estado === 'terminada' ? 'outline' : 'secondary'}>
-            {obra.estado === 'terminada' ? 'Terminada' : 'En ejecución'}
-          </Badge>
+          <Badge variant={obra.estado === 'terminada' ? 'outline' : 'secondary'}>{estado}</Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              descargar(
+                `Control_Obra_${obra.codigo}.csv`,
+                csvObra({ ...obra, cliente: obra.clientes?.nombre ?? null, estado }, control.data, cerrados),
+              )
+            }
+          >
+            <Download /> Exportar CSV
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/control-obra/${id}/imprimir`}>
+              <Printer /> Imprimir
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -73,14 +114,20 @@ export function ControlObraFicha() {
       />
 
       {activa === 'resumen' ? (
-        <Resumen datos={control.data} gastosGeneralesPct={obra.gastos_generales_pct} importePedido={obra.importe_pedido} />
+        <Resumen
+          datos={control.data}
+          gastosGeneralesPct={obra.gastos_generales_pct}
+          importePedido={obra.importe_pedido}
+          cerrados={cerrados}
+          cierre={cierre}
+        />
       ) : activa === 'graficos' ? (
         <GraficosObra datos={control.data} />
       ) : activa === 'comparativa' ? (
         obra.presupuesto_id && <ComparativaObra presupuestoId={obra.presupuesto_id} datos={control.data} />
       ) : (
         // key: cada hoja empieza con su propio filtro de mes y sin diálogos abiertos
-        <HojaApuntes key={activa} config={hojas[activa]} obraId={id} />
+        <HojaApuntes key={activa} config={hojas[activa]} obraId={id} cerrados={cerrados} />
       )}
     </div>
   )
@@ -90,57 +137,31 @@ function Resumen({
   datos,
   gastosGeneralesPct,
   importePedido,
+  cerrados,
+  cierre,
 }: {
   datos: Calculo
   gastosGeneralesPct: number
   importePedido: number
+  cerrados: ReadonlySet<string>
+  cierre: Cierre
 }) {
-  const { meses, totales, pendientePedido, pctAvance, margenGlobal } = datos
+  const { meses } = datos
   const colorResultado = (valor: number) => (valor >= 0 ? 'text-exito' : 'text-destructive')
   const colorMargen = (valor: number) => COLOR_MARGEN[nivelMargen(valor)]
 
-  const indicadores = [
-    { etiqueta: 'Importe del pedido', valor: euros(importePedido) },
-    { etiqueta: `Certificado a origen (${pct(pctAvance)} del pedido)`, valor: euros(totales.sumCert) },
-    { etiqueta: 'Pendiente de certificar', valor: euros(pendientePedido) },
-    { etiqueta: 'Costes a origen, con estructura', valor: euros(totales.sumTotMasEst) },
-    { etiqueta: 'Costes directos', valor: euros(totales.sumDirectos) },
-    { etiqueta: `Estructura (${gastosGeneralesPct} % de lo certificado)`, valor: euros(totales.sumEst) },
-    { etiqueta: 'Dietas y hoteles', valor: euros(totales.sumDie + totales.sumHot) },
-    { etiqueta: 'Resultado a origen', valor: euros(totales.sumRes), color: colorResultado(totales.sumRes) },
-    { etiqueta: 'Margen a origen', valor: pct(margenGlobal), color: totales.sumCert > 0 ? colorMargen(margenGlobal) : '' },
-  ]
+  const indicadores = indicadoresObra(datos, gastosGeneralesPct, importePedido).map((i) => ({
+    ...i,
+    color: i.tipo === 'resultado' ? colorResultado(i.numero!) : i.tipo === 'margen' ? colorMargen(i.numero!) : '',
+  }))
 
-  // Mismas filas y en el mismo orden que la matriz de la herramienta
-  const filas: { campo: keyof Calculo['meses'][number]; etiqueta: string; tipo?: 'resultado' | 'margen'; fuerte?: boolean }[] = [
-    { campo: 'certificacion', etiqueta: 'Certificación', fuerte: true },
-    { campo: 'costeEstructura', etiqueta: 'Coste de estructura' },
-    { campo: 'personal', etiqueta: 'Personal (horas)' },
-    { campo: 'subcontrata', etiqueta: 'Subcontrata' },
-    { campo: 'combustible', etiqueta: 'Combustible' },
-    { campo: 'dietas', etiqueta: 'Dietas' },
-    { campo: 'hoteles', etiqueta: 'Hoteles' },
-    { campo: 'alquileres', etiqueta: 'Alquileres' },
-    { campo: 'materiales', etiqueta: 'Materiales' },
-    { campo: 'costesTotales', etiqueta: 'Costes totales', fuerte: true },
-    { campo: 'sumatorioCostes', etiqueta: 'Costes + estructura', fuerte: true },
-    { campo: 'resultadoMes', etiqueta: 'Resultado del mes', tipo: 'resultado', fuerte: true },
-    { campo: 'margenPct', etiqueta: 'Margen del mes', tipo: 'margen', fuerte: true },
-  ]
-  const acumulados: typeof filas = [
-    { campo: 'certOrigen', etiqueta: 'Certificación a origen', fuerte: true },
-    { campo: 'costesOrigen', etiqueta: 'Costes a origen' },
-    { campo: 'resultadoOrigen', etiqueta: 'Resultado a origen', tipo: 'resultado', fuerte: true },
-    { campo: 'margenOrigenPct', etiqueta: 'Margen a origen', tipo: 'margen', fuerte: true },
-  ]
-
-  const fila = (f: (typeof filas)[number]) => (
+  const fila = (f: FilaMatriz) => (
     <tr key={f.campo} className={f.fuerte ? 'font-semibold' : undefined}>
       <th scope="row" className="sticky left-0 border-r bg-background px-3 py-2 text-left font-[inherit]">
         {f.etiqueta}
       </th>
       {meses.map((m) => {
-        const valor = m[f.campo] as number
+        const valor = m[f.campo]
         const color =
           f.tipo === 'resultado' ? colorResultado(valor) : f.tipo === 'margen' && m.certOrigen > 0 ? colorMargen(valor) : ''
         return (
@@ -158,7 +179,7 @@ function Resumen({
         {indicadores.map((i) => (
           <div key={i.etiqueta} className="flex flex-col-reverse justify-end gap-0.5 border-r border-b bg-background p-4">
             <dt className="text-sm text-muted-foreground">{i.etiqueta}</dt>
-            <dd className={`text-xl font-semibold tabular-nums ${i.color ?? ''}`}>{i.valor}</dd>
+            <dd className={`text-xl font-semibold tabular-nums ${i.color}`}>{i.valor}</dd>
           </div>
         ))}
       </dl>
@@ -169,37 +190,100 @@ function Resumen({
           cualquiera de las de costes.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border bg-background">
-          <table className="w-full border-collapse text-sm">
-            <caption className="sr-only">Certificación, costes y resultado de cada mes, y acumulados a origen</caption>
-            <thead>
-              <tr className="border-b bg-muted">
-                <th scope="col" className="sticky left-0 border-r bg-muted px-3 py-2 text-left font-semibold">
-                  Concepto
-                </th>
-                {meses.map((m) => (
-                  <th key={m.mes} scope="col" className="min-w-28 px-3 py-2 text-right font-semibold whitespace-nowrap">
-                    {etiquetaMes(m.mes)}
+        <>
+          <div className="overflow-x-auto rounded-lg border bg-background">
+            <table className="w-full border-collapse text-sm">
+              <caption className="sr-only">Certificación, costes y resultado de cada mes, y acumulados a origen</caption>
+              <thead>
+                <tr className="border-b bg-muted">
+                  <th scope="col" className="sticky left-0 border-r bg-muted px-3 py-2 text-left font-semibold">
+                    Concepto
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {filas.map(fila)}
-              <tr className="bg-muted">
-                <th
-                  scope="colgroup"
-                  colSpan={meses.length + 1}
-                  className="sticky left-0 px-3 py-1.5 text-left text-xs font-semibold tracking-wide uppercase"
-                >
-                  Acumulados a origen
-                </th>
-              </tr>
-              {acumulados.map(fila)}
-            </tbody>
-          </table>
-        </div>
+                  {meses.map((m) => (
+                    <th key={m.mes} scope="col" className="min-w-28 px-3 py-2 text-right font-semibold whitespace-nowrap">
+                      {cerrados.has(m.mes) && (
+                        <Lock className="mr-1 inline size-3.5 align-[-2px] text-muted-foreground" aria-label="Mes cerrado" />
+                      )}
+                      {etiquetaMes(m.mes)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {FILAS_MATRIZ.map(fila)}
+                <tr className="bg-muted">
+                  <th
+                    scope="colgroup"
+                    colSpan={meses.length + 1}
+                    className="sticky left-0 px-3 py-1.5 text-left text-xs font-semibold tracking-wide uppercase"
+                  >
+                    Acumulados a origen
+                  </th>
+                </tr>
+                {FILAS_ACUMULADOS.map(fila)}
+              </tbody>
+            </table>
+          </div>
+
+          <CierreMeses meses={meses.map((m) => m.mes)} cerrados={cerrados} cierre={cierre} />
+        </>
       )}
     </div>
+  )
+}
+
+/** Estado de cada mes y, para quien tiene el permiso cierre_meses (gerencia), cerrar y reabrir. */
+function CierreMeses({ meses, cerrados, cierre }: { meses: string[]; cerrados: ReadonlySet<string>; cierre: Cierre }) {
+  const { puede } = useSesion()
+  const puedeCerrar = puede('cierre_meses', 'editar')
+  const [pendiente, setPendiente] = useState<{ mes: string; cerrar: boolean } | null>(null)
+
+  return (
+    <section className="grid gap-2">
+      <h2 className="font-semibold">Cierre de meses</h2>
+      <p className="text-sm text-muted-foreground">
+        En un mes cerrado nadie puede añadir, cambiar ni borrar apuntes de esta obra.
+        {puedeCerrar ? ' Puedes reabrirlo cuando haga falta.' : ' Los cierra y los reabre gerencia.'}
+      </p>
+      <ul className="divide-y rounded-lg border bg-background">
+        {meses.map((mes) => {
+          const cerrado = cerrados.has(mes)
+          return (
+            <li key={mes} className="flex items-center gap-3 px-3 py-2">
+              {cerrado ? (
+                <Lock className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+              ) : (
+                <LockOpen className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+              )}
+              <span className="min-w-0 flex-1 text-sm">
+                <span className="font-medium">{etiquetaMes(mes)}</span>
+                <span className="text-muted-foreground"> · {cerrado ? 'Cerrado' : 'Abierto'}</span>
+              </span>
+              {puedeCerrar && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={cierre.cambiar.isPending}
+                  onClick={() => setPendiente({ mes, cerrar: !cerrado })}
+                >
+                  {cerrado ? 'Reabrir' : 'Cerrar'}
+                </Button>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+      <Confirmar
+        titulo={pendiente ? `¿${pendiente.cerrar ? 'Cerrar' : 'Reabrir'} ${etiquetaMes(pendiente.mes)}?` : null}
+        detalle={
+          pendiente?.cerrar
+            ? 'Nadie podrá añadir, cambiar ni borrar apuntes de ese mes en esta obra hasta que se reabra.'
+            : 'Se podrán volver a añadir y cambiar apuntes de ese mes, y su resultado puede cambiar.'
+        }
+        accion={pendiente?.cerrar ? 'Cerrar el mes' : 'Reabrir el mes'}
+        onConfirmar={() => pendiente && cierre.cambiar.mutate(pendiente)}
+        onCerrar={() => setPendiente(null)}
+      />
+    </section>
   )
 }

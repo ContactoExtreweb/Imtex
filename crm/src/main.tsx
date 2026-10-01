@@ -12,6 +12,7 @@ import { Clientes } from '@/paginas/clientes'
 import { Combustible } from '@/paginas/combustible'
 import { ControlObra } from '@/paginas/control-obra'
 import { ControlObraFicha } from '@/paginas/control-obra-ficha'
+import { ControlObraImprimir } from '@/paginas/control-obra-imprimir'
 import { Galeria } from '@/paginas/galeria'
 import { GaleriaFicha } from '@/paginas/galeria-ficha'
 import { Inicio } from '@/paginas/inicio'
@@ -34,7 +35,8 @@ const router = createBrowserRouter([
   {
     element: <Protegido />,
     children: [
-      // Sin menú: es la hoja que se imprime
+      // Sin menú: son las hojas que se imprimen
+      { path: 'control-obra/:id/imprimir', element: <ConPermiso modulo="control_obra"><ControlObraImprimir /></ConPermiso> },
       { path: 'presupuestos/:id/imprimir', element: <ConPermiso modulo="presupuestos"><PresupuestoImprimir /></ConPermiso> },
       {
         element: <Layout />,

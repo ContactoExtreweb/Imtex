@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react'
+import { Lock, Plus } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { Campo, Selector } from '@/components/campo'
@@ -48,7 +48,16 @@ export interface ConfigHoja {
 
 const hoy = () => new Date().toISOString().slice(0, 10)
 
-export function HojaApuntes({ config, obraId }: { config: ConfigHoja; obraId: string }) {
+export function HojaApuntes({
+  config,
+  obraId,
+  cerrados,
+}: {
+  config: ConfigHoja
+  obraId: string
+  /** Meses cerrados de la obra (día 1): sus apuntes no se pueden cambiar */
+  cerrados: ReadonlySet<string>
+}) {
   const { puede } = useSesion()
   const editable = puede(config.modulo, 'editar')
   const { lista, guardar, borrar } = useApuntes(config.tabla, obraId)
@@ -95,9 +104,14 @@ export function HojaApuntes({ config, obraId }: { config: ConfigHoja; obraId: st
               key={f.id}
               titulo={config.titulo(f)}
               detalle={[etiquetaMes(f.mes), config.detalle(f, todas)].filter(Boolean).join(' · ')}
-              extra={<span className="text-sm font-medium tabular-nums">{euros(config.importe(f, todas))}</span>}
+              extra={
+                <span className="flex items-center gap-1.5 text-sm font-medium tabular-nums">
+                  {cerrados.has(f.mes) && <Lock className="size-3.5 text-muted-foreground" aria-label="Mes cerrado" />}
+                  {euros(config.importe(f, todas))}
+                </span>
+              }
               onAbrir={() => setAbierto(f)}
-              onBorrar={editable ? () => setBorrando(f) : undefined}
+              onBorrar={editable && !cerrados.has(f.mes) ? () => setBorrando(f) : undefined}
             />
           ))}
         </ul>
@@ -108,7 +122,8 @@ export function HojaApuntes({ config, obraId }: { config: ConfigHoja; obraId: st
           config={config}
           filas={todas}
           apunte={abierto === 'nuevo' ? null : abierto}
-          soloLectura={!editable}
+          cerrados={cerrados}
+          soloLectura={!editable || (abierto !== 'nuevo' && cerrados.has(abierto.mes))}
           guardando={guardar.isPending}
           onGuardar={(fila) =>
             guardar.mutate(
@@ -132,6 +147,7 @@ function FormularioApunte({
   config,
   filas,
   apunte,
+  cerrados,
   soloLectura,
   guardando,
   onGuardar,
@@ -140,6 +156,7 @@ function FormularioApunte({
   config: ConfigHoja
   filas: Apunte[]
   apunte: Apunte | null
+  cerrados: ReadonlySet<string>
   soloLectura: boolean
   guardando: boolean
   onGuardar: (fila: Record<string, unknown>) => void
@@ -165,9 +182,13 @@ function FormularioApunte({
     setValores(config.alCambiar ? config.alCambiar(campo, nuevos) : nuevos)
   }
 
+  // La base de datos también lo impide; aquí se avisa antes de guardar
+  const mesCerrado = cerrados.has(`${mes}-01`)
+
   function enviar(e: React.FormEvent) {
     e.preventDefault()
     if (!mes) return toast.error('Elige el mes al que se imputa.')
+    if (mesCerrado) return toast.error('Ese mes está cerrado en esta obra. Elige otro o pide a gerencia que lo reabra.')
     const fila = config.preparar(valores, filas, apunte)
     if (typeof fila === 'string') return toast.error(fila)
     onGuardar({ ...fila, [config.campoFecha]: fecha || null, mes: `${mes}-01` })
@@ -203,6 +224,12 @@ function FormularioApunte({
           />
         </Campo>
       </div>
+      {mesCerrado && (
+        <p className="flex items-center gap-1.5 text-sm text-muted-foreground" role="status">
+          <Lock className="size-3.5 shrink-0" aria-hidden />
+          {soloLectura ? 'Mes cerrado: este apunte no se puede cambiar.' : 'Ese mes está cerrado en esta obra.'}
+        </p>
+      )}
       {config.campos
         .filter((c) => !c.visible || c.visible(valores))
         .map((c) => (

@@ -165,7 +165,7 @@ export function useControlObra(obraId: string | undefined) {
     enabled: !!obraId,
     queryFn: async () => {
       const [obra, sumas] = await Promise.all([
-        supabase.from('obras').select().eq('id', obraId!).single(),
+        supabase.from('obras').select('*, clientes(nombre)').eq('id', obraId!).single(),
         supabase.from('control_obra_mensual').select().eq('obra_id', obraId!).order('mes'),
       ])
       if (obra.error) throw obra.error
@@ -175,6 +175,36 @@ export function useControlObra(obraId: string | undefined) {
       return { obra: obra.data, ...calcularObra(meses, obra.data.gastos_generales_pct, obra.data.importe_pedido) }
     },
   })
+}
+
+/**
+ * Meses cerrados de una obra (día 1 de cada mes) y la acción de cerrar o reabrir uno.
+ * El bloqueo de los apuntes lo hace la base de datos (triggers de la migración cierre_meses).
+ */
+export function useMesesCerrados(obraId: string | undefined) {
+  const queryClient = useQueryClient()
+  const consulta = useQuery({
+    queryKey: ['meses_cerrados', obraId],
+    enabled: !!obraId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('meses_cerrados').select('mes').eq('obra_id', obraId!)
+      if (error) throw error
+      return new Set(data.map((m) => m.mes))
+    },
+  })
+  const cambiar = useMutation({
+    mutationFn: async ({ mes, cerrar }: { mes: string; cerrar: boolean }) => {
+      const tabla = supabase.from('meses_cerrados')
+      const { error } = cerrar
+        ? await tabla.insert({ obra_id: obraId!, mes })
+        : await tabla.delete().eq('obra_id', obraId!).eq('mes', mes)
+      if (error) throw error
+    },
+    onSuccess: (_, { cerrar }) => toast.success(cerrar ? 'Mes cerrado' : 'Mes reabierto'),
+    onError: (error: Error) => toast.error(mensajeError(error)),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['meses_cerrados', obraId] }),
+  })
+  return { cerrados: consulta.data, cambiar }
 }
 
 /** Apuntes de una hoja en una obra: listado, alta/edición y borrado. Al cambiar algo se recalcula la obra. */
