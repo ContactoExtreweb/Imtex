@@ -13,7 +13,6 @@
 | 28/09/2026 | Estados de obra `en_ejecucion` y `terminada`; `tarifas_combustible` con una sola fila (1,45 €/L; 8 y 26 L/100 km) | Son los de `referencia/IMTEX_control_obra.html` |
 | 28/09/2026 | `obras.presupuesto_id` se añade en el prompt 6 | La tabla `presupuestos` aún no existe |
 | 28/09/2026 | Prueba de permisos en SQL (`supabase/pruebas/permisos.sql`), lanzada con `db query --linked` y deshecha al terminar | No necesita claves secretas ni deja usuarios; lo esperado sale de `permisos_rol` |
-
 | 29/09/2026 | No hay reunión de arranque: las dudas de PLAN.md A5 se deciden con la propuesta del plan | El presupuesto está aceptado y hay que producir ya |
 | 29/09/2026 | Matriz de permisos: la de B5 tal cual. Trabajadores los da de alta gerencia (`ajustes`); el operario no ve tarifas | Propuesta del plan; se cambia con una migración si IMTEX lo pide |
 | 29/09/2026 | El coste de cada línea se copia al añadirla al presupuesto; los borradores tienen «Actualizar con la base de precios» | Propuesta de B4: un cambio de precios no altera presupuestos enviados |
