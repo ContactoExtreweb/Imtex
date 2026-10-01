@@ -37,6 +37,12 @@ const normalizar = (s: string) =>
 export const coincide = (busqueda: string, ...valores: (string | null | undefined)[]) =>
   valores.some((v) => v && normalizar(v).includes(normalizar(busqueda.trim())))
 
+/** «E.T.A.P. Torrelaguna» → «e-t-a-p-torrelaguna»: para direcciones de la web. */
+export const aSlug = (texto: string) =>
+  normalizar(texto)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
 /** Valor para un campo de formulario: 18.5 → «18,5» */
 export const numeroATexto = (n: number | null | undefined) =>
   n == null ? '' : String(n).replace('.', ',')
