@@ -134,6 +134,7 @@ export type Database = {
           importe_pedido: number
           localidad: string | null
           nombre: string
+          presupuesto_id: string | null
           updated_at: string
         }
         Insert: {
@@ -149,6 +150,7 @@ export type Database = {
           importe_pedido?: number
           localidad?: string | null
           nombre: string
+          presupuesto_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -164,6 +166,7 @@ export type Database = {
           importe_pedido?: number
           localidad?: string | null
           nombre?: string
+          presupuesto_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -172,6 +175,107 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_presupuesto_id_fkey"
+            columns: ["presupuesto_id"]
+            isOneToOne: true
+            referencedRelation: "presupuestos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_presupuesto_id_fkey"
+            columns: ["presupuesto_id"]
+            isOneToOne: true
+            referencedRelation: "presupuestos_totales"
+            referencedColumns: ["presupuesto_id"]
+          },
+        ]
+      }
+      partidas_tipo: {
+        Row: {
+          ben_pct: number
+          cantidad: number
+          codigo: string
+          created_at: string
+          created_by: string | null
+          gg_pct: number
+          id: string
+          medicion: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          ben_pct?: number
+          cantidad?: number
+          codigo: string
+          created_at?: string
+          created_by?: string | null
+          gg_pct?: number
+          id?: string
+          medicion?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Update: {
+          ben_pct?: number
+          cantidad?: number
+          codigo?: string
+          created_at?: string
+          created_by?: string | null
+          gg_pct?: number
+          id?: string
+          medicion?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      partidas_tipo_lineas: {
+        Row: {
+          coste_unitario: number | null
+          descripcion: string | null
+          id: string
+          orden: number
+          partida_tipo_id: string
+          precio_id: string | null
+          rendimiento: number
+          unidad: string | null
+        }
+        Insert: {
+          coste_unitario?: number | null
+          descripcion?: string | null
+          id?: string
+          orden?: number
+          partida_tipo_id: string
+          precio_id?: string | null
+          rendimiento?: number
+          unidad?: string | null
+        }
+        Update: {
+          coste_unitario?: number | null
+          descripcion?: string | null
+          id?: string
+          orden?: number
+          partida_tipo_id?: string
+          precio_id?: string | null
+          rendimiento?: number
+          unidad?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partidas_tipo_lineas_partida_tipo_id_fkey"
+            columns: ["partida_tipo_id"]
+            isOneToOne: false
+            referencedRelation: "partidas_tipo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partidas_tipo_lineas_precio_id_fkey"
+            columns: ["precio_id"]
+            isOneToOne: false
+            referencedRelation: "precios"
             referencedColumns: ["id"]
           },
         ]
@@ -240,6 +344,227 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "roles"
             referencedColumns: ["codigo"]
+          },
+        ]
+      }
+      precios: {
+        Row: {
+          activo: boolean
+          codigo: string
+          coste: number
+          created_at: string
+          created_by: string | null
+          descripcion: string
+          fabricante: string | null
+          familia: string
+          id: string
+          notas: string | null
+          unidad: string
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          codigo: string
+          coste?: number
+          created_at?: string
+          created_by?: string | null
+          descripcion: string
+          fabricante?: string | null
+          familia: string
+          id?: string
+          notas?: string | null
+          unidad?: string
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          codigo?: string
+          coste?: number
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string
+          fabricante?: string | null
+          familia?: string
+          id?: string
+          notas?: string | null
+          unidad?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      presupuesto_lineas: {
+        Row: {
+          codigo: string | null
+          coste_unitario: number
+          descripcion: string
+          id: string
+          orden: number
+          partida_id: string
+          precio_id: string | null
+          rendimiento: number
+          unidad: string | null
+        }
+        Insert: {
+          codigo?: string | null
+          coste_unitario?: number
+          descripcion: string
+          id?: string
+          orden?: number
+          partida_id: string
+          precio_id?: string | null
+          rendimiento?: number
+          unidad?: string | null
+        }
+        Update: {
+          codigo?: string | null
+          coste_unitario?: number
+          descripcion?: string
+          id?: string
+          orden?: number
+          partida_id?: string
+          precio_id?: string | null
+          rendimiento?: number
+          unidad?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presupuesto_lineas_partida_id_fkey"
+            columns: ["partida_id"]
+            isOneToOne: false
+            referencedRelation: "presupuesto_partidas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presupuesto_lineas_precio_id_fkey"
+            columns: ["precio_id"]
+            isOneToOne: false
+            referencedRelation: "precios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      presupuesto_partidas: {
+        Row: {
+          ben_pct: number
+          cantidad: number
+          codigo: string
+          gg_pct: number
+          id: string
+          medicion: string
+          orden: number
+          presupuesto_id: string
+          titulo: string
+        }
+        Insert: {
+          ben_pct?: number
+          cantidad?: number
+          codigo?: string
+          gg_pct?: number
+          id?: string
+          medicion?: string
+          orden?: number
+          presupuesto_id: string
+          titulo?: string
+        }
+        Update: {
+          ben_pct?: number
+          cantidad?: number
+          codigo?: string
+          gg_pct?: number
+          id?: string
+          medicion?: string
+          orden?: number
+          presupuesto_id?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presupuesto_partidas_presupuesto_id_fkey"
+            columns: ["presupuesto_id"]
+            isOneToOne: false
+            referencedRelation: "presupuestos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presupuesto_partidas_presupuesto_id_fkey"
+            columns: ["presupuesto_id"]
+            isOneToOne: false
+            referencedRelation: "presupuestos_totales"
+            referencedColumns: ["presupuesto_id"]
+          },
+        ]
+      }
+      presupuestos: {
+        Row: {
+          ben_pct_def: number
+          carta: string
+          cliente_id: string | null
+          codigo: string
+          condiciones: string
+          contacto: string | null
+          created_at: string
+          created_by: string | null
+          estado: string
+          fecha: string
+          forma_pago: string | null
+          gg_pct_def: number
+          id: string
+          iva_pct: number
+          localidad: string | null
+          plazo: string | null
+          titulo: string
+          updated_at: string
+          validez: string | null
+        }
+        Insert: {
+          ben_pct_def?: number
+          carta?: string
+          cliente_id?: string | null
+          codigo: string
+          condiciones?: string
+          contacto?: string | null
+          created_at?: string
+          created_by?: string | null
+          estado?: string
+          fecha?: string
+          forma_pago?: string | null
+          gg_pct_def?: number
+          id?: string
+          iva_pct?: number
+          localidad?: string | null
+          plazo?: string | null
+          titulo?: string
+          updated_at?: string
+          validez?: string | null
+        }
+        Update: {
+          ben_pct_def?: number
+          carta?: string
+          cliente_id?: string | null
+          codigo?: string
+          condiciones?: string
+          contacto?: string | null
+          created_at?: string
+          created_by?: string | null
+          estado?: string
+          fecha?: string
+          forma_pago?: string | null
+          gg_pct_def?: number
+          id?: string
+          iva_pct?: number
+          localidad?: string | null
+          plazo?: string | null
+          titulo?: string
+          updated_at?: string
+          validez?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presupuestos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -332,10 +657,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      presupuestos_totales: {
+        Row: {
+          base: number | null
+          coste_directo: number | null
+          iva: number | null
+          presupuesto_id: string | null
+          total: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      guardar_partida_tipo: { Args: { p: Json }; Returns: string }
+      guardar_presupuesto: { Args: { p: Json }; Returns: string }
     }
     Enums: {
       [_ in never]: never

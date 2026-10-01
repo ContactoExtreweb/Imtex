@@ -22,6 +22,12 @@ declare
   f_categoria uuid;
   f_trabajador uuid;
   f_propia uuid;
+  f_precio uuid;
+  f_tipo uuid;
+  f_tipo_linea uuid;
+  f_presupuesto uuid;
+  f_partida uuid;
+  f_linea uuid;
   n int;
   ok boolean;
 begin
@@ -62,6 +68,16 @@ begin
       insert into public.categorias_profesionales (nombre) values ('Categoría prueba')
         returning id into f_categoria;
       insert into public.trabajadores (nombre) values ('Trabajador prueba') returning id into f_trabajador;
+
+      insert into public.precios (codigo, familia, descripcion) values (gen_random_uuid()::text, 'materiales', 'Precio prueba')
+        returning id into f_precio;
+      insert into public.partidas_tipo (codigo) values ('T.prueba') returning id into f_tipo;
+      insert into public.partidas_tipo_lineas (partida_tipo_id, descripcion, coste_unitario) values (f_tipo, 'Línea prueba', 1)
+        returning id into f_tipo_linea;
+      insert into public.presupuestos (codigo) values (gen_random_uuid()::text) returning id into f_presupuesto;
+      insert into public.presupuesto_partidas (presupuesto_id) values (f_presupuesto) returning id into f_partida;
+      insert into public.presupuesto_lineas (partida_id, descripcion) values (f_partida, 'Línea prueba')
+        returning id into f_linea;
 
       -- Cambio de identidad
       if u.rol is null then
@@ -107,6 +123,33 @@ begin
           ('perfiles', 'insertar', 'insert into public.perfiles (id, nombre, email, rol) values ($1, ''x'', ''x'', ''operario'')', nuevo),
           ('perfiles', 'editar', 'update public.perfiles set nombre = nombre where id = $1', otro),
           ('perfiles', 'borrar', 'delete from public.perfiles where id = $1', otro),
+
+
+          -- Las líneas antes que sus partidas, y estas antes que su cabecera: borrar arriba borra en cascada
+          ('presupuesto_lineas', 'ver', 'select from public.presupuesto_lineas where id = $1', f_linea),
+          ('presupuesto_lineas', 'insertar', 'insert into public.presupuesto_lineas (partida_id, descripcion) values ($1, ''x'')', f_partida),
+          ('presupuesto_lineas', 'editar', 'update public.presupuesto_lineas set orden = orden where id = $1', f_linea),
+          ('presupuesto_lineas', 'borrar', 'delete from public.presupuesto_lineas where id = $1', f_linea),
+          ('presupuesto_partidas', 'ver', 'select from public.presupuesto_partidas where id = $1', f_partida),
+          ('presupuesto_partidas', 'insertar', 'insert into public.presupuesto_partidas (presupuesto_id) values ($1)', f_presupuesto),
+          ('presupuesto_partidas', 'editar', 'update public.presupuesto_partidas set orden = orden where id = $1', f_partida),
+          ('presupuesto_partidas', 'borrar', 'delete from public.presupuesto_partidas where id = $1', f_partida),
+          ('presupuestos', 'ver', 'select from public.presupuestos where id = $1', f_presupuesto),
+          ('presupuestos', 'insertar', 'insert into public.presupuestos (codigo) values (gen_random_uuid()::text)', null),
+          ('presupuestos', 'editar', 'update public.presupuestos set titulo = titulo where id = $1', f_presupuesto),
+          ('presupuestos', 'borrar', 'delete from public.presupuestos where id = $1', f_presupuesto),
+          ('partidas_tipo_lineas', 'ver', 'select from public.partidas_tipo_lineas where id = $1', f_tipo_linea),
+          ('partidas_tipo_lineas', 'insertar', 'insert into public.partidas_tipo_lineas (partida_tipo_id, descripcion, coste_unitario) values ($1, ''x'', 1)', f_tipo),
+          ('partidas_tipo_lineas', 'editar', 'update public.partidas_tipo_lineas set orden = orden where id = $1', f_tipo_linea),
+          ('partidas_tipo_lineas', 'borrar', 'delete from public.partidas_tipo_lineas where id = $1', f_tipo_linea),
+          ('partidas_tipo', 'ver', 'select from public.partidas_tipo where id = $1', f_tipo),
+          ('partidas_tipo', 'insertar', 'insert into public.partidas_tipo (codigo) values (''x'')', null),
+          ('partidas_tipo', 'editar', 'update public.partidas_tipo set titulo = titulo where id = $1', f_tipo),
+          ('partidas_tipo', 'borrar', 'delete from public.partidas_tipo where id = $1', f_tipo),
+          ('precios', 'ver', 'select from public.precios where id = $1', f_precio),
+          ('precios', 'insertar', 'insert into public.precios (codigo, familia, descripcion) values (gen_random_uuid()::text, ''materiales'', ''x'')', null),
+          ('precios', 'editar', 'update public.precios set notas = notas where id = $1', f_precio),
+          ('precios', 'borrar', 'delete from public.precios where id = $1', f_precio),
 
           ('roles', 'ver', 'select from public.roles', null),
           ('roles', 'insertar', 'insert into public.roles (codigo, nombre) values (''x'', ''x'')', null),
@@ -154,6 +197,12 @@ m (tabla, ver, editar) as (values
   ('trabajadores', array['ajustes', 'control_obra'], 'ajustes'),
   ('tarifas_combustible', array['ajustes', 'control_obra'], 'ajustes'),
   ('perfiles', array['usuarios'], 'usuarios'),
+  ('precios', array['base_precios', 'presupuestos'], 'base_precios'),
+  ('partidas_tipo', array['base_precios', 'presupuestos'], 'base_precios'),
+  ('partidas_tipo_lineas', array['base_precios', 'presupuestos'], 'base_precios'),
+  ('presupuestos', array['presupuestos'], 'presupuestos'),
+  ('presupuesto_partidas', array['presupuestos'], 'presupuestos'),
+  ('presupuesto_lineas', array['presupuestos'], 'presupuestos'),
   ('roles', null, null),
   ('permisos_rol', null, null)
 ),
