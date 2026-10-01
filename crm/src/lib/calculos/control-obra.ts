@@ -157,3 +157,24 @@ export function nivelMargen(pct: number): 'bien' | 'justo' | 'mal' {
   if (pct > 15) return 'bien'
   return pct >= 5 ? 'justo' : 'mal'
 }
+
+// Certificaciones -------------------------------------------------------------------
+
+interface CertificacionOrigen {
+  id: string
+  numero: number
+  importe_origen: number
+}
+
+/**
+ * Importe a origen de la certificación anterior a la número `numero` (0 si es la primera).
+ * Lo certificado en un mes es su importe a origen menos este. Como recomputeCertChain de la herramienta.
+ */
+export function origenAnterior(numero: number, certificaciones: CertificacionOrigen[], idPropia?: string): number {
+  let anterior: CertificacionOrigen | undefined
+  for (const c of certificaciones) {
+    if (c.id === idPropia || c.numero >= numero) continue
+    if (!anterior || c.numero > anterior.numero) anterior = c
+  }
+  return anterior?.importe_origen ?? 0
+}

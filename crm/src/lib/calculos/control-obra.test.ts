@@ -1,6 +1,14 @@
 import { describe, expect, test } from 'vitest'
 import herramienta from '../../../../referencia/IMTEX_control_obra.html?raw'
-import { calcularObra, etiquetaMes, mesDeFecha, nivelMargen, rellenarMeses, type SumasMes } from './control-obra'
+import {
+  calcularObra,
+  etiquetaMes,
+  mesDeFecha,
+  nivelMargen,
+  origenAnterior,
+  rellenarMeses,
+  type SumasMes,
+} from './control-obra'
 
 // Se ejecutan las funciones ORIGINALES de la herramienta de IMTEX con sus datos de ejemplo
 // (DEFAULT_STORE, la obra de Valencia) y se comparan con las nuestras.
@@ -191,4 +199,19 @@ describe('meses', () => {
     expect(nivelMargen(4.99)).toBe('mal')
     expect(nivelMargen(-3)).toBe('mal')
   })
+})
+
+test('origenAnterior encadena las certificaciones por número, aunque lleguen desordenadas', () => {
+  // Las tres primeras de DEFAULT_STORE
+  const certs = [
+    { id: 'c3', numero: 3, importe_origen: 266900 },
+    { id: 'c1', numero: 1, importe_origen: 42000 },
+    { id: 'c2', numero: 2, importe_origen: 131500 },
+  ]
+  expect(origenAnterior(1, certs)).toBe(0)
+  expect(origenAnterior(3, certs)).toBe(131500)
+  expect(origenAnterior(4, certs)).toBe(266900) // una nueva al final
+  // Al editar la nº 2, ella misma no cuenta como anterior
+  expect(origenAnterior(2, certs, 'c2')).toBe(42000)
+  expect(origenAnterior(1, [])).toBe(0)
 })

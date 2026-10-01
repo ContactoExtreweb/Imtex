@@ -9,6 +9,7 @@
     --color-marca: var(--marca);
     --color-pizarra: var(--pizarra);
     --color-exito: var(--exito);
+    --color-aviso: var(--aviso);
     --font-heading: var(--font-sans);
     --font-sans: 'Geist Variable', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
@@ -57,6 +58,7 @@
     --marca: oklch(0.646 0.24 30); /* rojo puro: logo, iconos, subrayados y foco; no para texto pequeño (3,7:1) */
     --pizarra: oklch(0.396 0.029 282);
     --exito: oklch(0.47 0.12 152);
+    --aviso: oklch(0.5 0.11 70); /* ámbar oscuro: margen justo (texto a más de 4,5:1 sobre blanco) */
 
     --background: oklch(1 0 0);
     --foreground: oklch(0.182 0.011 303); /* negro de marca */
@@ -106,6 +108,11 @@
     /* Lo que pinta el navegador también es de la marca */
     caret-color: var(--primary);
     accent-color: var(--primary);
+  }
+  /* Un hijo de rejilla no puede ser más estrecho que su contenido salvo que se le diga: un nombre largo
+     sin saltos ensanchaba la página entera en el móvil. Con :where no pisa ninguna clase min-w-*. */
+  :where(.grid) > * {
+    min-width: 0;
   }
   ::selection {
     background: oklch(0.646 0.24 30 / 0.2);

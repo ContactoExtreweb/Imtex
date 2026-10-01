@@ -1,4 +1,4 @@
-import { BookOpen, FileText, Fuel, HardHat, IdCard, Layers, Tags, UserCog, Users, type LucideIcon } from 'lucide-react'
+import { BookOpen, FileText, Fuel, HardHat, IdCard, Layers, Tags, TrendingUp, UserCog, Users, type LucideIcon } from 'lucide-react'
 import { useSesion, type Modulo } from './sesion'
 
 // Apartados del programa: los usan el menú lateral y los accesos de la portada.
@@ -15,6 +15,7 @@ const SECCIONES: { titulo?: string; enlaces: Enlace[] }[] = [
     enlaces: [
       { a: '/clientes', texto: 'Clientes', icono: Users, modulo: 'clientes' },
       { a: '/obras', texto: 'Obras', icono: HardHat, modulo: 'obras' },
+      { a: '/control-obra', texto: 'Control de obra', icono: TrendingUp, modulo: 'control_obra' },
     ],
   },
   {

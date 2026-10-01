@@ -7,6 +7,7 @@ import { Campo, Selector } from '@/components/campo'
 import { EditorPartida } from '@/components/editor-partida'
 import { EntradaNumero } from '@/components/entrada-numero'
 import { ConfirmarBorrado } from '@/components/listado'
+import { Pestanas } from '@/components/pestanas'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -301,20 +302,16 @@ function EditorPresupuesto({ inicial }: { inicial: PresupuestoEdicion }) {
           )
         ))}
 
-      <div role="tablist" className="flex gap-1 border-b">
-        {(['datos', 'partidas', 'resumen'] as const).map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={pestana === t}
-            className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground aria-selected:border-marca aria-selected:text-foreground"
-            onClick={() => setPestana(t)}
-          >
-            {{ datos: 'Datos', partidas: `Partidas (${p.partidas.length})`, resumen: 'Resumen' }[t]}
-          </button>
-        ))}
-        <span className="ml-auto self-center text-sm font-medium tabular-nums">{euros(resumen.base)} + IVA</span>
-      </div>
+      <Pestanas<Pestana>
+        pestanas={[
+          { id: 'datos', texto: 'Datos' },
+          { id: 'partidas', texto: `Partidas (${p.partidas.length})` },
+          { id: 'resumen', texto: 'Resumen' },
+        ]}
+        activa={pestana}
+        onCambio={setPestana}
+        extra={<span className="text-sm font-medium tabular-nums">{euros(resumen.base)} + IVA</span>}
+      />
 
       {pestana === 'datos' && (
         <fieldset disabled={!editable} className="grid gap-3">

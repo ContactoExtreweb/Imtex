@@ -40,3 +40,8 @@ export const coincide = (busqueda: string, ...valores: (string | null | undefine
 /** Valor para un campo de formulario: 18.5 → «18,5» */
 export const numeroATexto = (n: number | null | undefined) =>
   n == null ? '' : String(n).replace('.', ',')
+
+const formatoPct = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+
+/** 16.234 → «16,2 %» */
+export const pct = (valor: number) => `${formatoPct.format(valor)} %`
