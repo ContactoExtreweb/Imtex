@@ -75,39 +75,33 @@ export function EditorPartida({
               </p>
             ) : (
               <div className="flex gap-2">
-                <Input
-                  aria-label="Descripción del precio libre"
-                  placeholder="Precio libre: descripción"
-                  value={l.descripcion}
-                  onChange={(e) => cambiarLinea(i, { descripcion: e.target.value })}
-                />
-                <Input
-                  aria-label="Unidad"
-                  className="w-20"
-                  value={l.unidad}
-                  onChange={(e) => cambiarLinea(i, { unidad: e.target.value })}
-                />
+                <Campo etiqueta="Precio libre: descripción" className="min-w-0 flex-1">
+                  <Input value={l.descripcion} onChange={(e) => cambiarLinea(i, { descripcion: e.target.value })} />
+                </Campo>
+                <Campo etiqueta="Unidad" className="w-20">
+                  <Input value={l.unidad} onChange={(e) => cambiarLinea(i, { unidad: e.target.value })} />
+                </Campo>
               </div>
             )}
-            <div className="flex items-center gap-2 text-sm">
-              <EntradaNumero
-                aria-label="Rendimiento"
-                className="w-24"
-                valor={l.rendimiento}
-                onCambio={(rendimiento) => cambiarLinea(i, { rendimiento })}
-              />
-              <span className="text-muted-foreground">{l.unidad} ×</span>
-              {l.precio_id ? (
-                <span>{euros(l.coste_unitario)}</span>
-              ) : (
-                <EntradaNumero
-                  aria-label="Coste unitario"
-                  className="w-24"
-                  valor={l.coste_unitario}
-                  onCambio={(coste_unitario) => cambiarLinea(i, { coste_unitario })}
-                />
-              )}
-              <span className="ml-auto font-medium tabular-nums">{euros(l.rendimiento * l.coste_unitario)}</span>
+            {/* Cada casilla con su nombre: rendimiento × coste unitario = importe */}
+            <div className="flex items-end gap-2 text-sm">
+              <Campo etiqueta={`Rendimiento (${l.unidad || 'ud'})`} className="max-w-32 min-w-0 flex-1">
+                <EntradaNumero valor={l.rendimiento} onCambio={(rendimiento) => cambiarLinea(i, { rendimiento })} />
+              </Campo>
+              <span className="pb-1.5 text-muted-foreground">×</span>
+              <Campo etiqueta="Coste unitario (€)" className="max-w-32 min-w-0 flex-1">
+                {l.precio_id ? (
+                  <span className="flex h-8 items-center tabular-nums">{euros(l.coste_unitario)}</span>
+                ) : (
+                  <EntradaNumero
+                    valor={l.coste_unitario}
+                    onCambio={(coste_unitario) => cambiarLinea(i, { coste_unitario })}
+                  />
+                )}
+              </Campo>
+              <span className="ml-auto pb-1.5 font-medium tabular-nums">
+                {euros(l.rendimiento * l.coste_unitario)}
+              </span>
               {!soloLectura && (
                 <Button
                   type="button"
