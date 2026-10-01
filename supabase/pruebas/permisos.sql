@@ -38,6 +38,11 @@ declare
   f_combustible uuid;
   f_gastos_viaje uuid;
   f_nota_ajena uuid;
+  f_web_publicada uuid;
+  f_web_borrador uuid;
+  f_foto_publicada uuid;
+  f_foto_borrador uuid;
+  f_objeto uuid;
   n int;
   ok boolean;
 begin
@@ -114,6 +119,18 @@ begin
       end if;
       insert into public.notas (perfil_id, texto) values (otro, 'Nota ajena') returning id into f_nota_ajena;
 
+      -- Galería de la web: una obra publicada y un borrador, cada una con una foto, y un archivo en el bucket
+      insert into public.web_obras (slug, titulo, servicio, publicada)
+        values ('pub-' || gen_random_uuid(), 'Publicada', 'otros', true) returning id into f_web_publicada;
+      insert into public.web_obras (slug, titulo) values ('bor-' || gen_random_uuid(), 'Borrador')
+        returning id into f_web_borrador;
+      insert into public.web_fotos (obra_id, storage_path, ancho, alto)
+        values (f_web_publicada, gen_random_uuid()::text, 1, 1) returning id into f_foto_publicada;
+      insert into public.web_fotos (obra_id, storage_path, ancho, alto)
+        values (f_web_borrador, gen_random_uuid()::text, 1, 1) returning id into f_foto_borrador;
+      insert into storage.objects (bucket_id, name) values ('galeria', 'prueba/' || gen_random_uuid())
+        returning id into f_objeto;
+
       -- Cambio de identidad
       if u.rol is null then
         perform set_config('request.jwt.claims', '', true);
@@ -188,6 +205,23 @@ begin
           ('notas', 'insertar', 'insert into public.notas (texto) values (''x'')', null),
           ('notas', 'editar', 'update public.notas set texto = texto where id = $1', f_nota_ajena),
           ('notas', 'borrar', 'delete from public.notas where id = $1', f_nota_ajena),
+
+          -- Galería: lo publicado lo ve todo el mundo (también sin sesión); las fotos antes que su obra
+          ('web_fotos', 'ver_publicada', 'select from public.web_fotos where id = $1', f_foto_publicada),
+          ('web_fotos', 'ver', 'select from public.web_fotos where id = $1', f_foto_borrador),
+          ('web_fotos', 'insertar', 'insert into public.web_fotos (obra_id, storage_path, ancho, alto) values ($1, gen_random_uuid()::text, 1, 1)', f_web_borrador),
+          ('web_fotos', 'editar', 'update public.web_fotos set alt = alt where id = $1', f_foto_borrador),
+          ('web_fotos', 'editar_publicada', 'update public.web_fotos set alt = alt where id = $1', f_foto_publicada),
+          ('web_fotos', 'borrar', 'delete from public.web_fotos where id = $1', f_foto_borrador),
+          ('web_obras', 'ver_publicada', 'select from public.web_obras where id = $1', f_web_publicada),
+          ('web_obras', 'ver', 'select from public.web_obras where id = $1', f_web_borrador),
+          ('web_obras', 'insertar', 'insert into public.web_obras (slug, titulo) values (''x-'' || gen_random_uuid(), ''x'')', null),
+          ('web_obras', 'editar', 'update public.web_obras set titulo = titulo where id = $1', f_web_borrador),
+          ('web_obras', 'editar_publicada', 'update public.web_obras set titulo = titulo where id = $1', f_web_publicada),
+          ('web_obras', 'borrar', 'delete from public.web_obras where id = $1', f_web_borrador),
+          -- Bucket de fotos (el borrado directo en storage.objects está bloqueado: va por la API)
+          ('storage_galeria', 'ver', 'select from storage.objects where id = $1', f_objeto),
+          ('storage_galeria', 'insertar', 'insert into storage.objects (bucket_id, name) values (''galeria'', ''prueba/'' || gen_random_uuid())', null),
 
           ('perfiles', 'ver', 'select from public.perfiles where id = $1', otro),
           ('perfiles', 'ver_propio', 'select from public.perfiles where id = $1', uid),
@@ -281,6 +315,9 @@ m (tabla, ver, editar) as (values
   ('alquileres', array['control_obra'], 'control_obra'),
   ('combustible', array['control_obra'], 'control_obra'),
   ('gastos_viaje', array['control_obra'], 'control_obra'),
+  ('web_obras', array['galeria'], 'galeria'),
+  ('web_fotos', array['galeria'], 'galeria'),
+  ('storage_galeria', array['galeria'], 'galeria'),
   ('notas', null, null),
   ('roles', null, null),
   ('permisos_rol', null, null)
@@ -288,6 +325,7 @@ m (tabla, ver, editar) as (values
 c as (
   select r.*,
     case
+      when r.accion = 'ver_publicada' then true                       -- la web es pública
       when r.rol is null then false                                   -- anon
       when r.tabla in ('roles', 'permisos_rol') then r.accion = 'ver' -- solo lectura
       when r.tabla = 'notas' then r.accion in ('ver_propio', 'insertar') -- cada uno, solo las suyas

@@ -1075,6 +1075,109 @@ export type Database = {
           },
         ]
       }
+      web_fotos: {
+        Row: {
+          alt: string
+          alto: number
+          ancho: number
+          created_at: string
+          created_by: string | null
+          id: string
+          obra_id: string
+          orden: number
+          storage_path: string
+        }
+        Insert: {
+          alt?: string
+          alto: number
+          ancho: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          obra_id: string
+          orden?: number
+          storage_path: string
+        }
+        Update: {
+          alt?: string
+          alto?: number
+          ancho?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          obra_id?: string
+          orden?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "web_fotos_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "web_obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      web_obras: {
+        Row: {
+          anio: string | null
+          created_at: string
+          created_by: string | null
+          descripcion: string | null
+          destacada: boolean
+          id: string
+          obra_id: string | null
+          publicada: boolean
+          resumen: string | null
+          servicio: string | null
+          slug: string
+          titulo: string
+          ubicacion: string | null
+          updated_at: string
+        }
+        Insert: {
+          anio?: string | null
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          destacada?: boolean
+          id?: string
+          obra_id?: string | null
+          publicada?: boolean
+          resumen?: string | null
+          servicio?: string | null
+          slug: string
+          titulo: string
+          ubicacion?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anio?: string | null
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          destacada?: boolean
+          id?: string
+          obra_id?: string | null
+          publicada?: boolean
+          resumen?: string | null
+          servicio?: string | null
+          slug?: string
+          titulo?: string
+          ubicacion?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "web_obras_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: true
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       control_obra_mensual: {
