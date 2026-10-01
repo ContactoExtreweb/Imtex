@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "crm/src/paginas/presupuesto-imprimir.tsx"
+        ],
+        "createdAt": "2026-10-01T09:45:37.350Z",
+        "reason": "Claude: reproduce el formato del presupuesto impreso de la herramienta de IMTEX (.r-title con border-left en referencia/IMTEX_plantilla_presupuestos.html); el plan aprobado pide el mismo formato"
+      }
+    ]
+  }
+}
