@@ -1,17 +1,4 @@
-import {
-  BookOpen,
-  FileText,
-  Fuel,
-  HardHat,
-  House,
-  IdCard,
-  Layers,
-  LogOut,
-  Tags,
-  UserCog,
-  Users,
-  type LucideIcon,
-} from 'lucide-react'
+import { House, LogOut, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, Navigate, Outlet, useLocation } from 'react-router'
 import logoClaro from '@/assets/logo-imtex-claro.png'
@@ -33,49 +20,9 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { useSecciones } from '@/lib/menu'
 import { useSesion, type Modulo } from '@/lib/sesion'
 import { useRoles } from '@/lib/tabla'
-
-interface Enlace {
-  a: string
-  texto: string
-  icono: LucideIcon
-  modulo: Modulo
-}
-
-const SECCIONES: { titulo?: string; enlaces: Enlace[] }[] = [
-  {
-    enlaces: [
-      { a: '/clientes', texto: 'Clientes', icono: Users, modulo: 'clientes' },
-      { a: '/obras', texto: 'Obras', icono: HardHat, modulo: 'obras' },
-    ],
-  },
-  {
-    titulo: 'Presupuestos',
-    enlaces: [
-      { a: '/presupuestos', texto: 'Presupuestos', icono: FileText, modulo: 'presupuestos' },
-      { a: '/partidas-tipo', texto: 'Partidas tipo', icono: Layers, modulo: 'base_precios' },
-      { a: '/precios', texto: 'Base de precios', icono: BookOpen, modulo: 'base_precios' },
-    ],
-  },
-  {
-    titulo: 'Ajustes',
-    enlaces: [
-      { a: '/ajustes/categorias', texto: 'Categorías', icono: Tags, modulo: 'ajustes' },
-      { a: '/ajustes/combustible', texto: 'Tarifas de combustible', icono: Fuel, modulo: 'ajustes' },
-      { a: '/ajustes/trabajadores', texto: 'Trabajadores', icono: IdCard, modulo: 'ajustes' },
-      { a: '/ajustes/usuarios', texto: 'Usuarios', icono: UserCog, modulo: 'usuarios' },
-    ],
-  },
-]
-
-/** Secciones del menú con solo los enlaces que el usuario puede ver. */
-function useSecciones() {
-  const { puede } = useSesion()
-  return SECCIONES.map((s) => ({ ...s, enlaces: s.enlaces.filter((e) => puede(e.modulo, 'ver')) })).filter(
-    (s) => s.enlaces.length > 0,
-  )
-}
 
 function Centrado({ children }: { children: ReactNode }) {
   return <main className="grid min-h-dvh place-items-center p-4 text-center">{children}</main>
@@ -109,7 +56,15 @@ export function Layout() {
   return (
     <SidebarProvider>
       <Menu />
-      <SidebarInset>
+      <SidebarInset className="isolate">
+        {/* Escritorio: el logo en grande y muy tenue, fijo detrás del contenido. Decorativo. */}
+        <div aria-hidden="true" className="pointer-events-none sticky top-0 -z-10 hidden h-0 lg:block">
+          <img
+            src={logo}
+            alt=""
+            className="absolute top-[50dvh] left-1/2 w-[72%] max-w-5xl -translate-x-1/2 -translate-y-1/2 opacity-[0.07]"
+          />
+        </div>
         <header className="flex h-12 items-center gap-2 border-b px-3">
           <SidebarTrigger />
           {/* En el móvil el menú está plegado: la marca va aquí */}

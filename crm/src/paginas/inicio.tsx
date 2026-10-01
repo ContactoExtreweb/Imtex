@@ -1,13 +1,17 @@
 import type { PostgrestError } from '@supabase/supabase-js'
-import { useQuery } from '@tanstack/react-query'
-import { useState, type ReactNode } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Plus, Trash2 } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import lema from '@/assets/lema-imtex.png'
-import logo from '@/assets/logo-imtex.png'
+import { toast } from 'sonner'
+import { ConfirmarBorrado } from '@/components/listado'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { euros, fecha } from '@/lib/formato'
+import { useSecciones } from '@/lib/menu'
 import type { Estado } from '@/lib/presupuestos'
 import { useSesion } from '@/lib/sesion'
-import { supabase } from '@/lib/supabase'
+import { mensajeError, supabase, type Fila as FilaDe } from '@/lib/supabase'
 import { useRoles } from '@/lib/tabla'
 import { InsigniaEstado } from './presupuestos'
 
@@ -22,12 +26,14 @@ async function contar(consulta: PromiseLike<{ count: number | null; error: Postg
 const SOLO_CONTAR = { count: 'exact', head: true } as const
 
 /**
- * Portada: un resumen de lo que cada usuario puede ver. No hay un resumen por rol escrito a mano:
- * sale de sus permisos, así que si cambia la matriz de permisos, cambia la portada.
+ * Portada: resumen de lo que cada usuario puede ver, accesos a sus apartados y sus notas.
+ * No hay un resumen por rol escrito a mano: sale de sus permisos, así que si cambia la matriz
+ * de permisos, cambia la portada.
  */
 export function Inicio() {
   const { perfil, puede } = useSesion()
   const roles = useRoles().data
+  const secciones = useSecciones()
   const [fechaDeHoy] = useState(() => hoy.format(new Date()))
   const ve = {
     obras: puede('obras', 'ver'),
@@ -103,93 +109,104 @@ export function Inicio() {
   ].filter((c) => c.visible)
 
   return (
-    <div className="mx-auto grid w-full max-w-4xl gap-8 p-4">
-      <header className="flex items-end justify-between gap-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Hola, {perfil?.nombre}</h1>
-          <p className="text-sm text-muted-foreground">
-            {[roles?.find((x) => x.codigo === perfil?.rol)?.nombre, fechaDeHoy].filter(Boolean).join(' · ')}
-          </p>
-        </div>
-        {/* En el móvil el logo ya va en la barra de arriba */}
-        <div className="hidden w-56 shrink-0 gap-2 sm:grid">
-          <img src={logo} alt="IMTEX" className="w-40 justify-self-center" />
-          <img src={lema} alt="Soluciones técnicas para industria y construcción" />
-        </div>
+    <div className="mx-auto grid w-full max-w-6xl gap-8 p-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <header className="lg:col-span-2">
+        <h1 className="text-2xl font-semibold">Hola, {perfil?.nombre}</h1>
+        <p className="text-sm text-muted-foreground">
+          {[roles?.find((x) => x.codigo === perfil?.rol)?.nombre, fechaDeHoy].filter(Boolean).join(' · ')}
+        </p>
       </header>
 
-      {resumen.isError && (
-        <p role="alert" className="text-sm text-destructive">
-          No se ha podido cargar el resumen. Recarga la página.
-        </p>
-      )}
-
-      {cifras.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Todavía no hay apartados disponibles para tu perfil.</p>
-      ) : (
-        <ul className="grid grid-cols-2 border-t border-l sm:grid-cols-3 lg:grid-cols-4">
-          {cifras.map((c) => {
-            const contenido = (
-              <>
-                <span className="text-2xl font-semibold tabular-nums">{c.valor ?? '–'}</span>
-                <span className="text-sm text-muted-foreground">{c.etiqueta}</span>
-              </>
-            )
-            const clases = 'flex h-full flex-col gap-0.5 p-4'
-            return (
-              <li key={c.etiqueta} className="border-r border-b">
-                {c.a ? (
-                  <Link to={c.a} className={`${clases} hover:bg-muted`}>
-                    {contenido}
-                  </Link>
-                ) : (
-                  <div className={clases}>{contenido}</div>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      )}
-
-      <div className="grid gap-8 lg:grid-cols-2">
-        {ve.obras && (
-          <Lista titulo="Obras en ejecución" a="/obras">
-            {r?.obras?.length === 0 && (
-              <Vacio>No hay obras en ejecución. Se crean en Obras o desde un presupuesto aceptado.</Vacio>
-            )}
-            {r?.obras?.map((o) => (
-              <Fila key={o.id} a="/obras" titulo={`${o.codigo} · ${o.nombre}`} dato={euros(o.importe_pedido)} />
-            ))}
-          </Lista>
+      <div className="grid content-start gap-8">
+        {resumen.isError && (
+          <p role="alert" className="text-sm text-destructive">
+            No se ha podido cargar el resumen. Recarga la página.
+          </p>
         )}
-        {ve.presupuestos && (
-          <Lista titulo="Últimos presupuestos" a="/presupuestos">
-            {r?.presupuestos?.length === 0 && (
-              <Vacio>
-                Todavía no hay presupuestos.
-                {puede('presupuestos', 'editar') && (
-                  <>
-                    {' '}
-                    <Link to="/presupuestos/nuevo" className="font-medium text-primary underline">
-                      Crear el primero
+
+        {cifras.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Todavía no hay apartados disponibles para tu perfil.</p>
+        ) : (
+          <ul className="grid grid-cols-2 border-t border-l sm:grid-cols-3">
+            {cifras.map((c) => {
+              const contenido = (
+                <>
+                  <span className="text-2xl font-semibold tabular-nums">{c.valor ?? '–'}</span>
+                  <span className="text-sm text-muted-foreground">{c.etiqueta}</span>
+                </>
+              )
+              const clases = 'flex h-full flex-col gap-0.5 p-4'
+              return (
+                <li key={c.etiqueta} className="border-r border-b">
+                  {c.a ? (
+                    <Link to={c.a} className={`${clases} hover:bg-muted`}>
+                      {contenido}
                     </Link>
-                  </>
-                )}
-              </Vacio>
-            )}
-            {r?.presupuestos?.map((p) => (
-              <Fila
-                key={p.id}
-                a={`/presupuestos/${p.id}`}
-                titulo={`${p.codigo} · ${p.titulo || '(sin título)'}`}
-                detalle={fecha(p.fecha)}
-                dato={euros(p.base)}
-                extra={<InsigniaEstado estado={p.estado as Estado} />}
-              />
-            ))}
-          </Lista>
+                  ) : (
+                    <div className={clases}>{contenido}</div>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
         )}
+
+        <div className="grid gap-8 sm:grid-cols-2">
+          {ve.obras && (
+            <Lista titulo="Obras en ejecución" a="/obras">
+              {r?.obras?.length === 0 && (
+                <Vacio>No hay obras en ejecución. Se crean en Obras o desde un presupuesto aceptado.</Vacio>
+              )}
+              {r?.obras?.map((o) => (
+                <Fila key={o.id} a="/obras" titulo={`${o.codigo} · ${o.nombre}`} dato={euros(o.importe_pedido)} />
+              ))}
+            </Lista>
+          )}
+          {ve.presupuestos && (
+            <Lista titulo="Últimos presupuestos" a="/presupuestos">
+              {r?.presupuestos?.length === 0 && (
+                <Vacio>
+                  Todavía no hay presupuestos.
+                  {puede('presupuestos', 'editar') && (
+                    <>
+                      {' '}
+                      <Link to="/presupuestos/nuevo" className="font-medium text-primary underline">
+                        Crear el primero
+                      </Link>
+                    </>
+                  )}
+                </Vacio>
+              )}
+              {r?.presupuestos?.map((p) => (
+                <Fila
+                  key={p.id}
+                  a={`/presupuestos/${p.id}`}
+                  titulo={`${p.codigo} · ${p.titulo || '(sin título)'}`}
+                  detalle={fecha(p.fecha)}
+                  dato={euros(p.base)}
+                  extra={<InsigniaEstado estado={p.estado as Estado} />}
+                />
+              ))}
+            </Lista>
+          )}
+        </div>
+
+        {/* Accesos a los apartados, los mismos del menú */}
+        {secciones.map((s) => (
+          <section key={s.titulo ?? 'principal'} className="grid gap-2">
+            <h2 className="font-semibold">{s.titulo ?? 'Accesos'}</h2>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {s.enlaces.map(({ a, texto, icono: Icono }) => (
+                <Link key={a} to={a} className="flex items-center gap-3 rounded-lg border p-4 font-medium hover:bg-muted">
+                  <Icono className="size-5 text-marca" /> {texto}
+                </Link>
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
+
+      <Notas />
     </div>
   )
 }
@@ -235,6 +252,121 @@ function Fila({
         {extra}
         <span className="text-sm font-medium tabular-nums">{dato}</span>
       </Link>
+    </li>
+  )
+}
+
+// Notas rápidas ------------------------------------------------------------------
+
+type Nota = FilaDe<'notas'>
+
+/** Notas personales: cada usuario ve solo las suyas (lo garantiza el RLS de la tabla notas). */
+function Notas() {
+  const queryClient = useQueryClient()
+  const [borrando, setBorrando] = useState<Nota | null>(null)
+  const notas = useQuery({
+    queryKey: ['notas'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('notas').select().order('created_at')
+      if (error) throw error
+      return data
+    },
+  })
+  const alTerminar = {
+    onError: (error: Error) => toast.error(mensajeError(error)),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['notas'] }),
+  }
+  const crear = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('notas').insert({ texto: '' })
+      if (error) throw error
+    },
+    ...alTerminar,
+  })
+  const borrar = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('notas').delete().eq('id', id)
+      if (error) throw error
+    },
+    ...alTerminar,
+  })
+
+  return (
+    <section className="grid content-start gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-semibold">Notas rápidas</h2>
+        <Button variant="outline" size="sm" onClick={() => crear.mutate()} disabled={crear.isPending}>
+          <Plus /> Añadir
+        </Button>
+      </div>
+      {notas.data?.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          Apunta aquí lo que no quieras olvidar. Se guarda solo y solo lo ves tú.
+        </p>
+      )}
+      <ul className="grid gap-3">
+        {notas.data?.map((nota) => (
+          <NotaEditable
+            key={nota.id}
+            nota={nota}
+            // Una nota vacía se borra sin preguntar
+            onBorrar={(texto) => (texto.trim() ? setBorrando({ ...nota, texto }) : borrar.mutate(nota.id))}
+          />
+        ))}
+      </ul>
+      <ConfirmarBorrado
+        nombre={borrando ? borrando.texto.trim().slice(0, 40) : null}
+        onConfirmar={() => borrando && borrar.mutate(borrando.id)}
+        onCerrar={() => setBorrando(null)}
+      />
+    </section>
+  )
+}
+
+/** Se guarda sola: un momento después de dejar de escribir, al salir del cuadro y al cambiar de página. */
+function NotaEditable({ nota, onBorrar }: { nota: Nota; onBorrar: (texto: string) => void }) {
+  const [texto, setTexto] = useState(nota.texto)
+  const [estado, setEstado] = useState<'guardado' | 'pendiente' | 'error'>('guardado')
+  const pendiente = useRef<string | null>(null)
+  const temporizador = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  const guardar = useCallback(async () => {
+    clearTimeout(temporizador.current)
+    const valor = pendiente.current
+    if (valor === null) return
+    pendiente.current = null
+    const { error } = await supabase.from('notas').update({ texto: valor }).eq('id', nota.id)
+    if (error) pendiente.current ??= valor // se reintenta en el siguiente guardado
+    setEstado(error ? 'error' : pendiente.current === null ? 'guardado' : 'pendiente')
+  }, [nota.id])
+
+  // Si se sale de la portada con algo sin guardar, se guarda al desmontar
+  useEffect(() => () => void guardar(), [guardar])
+
+  return (
+    <li className="grid gap-1">
+      <Textarea
+        aria-label="Nota"
+        placeholder="Escribe una nota…"
+        className="field-sizing-content min-h-24 bg-background"
+        value={texto}
+        onChange={(e) => {
+          setTexto(e.target.value)
+          setEstado('pendiente')
+          pendiente.current = e.target.value
+          clearTimeout(temporizador.current)
+          temporizador.current = setTimeout(guardar, 800)
+        }}
+        onBlur={guardar}
+      />
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span role="status" className={estado === 'error' ? 'text-destructive' : undefined}>
+          {{ guardado: 'Guardado', pendiente: 'Guardando…', error: 'No se ha podido guardar. Revisa la conexión.' }[estado]}
+        </span>
+        <Button variant="ghost" size="icon" aria-label="Borrar nota" onClick={() => onBorrar(texto)}>
+          <Trash2 />
+        </Button>
+      </div>
     </li>
   )
 }

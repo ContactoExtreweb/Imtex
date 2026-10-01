@@ -20,7 +20,7 @@ Las herramientas de `referencia/` son la especificación funcional de la fase 1 
 - Edge Functions (sin Docker): `npx supabase functions deploy <nombre> --use-api`
 
 ## Puesta en marcha de un proyecto Supabase (dev o producción)
-1. Authentication → Sign In / Providers: desactivar «Allow new users to sign up».
+1. Authentication → Sign In / Providers: desactivar «Allow new users to sign up». En producción (plan Pro), activar también «Leaked password protection»: el Security Advisor avisa si está apagada.
 2. Authentication → URL Configuration: Site URL = URL del CRM; Redirect URLs = `<URL del CRM>/**` (en dev, `http://localhost:5173/**`).
 3. Primer usuario de gerencia: invitarlo desde el panel (Authentication → Users → Invite user) y crearle el perfil:
    `npx supabase db query --linked "insert into public.perfiles (id, nombre, email, rol) select id, '<Nombre>', email, 'gerencia' from auth.users where email = '<email>'"`

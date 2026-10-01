@@ -42,3 +42,6 @@
 | 01/10/2026 | El presupuesto impreso usa el logo y los colores nuevos | La marca nueva sustituye a la de la herramienta antigua |
 | 01/10/2026 | Teléfono de IMTEX: 924 84 12 46 (el de la marca nueva; la plantilla antigua tenía 924 84 42 02) | Confirmado por Saúl |
 | 01/10/2026 | La portada muestra un resumen según los permisos de cada usuario (cifras, obras en ejecución y últimos presupuestos), no un panel escrito a mano por rol | Si cambia la matriz de permisos, la portada cambia sola. Las cifras se cuentan en SQL (regla 7) |
+| 01/10/2026 | Notas rápidas en la portada, guardadas en la tabla `notas`; cada usuario ve solo las suyas (RLS por dueño, sin módulo de permisos) | Pedido por Saúl. No está en PLAN.md §0: es una ampliación pequeña asumida. En base de datos y no en el navegador, para verlas igual en el móvil y en el PC |
+| 01/10/2026 | Portada: resumen, accesos a los apartados y notas. En escritorio, el logo va grande y muy tenue (7 %) de fondo en todas las pantallas | Pedido por Saúl, para que se note la identidad |
+| 01/10/2026 | El presupuesto impreso lleva solo el logo de IMTEX y el contacto, sin lema ni sellos de OCA | Pedido por Saúl |

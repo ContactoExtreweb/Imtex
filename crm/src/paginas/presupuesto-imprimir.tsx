@@ -2,9 +2,7 @@ import { ArrowLeft, Globe, Mail, Phone, Printer } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import firma from '@/assets/firma-imtex.png'
-import lema from '@/assets/lema-imtex.png'
 import logoImtex from '@/assets/logo-imtex.png'
-import sellosOca from '@/assets/sellos-oca.png'
 import { Button } from '@/components/ui/button'
 import { partidaCostes, sumaResumen } from '@/lib/calculos/presupuesto'
 import { EMPRESA } from '@/lib/empresa'
@@ -39,14 +37,8 @@ export function PresupuestoImprimir() {
     <>
       <div className="mb-4 flex items-start justify-between gap-6 border-b-2 border-[#131116] pb-3">
         <div>
-          {/* Como la tarjeta de IMTEX: logo con su lema, sellos de OCA y contacto con iconos */}
-          <div className="flex items-center gap-5">
-            <div className="grid gap-1.5">
-              <img src={logoImtex} alt={EMPRESA.nombre} className="h-[62px] w-auto justify-self-center" />
-              <img src={lema} alt="Soluciones técnicas para industria y construcción" className="w-[270px]" />
-            </div>
-            <img src={sellosOca} alt="Certificaciones OCA ISO 9001 e ISO 14001" className="h-[72px] w-auto" />
-          </div>
+          {/* Solo el logo de IMTEX (sin lema ni sellos de certificación) y el contacto */}
+          <img src={logoImtex} alt={EMPRESA.nombre} className="h-[70px] w-auto" />
           <p className="mt-2 text-[10.5px] text-[#64758a]">
             {EMPRESA.direccion} · {EMPRESA.poblacion}
           </p>

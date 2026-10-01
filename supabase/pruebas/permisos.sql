@@ -28,6 +28,8 @@ declare
   f_presupuesto uuid;
   f_partida uuid;
   f_linea uuid;
+  f_nota uuid;
+  f_nota_ajena uuid;
   n int;
   ok boolean;
 begin
@@ -79,6 +81,13 @@ begin
       insert into public.presupuesto_lineas (partida_id, descripcion) values (f_partida, 'Línea prueba')
         returning id into f_linea;
 
+      -- Notas: una del propio usuario (si lo hay) y otra ajena
+      f_nota := null;
+      if uid is not null then
+        insert into public.notas (perfil_id, texto) values (uid, 'Nota propia') returning id into f_nota;
+      end if;
+      insert into public.notas (perfil_id, texto) values (otro, 'Nota ajena') returning id into f_nota_ajena;
+
       -- Cambio de identidad
       if u.rol is null then
         perform set_config('request.jwt.claims', '', true);
@@ -117,6 +126,13 @@ begin
           ('tarifas_combustible', 'insertar', 'insert into public.tarifas_combustible (precio_litro_ref, consumo_furgon_l100, consumo_camion_l100) values (1, 1, 1)', null),
           ('tarifas_combustible', 'editar', 'update public.tarifas_combustible set precio_litro_ref = precio_litro_ref', null),
           ('tarifas_combustible', 'borrar', 'delete from public.tarifas_combustible', null),
+
+          -- Antes que perfiles: borrar el perfil ajeno borraría su nota en cascada
+          ('notas', 'ver', 'select from public.notas where id = $1', f_nota_ajena),
+          ('notas', 'ver_propio', 'select from public.notas where id = $1', f_nota),
+          ('notas', 'insertar', 'insert into public.notas (texto) values (''x'')', null),
+          ('notas', 'editar', 'update public.notas set texto = texto where id = $1', f_nota_ajena),
+          ('notas', 'borrar', 'delete from public.notas where id = $1', f_nota_ajena),
 
           ('perfiles', 'ver', 'select from public.perfiles where id = $1', otro),
           ('perfiles', 'ver_propio', 'select from public.perfiles where id = $1', uid),
@@ -203,6 +219,7 @@ m (tabla, ver, editar) as (values
   ('presupuestos', array['presupuestos'], 'presupuestos'),
   ('presupuesto_partidas', array['presupuestos'], 'presupuestos'),
   ('presupuesto_lineas', array['presupuestos'], 'presupuestos'),
+  ('notas', null, null),
   ('roles', null, null),
   ('permisos_rol', null, null)
 ),
@@ -211,6 +228,7 @@ c as (
     case
       when r.rol is null then false                                   -- anon
       when r.tabla in ('roles', 'permisos_rol') then r.accion = 'ver' -- solo lectura
+      when r.tabla = 'notas' then r.accion in ('ver_propio', 'insertar') -- cada uno, solo las suyas
       when r.accion = 'ver_propio' then true
       when r.tabla = 'tarifas_combustible' and r.accion in ('insertar', 'borrar') then false
       else r.activo and exists (

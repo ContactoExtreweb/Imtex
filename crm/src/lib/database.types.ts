@@ -120,6 +120,38 @@ export type Database = {
         }
         Relationships: []
       }
+      notas: {
+        Row: {
+          created_at: string
+          id: string
+          perfil_id: string
+          texto: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          perfil_id?: string
+          texto?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          perfil_id?: string
+          texto?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notas_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       obras: {
         Row: {
           cliente_id: string | null
