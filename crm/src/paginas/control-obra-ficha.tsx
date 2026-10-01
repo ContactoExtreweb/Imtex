@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { ComparativaObra } from '@/components/comparativa-obra'
 import { GraficosObra } from '@/components/graficos-obra'
 import { HojaApuntes } from '@/components/hoja-apuntes'
 import { Pestanas } from '@/components/pestanas'
@@ -11,7 +12,7 @@ import { useSesion } from '@/lib/sesion'
 import { mensajeError } from '@/lib/supabase'
 import { useHojas, type IdHoja } from './control-obra-hojas'
 
-type Pestana = 'resumen' | 'graficos' | IdHoja
+type Pestana = 'resumen' | 'graficos' | 'comparativa' | IdHoja
 type Calculo = ReturnType<typeof calcularObra>
 
 /** Control de una obra: resumen con la matriz mensual y las hojas de certificaciones y costes. */
@@ -33,6 +34,12 @@ export function ControlObraFicha() {
     { id: 'alquileres', texto: 'Alquileres', visible: true },
     { id: 'combustible', texto: 'Combustible', visible: true },
     { id: 'viajes', texto: 'Dietas y hoteles', visible: true },
+    // Solo si la obra viene de un presupuesto y se pueden ver los presupuestos
+    {
+      id: 'comparativa',
+      texto: 'Comparativa',
+      visible: !!control.data?.obra.presupuesto_id && puede('presupuestos', 'ver'),
+    },
   ]
   const visibles = pestanas.filter((p) => p.visible)
   const pedida = parametros.get('hoja')
@@ -69,6 +76,8 @@ export function ControlObraFicha() {
         <Resumen datos={control.data} gastosGeneralesPct={obra.gastos_generales_pct} importePedido={obra.importe_pedido} />
       ) : activa === 'graficos' ? (
         <GraficosObra datos={control.data} />
+      ) : activa === 'comparativa' ? (
+        obra.presupuesto_id && <ComparativaObra presupuestoId={obra.presupuesto_id} datos={control.data} />
       ) : (
         // key: cada hoja empieza con su propio filtro de mes y sin diálogos abiertos
         <HojaApuntes key={activa} config={hojas[activa]} obraId={id} />

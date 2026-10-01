@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { ConfirmarBorrado } from '@/components/listado'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { euros, fecha } from '@/lib/formato'
+import { euros, fecha, pct } from '@/lib/formato'
 import { useSecciones } from '@/lib/menu'
 import type { Estado } from '@/lib/presupuestos'
 import { useSesion } from '@/lib/sesion'
@@ -43,13 +43,14 @@ export function Inicio() {
     trabajadores: puede('ajustes', 'ver') || puede('control_obra', 'ver'),
     precios: puede('base_precios', 'ver'),
     usuarios: puede('usuarios', 'ver'),
+    control: puede('control_obra', 'ver'),
   }
 
   const resumen = useQuery({
     queryKey: ['inicio', perfil?.rol],
     queryFn: async () => {
       const si = <T,>(condicion: boolean, consulta: () => Promise<T>) => (condicion ? consulta() : null)
-      const [obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos] =
+      const [obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos, origen] =
         await Promise.all([
           si(ve.obras, () => contar(supabase.from('obras').select('*', SOLO_CONTAR).eq('estado', 'en_ejecucion'))),
           si(ve.presupuestos, () =>
@@ -86,8 +87,22 @@ export function Inicio() {
             if (totales.error) throw totales.error
             return data.map((p) => ({ ...p, base: totales.data.find((t) => t.presupuesto_id === p.id)?.base ?? 0 }))
           }),
+          // Certificado y costes a origen de las obras en ejecución (una fila por obra, ya sumada en SQL)
+          si(ve.control, async () => {
+            const [enCurso, totales] = await Promise.all([
+              supabase.from('obras').select('id').eq('estado', 'en_ejecucion'),
+              supabase.from('control_obra_origen').select(),
+            ])
+            if (enCurso.error) throw enCurso.error
+            if (totales.error) throw totales.error
+            const ids = new Set(enCurso.data.map((o) => o.id))
+            const filas = totales.data.filter((t) => t.obra_id && ids.has(t.obra_id))
+            const certificado = filas.reduce((suma, t) => suma + (t.certificado ?? 0), 0)
+            const costes = filas.reduce((suma, t) => suma + (t.costes ?? 0), 0)
+            return { certificado, margen: certificado > 0 ? ((certificado - costes) / certificado) * 100 : null }
+          }),
         ])
-      return { obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos }
+      return { obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos, origen }
     },
   })
 
@@ -95,6 +110,18 @@ export function Inicio() {
   // Cada cifra enlaza a su apartado; sin permiso sobre el apartado, la cifra se ve pero no enlaza
   const cifras = [
     { visible: ve.obras, valor: r?.obrasEnCurso, etiqueta: 'Obras en ejecución', a: '/obras' },
+    {
+      visible: ve.control,
+      valor: r?.origen && euros(r.origen.certificado),
+      etiqueta: 'Certificado a origen en obras en ejecución',
+      a: '/control-obra',
+    },
+    {
+      visible: ve.control,
+      valor: r?.origen ? (r.origen.margen === null ? '–' : pct(r.origen.margen)) : undefined,
+      etiqueta: 'Margen a origen en obras en ejecución',
+      a: '/control-obra',
+    },
     { visible: ve.presupuestos, valor: r?.enviados, etiqueta: 'Presupuestos pendientes de respuesta', a: '/presupuestos' },
     { visible: ve.presupuestos, valor: r?.borradores, etiqueta: 'Presupuestos en borrador', a: '/presupuestos' },
     { visible: ve.clientes, valor: r?.clientes, etiqueta: 'Clientes', a: '/clientes' },
@@ -158,7 +185,7 @@ export function Inicio() {
                 <Vacio>No hay obras en ejecución. Se crean en Obras o desde un presupuesto aceptado.</Vacio>
               )}
               {r?.obras?.map((o) => (
-                <Fila key={o.id} a="/obras" titulo={`${o.codigo} · ${o.nombre}`} dato={euros(o.importe_pedido)} />
+                <Fila key={o.id} a={ve.control ? `/control-obra/${o.id}` : '/obras'} titulo={`${o.codigo} · ${o.nombre}`} dato={euros(o.importe_pedido)} />
               ))}
             </Lista>
           )}
