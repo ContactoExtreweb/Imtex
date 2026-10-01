@@ -84,13 +84,6 @@ export type Database = {
             foreignKeyName: "alquileres_obra_id_fkey"
             columns: ["obra_id"]
             isOneToOne: false
-            referencedRelation: "control_obra_origen"
-            referencedColumns: ["obra_id"]
-          },
-          {
-            foreignKeyName: "alquileres_obra_id_fkey"
-            columns: ["obra_id"]
-            isOneToOne: false
             referencedRelation: "obras"
             referencedColumns: ["id"]
           },
@@ -167,13 +160,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "certificaciones_obra_id_fkey"
-            columns: ["obra_id"]
-            isOneToOne: false
-            referencedRelation: "control_obra_origen"
-            referencedColumns: ["obra_id"]
-          },
           {
             foreignKeyName: "certificaciones_obra_id_fkey"
             columns: ["obra_id"]
@@ -279,13 +265,6 @@ export type Database = {
             foreignKeyName: "combustible_obra_id_fkey"
             columns: ["obra_id"]
             isOneToOne: false
-            referencedRelation: "control_obra_origen"
-            referencedColumns: ["obra_id"]
-          },
-          {
-            foreignKeyName: "combustible_obra_id_fkey"
-            columns: ["obra_id"]
-            isOneToOne: false
             referencedRelation: "obras"
             referencedColumns: ["id"]
           },
@@ -339,13 +318,6 @@ export type Database = {
             foreignKeyName: "gastos_viaje_obra_id_fkey"
             columns: ["obra_id"]
             isOneToOne: false
-            referencedRelation: "control_obra_origen"
-            referencedColumns: ["obra_id"]
-          },
-          {
-            foreignKeyName: "gastos_viaje_obra_id_fkey"
-            columns: ["obra_id"]
-            isOneToOne: false
             referencedRelation: "obras"
             referencedColumns: ["id"]
           },
@@ -395,13 +367,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "materiales_obra_id_fkey"
-            columns: ["obra_id"]
-            isOneToOne: false
-            referencedRelation: "control_obra_origen"
-            referencedColumns: ["obra_id"]
-          },
           {
             foreignKeyName: "materiales_obra_id_fkey"
             columns: ["obra_id"]
@@ -578,13 +543,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "categorias_profesionales"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "partes_horas_obra_id_fkey"
-            columns: ["obra_id"]
-            isOneToOne: false
-            referencedRelation: "control_obra_origen"
-            referencedColumns: ["obra_id"]
           },
           {
             foreignKeyName: "partes_horas_obra_id_fkey"
@@ -1040,13 +998,6 @@ export type Database = {
             foreignKeyName: "subcontratas_obra_id_fkey"
             columns: ["obra_id"]
             isOneToOne: false
-            referencedRelation: "control_obra_origen"
-            referencedColumns: ["obra_id"]
-          },
-          {
-            foreignKeyName: "subcontratas_obra_id_fkey"
-            columns: ["obra_id"]
-            isOneToOne: false
             referencedRelation: "obras"
             referencedColumns: ["id"]
           },
@@ -1138,14 +1089,6 @@ export type Database = {
           obra_id: string | null
           personal: number | null
           subcontrata: number | null
-        }
-        Relationships: []
-      }
-      control_obra_origen: {
-        Row: {
-          certificado: number | null
-          costes: number | null
-          obra_id: string | null
         }
         Relationships: []
       }

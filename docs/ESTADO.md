@@ -39,6 +39,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Certificaciones, partes de horas, materiales, subcontratas, alquileres, combustible, y dietas y hoteles.
 - Ficha de obra con resumen, matriz mensual, gráficos y comparativa con el presupuesto.
 - Los resultados coinciden con `referencia/IMTEX_control_obra.html` usando sus datos de ejemplo.
+- El listado y la portada calculan los totales con la misma función que la ficha, así que no pueden diferir.
 
 **6. Extras pedidos por Saúl**
 - Identidad de IMTEX: logo, colores, login con la composición de la tarjeta y logo de fondo en escritorio.
@@ -131,6 +132,7 @@ Cómo se ha trabajado hasta ahora, por si Claude no lo recuerda en ese ordenador
 
 ## Trampas conocidas
 
+- **La API de Supabase da como mucho 1.000 filas por petición** y corta el resto sin avisar. Para listados que pueden crecer, usa `todasLasFilas` (`crm/src/lib/todas-las-filas.ts`); para sumas, una vista SQL.
 - **`npx supabase migration new <nombre>` se queda colgado** si se lanza sin terminal interactiva: espera contenido por la entrada. Añade `< /dev/null` al final o crea el fichero a mano en `supabase/migrations/`.
 - **`config.toml` solo vale para Supabase en local.** Lo de Auth (registro público, URLs) se cambia en el panel de cada proyecto.
 - **El aviso «Leaked Password Protection Disabled»** del Security Advisor es del plan Pro: en dev no se puede quitar.

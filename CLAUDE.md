@@ -34,7 +34,7 @@ Qué está hecho, qué falta y cómo arrancar en otro ordenador: `docs/ESTADO.md
 4. Cambios de base de datos, siempre con migración en `supabase/migrations`, nunca a mano en el panel. Después, regenera los tipos.
 5. Nombres en español, snake_case y sin tildes. Importes en numeric(12,2).
 6. Los cálculos de presupuestos y control de obra van en funciones puras (`crm/src/lib/calculos`) con tests de Vitest, y deben coincidir al céntimo con `referencia/*.html`.
-7. Sumas de muchas filas, en SQL (vista o RPC): la API devuelve por defecto un máximo de 1.000 filas por petición.
+7. Sumas de muchas filas, en SQL (vista o RPC): la API devuelve por defecto un máximo de 1.000 filas por petición. Los listados que pueden crecer se piden con `todasLasFilas` (`crm/src/lib/todas-las-filas.ts`), que junta las páginas.
 8. Interfaz en español con formato es-ES (1.234,56 €; dd/mm/aaaa). Diseño pensado primero para el móvil; se prueba en iPhone.
 9. Las fotos se comprimen en el navegador antes de subirlas; HEIC → JPEG.
 10. Para cambios grandes, primero un plan. Antes de dar algo por terminado: build, tests y lint.

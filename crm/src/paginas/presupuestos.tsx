@@ -8,6 +8,7 @@ import { coincide, euros, fecha } from '@/lib/formato'
 import { ESTADOS, type Estado } from '@/lib/presupuestos'
 import { useSesion } from '@/lib/sesion'
 import { supabase } from '@/lib/supabase'
+import { todasLasFilas } from '@/lib/todas-las-filas'
 import { useTabla } from '@/lib/tabla'
 
 // El rojo de la marca es para acciones y selección; el estado lleva su propio código de color
@@ -35,17 +36,25 @@ export function Presupuestos() {
   const lista = useQuery({
     queryKey: ['presupuestos'],
     queryFn: async () => {
+      // Por páginas: en unos años habrá más de 1.000 presupuestos, que es el tope de la API por petición
       const [presupuestos, totales] = await Promise.all([
-        supabase
-          .from('presupuestos')
-          .select('id, codigo, titulo, estado, fecha, cliente_id')
-          .order('codigo', { ascending: false }),
-        supabase.from('presupuestos_totales').select('presupuesto_id, base'),
+        todasLasFilas((de, hasta) =>
+          supabase
+            .from('presupuestos')
+            .select('id, codigo, titulo, estado, fecha, cliente_id', { count: 'exact' })
+            .order('codigo', { ascending: false })
+            .range(de, hasta),
+        ),
+        todasLasFilas((de, hasta) =>
+          supabase
+            .from('presupuestos_totales')
+            .select('presupuesto_id, base', { count: 'exact' })
+            .order('presupuesto_id')
+            .range(de, hasta),
+        ),
       ])
-      if (presupuestos.error) throw presupuestos.error
-      if (totales.error) throw totales.error
-      const base = new Map(totales.data.map((t) => [t.presupuesto_id, t.base ?? 0]))
-      return presupuestos.data.map((p) => ({ ...p, base: base.get(p.id) ?? 0 }))
+      const base = new Map(totales.map((t) => [t.presupuesto_id, t.base ?? 0]))
+      return presupuestos.map((p) => ({ ...p, base: base.get(p.id) ?? 0 }))
     },
   })
 

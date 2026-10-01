@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router'
 import { Selector } from '@/components/campo'
 import { FilaListado, PaginaListado } from '@/components/listado'
 import { nivelMargen } from '@/lib/calculos/control-obra'
-import { COLOR_MARGEN } from '@/lib/control-obra'
+import { COLOR_MARGEN, totalesAOrigen } from '@/lib/control-obra'
 import { coincide, euros, pct } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
@@ -14,20 +14,18 @@ export function ControlObra() {
   const [busqueda, setBusqueda] = useState('')
   const [estado, setEstado] = useState('en_ejecucion')
 
-  // Los totales salen de la vista SQL control_obra_origen: una fila por obra
+  // Los totales se calculan con la misma función que la ficha (totalesAOrigen)
   const lista = useQuery({
     queryKey: ['control_obra', 'lista'],
     queryFn: async () => {
-      const [obras, totales] = await Promise.all([
-        supabase.from('obras').select('id, codigo, nombre, localidad, estado, importe_pedido').order('codigo'),
-        supabase.from('control_obra_origen').select(),
-      ])
-      if (obras.error) throw obras.error
-      if (totales.error) throw totales.error
-      const porObra = new Map(totales.data.map((t) => [t.obra_id, t]))
-      return obras.data.map((o) => {
-        const certificado = porObra.get(o.id)?.certificado ?? 0
-        const costes = porObra.get(o.id)?.costes ?? 0
+      const { data: obras, error } = await supabase
+        .from('obras')
+        .select('id, codigo, nombre, localidad, estado, importe_pedido, gastos_generales_pct')
+        .order('codigo')
+      if (error) throw error
+      const totales = await totalesAOrigen(obras)
+      return obras.map((o) => {
+        const { certificado, costes } = totales.get(o.id)!
         return { ...o, certificado, costes, margen: certificado > 0 ? ((certificado - costes) / certificado) * 100 : 0 }
       })
     },

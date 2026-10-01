@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { ConfirmarBorrado } from '@/components/listado'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { totalesAOrigen } from '@/lib/control-obra'
 import { euros, fecha, pct } from '@/lib/formato'
 import { useSecciones } from '@/lib/menu'
 import type { Estado } from '@/lib/presupuestos'
@@ -87,18 +88,17 @@ export function Inicio() {
             if (totales.error) throw totales.error
             return data.map((p) => ({ ...p, base: totales.data.find((t) => t.presupuesto_id === p.id)?.base ?? 0 }))
           }),
-          // Certificado y costes a origen de las obras en ejecución (una fila por obra, ya sumada en SQL)
+          // Certificado y costes a origen de las obras en ejecución, con las mismas cuentas que la ficha
           si(ve.control, async () => {
-            const [enCurso, totales] = await Promise.all([
-              supabase.from('obras').select('id').eq('estado', 'en_ejecucion'),
-              supabase.from('control_obra_origen').select(),
-            ])
+            const enCurso = await supabase
+              .from('obras')
+              .select('id, gastos_generales_pct, importe_pedido')
+              .eq('estado', 'en_ejecucion')
             if (enCurso.error) throw enCurso.error
-            if (totales.error) throw totales.error
-            const ids = new Set(enCurso.data.map((o) => o.id))
-            const filas = totales.data.filter((t) => t.obra_id && ids.has(t.obra_id))
-            const certificado = filas.reduce((suma, t) => suma + (t.certificado ?? 0), 0)
-            const costes = filas.reduce((suma, t) => suma + (t.costes ?? 0), 0)
+            // Pocas obras en ejecución: se piden solo sus meses. Con muchas, no cabrían en la URL
+            const filas = [...(await totalesAOrigen(enCurso.data, enCurso.data.length <= 100)).values()]
+            const certificado = filas.reduce((suma, t) => suma + t.certificado, 0)
+            const costes = filas.reduce((suma, t) => suma + t.costes, 0)
             return { certificado, margen: certificado > 0 ? ((certificado - costes) / certificado) * 100 : null }
           }),
         ])

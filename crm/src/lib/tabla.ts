@@ -2,6 +2,7 @@ import type { PostgrestError } from '@supabase/supabase-js'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { mensajeError, supabase, type Fila, type NuevaFila } from './supabase'
+import { todasLasFilas } from './todas-las-filas'
 
 type TablaEditable =
   | 'clientes'
@@ -15,7 +16,17 @@ type Resultado = PromiseLike<{ error: PostgrestError | null }>
 // supabase-js no sabe tipar un nombre de tabla genérico; se usa esta forma mínima por dentro
 // y hacia fuera todo va tipado con Fila<T> / NuevaFila<T>.
 interface Consulta {
-  select(): { order(columna: string): PromiseLike<{ data: unknown[] | null; error: PostgrestError | null }> }
+  select(columnas: '*', opciones: { count: 'exact' }): {
+    order(columna: string): {
+      order(columna: string): {
+        range(desde: number, hasta: number): PromiseLike<{
+          data: unknown[] | null
+          error: PostgrestError | null
+          count: number | null
+        }>
+      }
+    }
+  }
   insert(fila: unknown): Resultado
   update(fila: unknown): { eq(columna: 'id', valor: string): Resultado }
   delete(): { eq(columna: 'id', valor: string): Resultado }
@@ -45,11 +56,11 @@ export function useTabla<T extends TablaEditable>(tabla: T, orden: keyof Fila<T>
 
   const lista = useQuery({
     queryKey: [tabla],
-    queryFn: async () => {
-      const { data, error } = await desde().select().order(orden)
-      if (error) throw error
-      return data as Fila<T>[]
-    },
+    // La API da como mucho 1.000 filas por petición: se piden todas las páginas
+    queryFn: async () =>
+      (await todasLasFilas((de, hasta) =>
+        desde().select('*', { count: 'exact' }).order(orden).order('id').range(de, hasta),
+      )) as Fila<T>[],
   })
 
   const guardar = useMutation({

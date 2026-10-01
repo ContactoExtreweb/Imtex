@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import herramienta from '../../../../referencia/IMTEX_control_obra.html?raw'
 import {
   calcularObra,
+  consolidarMes,
   etiquetaMes,
   mesDeFecha,
   nivelMargen,
@@ -214,4 +215,12 @@ test('origenAnterior encadena las certificaciones por número, aunque lleguen de
   // Al editar la nº 2, ella misma no cuenta como anterior
   expect(origenAnterior(2, certs, 'c2')).toBe(42000)
   expect(origenAnterior(1, [])).toBe(0)
+})
+
+test('la estructura se redondea como la herramienta, aunque el medio céntimo caiga hacia abajo', () => {
+  // 100,50 × 13 % = 13,065 exactos, pero en coma flotante queda una pizca por debajo y toFixed da 13,06.
+  // SQL daría 13,07: por eso el listado y la portada usan también calcularObra (totalesAOrigen).
+  const mes = { mes: '2026-01-01', certificacion: 100.5, personal: 0, subcontrata: 0, materiales: 0, alquileres: 0, combustible: 0, dietas: 0, hoteles: 0 }
+  expect(consolidarMes(mes, 13).costeEstructura).toBe(13.06)
+  expect(calcularObra([mes], 13, 1000).totales.sumTotMasEst).toBe(13.06)
 })
