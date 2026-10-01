@@ -4,6 +4,7 @@ import {
   calcularObra,
   consolidarMes,
   etiquetaMes,
+  mesAnterior,
   mesDeFecha,
   nivelMargen,
   origenAnterior,
@@ -169,6 +170,10 @@ describe('control de obra: mismos resultados que la herramienta de IMTEX', () =>
 })
 
 describe('meses', () => {
+  test('mesAnterior, también al cambiar de año', () => {
+    expect(mesAnterior('2026-10-01')).toBe('2026-09-01')
+    expect(mesAnterior('2026-01-01')).toBe('2025-12-01')
+  })
   test('etiqueta y mes de imputación como la herramienta', () => {
     expect(etiquetaMes('2026-09-01')).toBe('septiembre-26')
     expect(etiquetaMes('2026-01-01')).toBe('enero-26')

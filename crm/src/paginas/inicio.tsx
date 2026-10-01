@@ -1,13 +1,14 @@
 import type { PostgrestError } from '@supabase/supabase-js'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, TriangleAlert } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { ConfirmarBorrado } from '@/components/listado'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { totalesAOrigen } from '@/lib/control-obra'
+import { etiquetaMes } from '@/lib/calculos/control-obra'
+import { resumenEnEjecucion, type AvisoObra } from '@/lib/control-obra'
 import { euros, fecha, pct } from '@/lib/formato'
 import { useSecciones } from '@/lib/menu'
 import type { Estado } from '@/lib/presupuestos'
@@ -88,28 +89,33 @@ export function Inicio() {
             if (totales.error) throw totales.error
             return data.map((p) => ({ ...p, base: totales.data.find((t) => t.presupuesto_id === p.id)?.base ?? 0 }))
           }),
-          // Certificado y costes a origen de las obras en ejecución, con las mismas cuentas que la ficha
-          si(ve.control, async () => {
-            const enCurso = await supabase
-              .from('obras')
-              .select('id, gastos_generales_pct, importe_pedido')
-              .eq('estado', 'en_ejecucion')
-            if (enCurso.error) throw enCurso.error
-            // Pocas obras en ejecución: se piden solo sus meses. Con muchas, no cabrían en la URL
-            const filas = [...(await totalesAOrigen(enCurso.data, enCurso.data.length <= 100)).values()]
-            const certificado = filas.reduce((suma, t) => suma + t.certificado, 0)
-            const costes = filas.reduce((suma, t) => suma + t.costes, 0)
-            return { certificado, margen: certificado > 0 ? ((certificado - costes) / certificado) * 100 : null }
-          }),
+          // Obras en ejecución: totales a origen, cifras del mes y avisos, con las mismas cuentas que la ficha
+          si(ve.control, () => resumenEnEjecucion(ve.presupuestos)),
         ])
       return { obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos, origen }
     },
   })
 
   const r = resumen.data
+  const nombreMes = (mes: string) => etiquetaMes(mes).split('-')[0] // «octubre-26» → «octubre»
   // Cada cifra enlaza a su apartado; sin permiso sobre el apartado, la cifra se ve pero no enlaza
-  const cifras = [
+  const cifras: { visible: boolean; valor?: ReactNode; etiqueta: string; nota?: string | null; a: string | null }[] = [
     { visible: ve.obras, valor: r?.obrasEnCurso, etiqueta: 'Obras en ejecución', a: '/obras' },
+    // Lo del mes en curso, con el mes anterior debajo para comparar
+    {
+      visible: ve.control,
+      valor: r?.origen && euros(r.origen.actual.certificado),
+      etiqueta: r?.origen ? `Certificado en ${nombreMes(r.origen.actual.mes)}` : 'Certificado este mes',
+      nota: r?.origen && `${nombreMes(r.origen.anterior.mes)}: ${euros(r.origen.anterior.certificado)}`,
+      a: '/control-obra',
+    },
+    {
+      visible: ve.control,
+      valor: r?.origen && euros(r.origen.actual.resultado),
+      etiqueta: r?.origen ? `Resultado de ${nombreMes(r.origen.actual.mes)}` : 'Resultado de este mes',
+      nota: r?.origen && `${nombreMes(r.origen.anterior.mes)}: ${euros(r.origen.anterior.resultado)}`,
+      a: '/control-obra',
+    },
     {
       visible: ve.control,
       valor: r?.origen && euros(r.origen.certificado),
@@ -151,6 +157,8 @@ export function Inicio() {
           </p>
         )}
 
+        {r?.origen && <Avisos avisos={r.origen.avisos} conPresupuestos={ve.presupuestos} />}
+
         {cifras.length === 0 ? (
           <p className="text-sm text-muted-foreground">Todavía no hay apartados disponibles para tu perfil.</p>
         ) : (
@@ -160,6 +168,7 @@ export function Inicio() {
                 <>
                   <span className="text-2xl font-semibold tabular-nums">{c.valor ?? '–'}</span>
                   <span className="text-sm text-muted-foreground">{c.etiqueta}</span>
+                  {c.nota && <span className="text-xs text-muted-foreground tabular-nums">{c.nota}</span>}
                 </>
               )
               const clases = 'flex h-full flex-col gap-0.5 p-4'
@@ -235,6 +244,45 @@ export function Inicio() {
 
       <Notas />
     </div>
+  )
+}
+
+/** Obras en ejecución que piden atención: margen bajo o desviación del presupuesto (lib/calculos/avisos.ts). */
+function Avisos({ avisos, conPresupuestos }: { avisos: AvisoObra[]; conPresupuestos: boolean }) {
+  return (
+    <section className="grid gap-2">
+      <h2 className="font-semibold">Avisos</h2>
+      {avisos.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          {conPresupuestos
+            ? 'Ninguna obra en ejecución tiene el margen bajo ni se desvía de su presupuesto.'
+            : 'Ninguna obra en ejecución tiene el margen bajo.'}
+        </p>
+      ) : (
+        <ul className="divide-y rounded-lg border">
+          {avisos.map((a) => (
+            <li key={`${a.obra.id}-${a.tipo}`}>
+              <Link
+                // Los avisos de presupuesto llevan a la comparativa de la obra
+                to={`/control-obra/${a.obra.id}${a.tipo === 'coste_superado' || a.tipo === 'desviacion' ? '?hoja=comparativa' : ''}`}
+                className="flex items-start gap-3 px-3 py-2 hover:bg-muted"
+              >
+                <TriangleAlert
+                  aria-hidden
+                  className={`mt-0.5 size-4 shrink-0 ${a.nivel === 'grave' ? 'text-destructive' : 'text-aviso'}`}
+                />
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium">
+                    {a.obra.codigo} · {a.obra.nombre}
+                  </span>
+                  <span className="block text-sm text-muted-foreground">{a.texto}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }
 

@@ -116,6 +116,12 @@ const MESES_ES = [
 /** «2026-09-17» → «2026-09-01»: el mes de imputación que se propone para una fecha. */
 export const mesDeFecha = (fecha: string) => `${fecha.slice(0, 7)}-01`
 
+/** Mes de imputación anterior: «2026-01-01» → «2025-12-01». */
+export function mesAnterior(mes: string): string {
+  const [anio, numero] = mes.split('-').map(Number)
+  return numero === 1 ? `${anio - 1}-12-01` : `${anio}-${String(numero - 1).padStart(2, '0')}-01`
+}
+
 /** «2026-09-01» → «septiembre-26», como la herramienta. */
 export function etiquetaMes(mes: string): string {
   const [anio, numero] = mes.split('-').map(Number)

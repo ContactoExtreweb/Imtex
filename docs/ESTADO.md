@@ -8,7 +8,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 | Qué | Dónde |
 |---|---|
 | Código | GitHub, `ContactoExtreweb/Imtex` (privado) |
-| Rama con todo el trabajo | **`feat/galeria-crm`** (sale de `feat/control-obra` y la incluye) |
+| Rama con todo el trabajo | **`feat/avisos-portada`** (incluye `feat/control-obra` y `feat/galeria-crm`) |
 | `main` | Llega hasta Presupuestos. Control de obra se fusiona cuando Saúl lo pruebe |
 | Base de datos de desarrollo | Supabase, proyecto `imtex-dev`, ref `vrhpxwnzthenjxubagys` (Fráncfort) |
 | Base de datos de producción | Sin crear todavía |
@@ -47,7 +47,12 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Ficha con zona para arrastrar fotos, categoría, textos, portada y publicar o despublicar.
 - Las fotos se reducen en el navegador (JPEG de 2.000 px y miniatura). No se hace el `/admin` dentro de la web.
 
-**7. Extras pedidos por Saúl**
+**7. Avisos y resumen del mes en la portada.** **Pendiente de que Saúl lo vea con datos.**
+- Bloque «Avisos» sobre las obras en ejecución: en pérdidas, margen bajo (menos del 5 %), margen justo (5–15 %), coste superado y desviación del presupuesto.
+- Dos cifras nuevas: certificado y resultado del mes en curso, con el mes anterior debajo.
+- Los avisos de presupuesto solo los ve quien puede ver presupuestos. Sin cambios en la base de datos.
+
+**8. Extras pedidos por Saúl**
 - Identidad de IMTEX: logo, colores, login con la composición de la tarjeta y logo de fondo en escritorio.
 - Portada con resumen según los permisos, accesos y notas rápidas personales.
 
@@ -56,6 +61,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 **De Saúl, ahora**
 - Probar Control de obra (los pasos están más abajo) y decir qué falla o qué cambiaría.
 - Probar la galería: Obras → abrir una obra → «Publicar en la web», arrastrar fotos (también desde el móvil), elegir categoría, cambiar la portada, publicar y despublicar. Como encargado no debe verse «Galería web».
+- Ver la portada como gerencia: bloque «Avisos» y cifras del mes. Para ver saltar un aviso, mete en «Obra Prueba» un material de 300 € sin certificar nada: debe avisar de que se desvía del presupuesto. Como encargado no deben salir avisos de presupuesto.
 - Decir cuándo se borra la obra de ejemplo `EJEMPLO-OB-2026-01` de dev. Es ficticia e infla las cifras de la portada.
 
 **Del CRM, para ponerlo en producción** (PLAN.md, parte C y hitos H4 y H5)
@@ -70,7 +76,6 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Contrato de encargado del tratamiento (RGPD) firmado antes de cargar datos personales.
 
 **Ampliaciones aprobadas por Saúl** (fuera de PLAN.md §0; él decide si se facturan)
-- Avisos y resúmenes en la portada del programa, sin correos: obras con margen bajo y obras que se desvían del presupuesto.
 - Cierre de meses por obra y mes, y exportar el informe de la obra a CSV más vista imprimible.
 - Seguimiento comercial de presupuestos (envío por correo, recordatorios y versiones): espera a tener Resend.
 
@@ -95,7 +100,7 @@ Hace falta Git, Node 22 o superior y Claude Code.
    git clone https://github.com/ContactoExtreweb/Imtex.git
    ```
    ```bash
-   cd Imtex && git checkout feat/galeria-crm
+   cd Imtex && git checkout feat/avisos-portada
    ```
 2. Instalar dependencias:
    ```bash

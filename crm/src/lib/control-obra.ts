@@ -1,7 +1,8 @@
 import type { PostgrestError } from '@supabase/supabase-js'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { calcularObra, rellenarMeses, type SumasMes } from './calculos/control-obra'
+import { avisosObra, type Aviso } from './calculos/avisos'
+import { calcularObra, mesAnterior, rellenarMeses, type SumasMes } from './calculos/control-obra'
 import type { Database } from './database.types'
 import { mensajeError, supabase } from './supabase'
 import { todasLasFilas } from './todas-las-filas'
@@ -55,17 +56,16 @@ const aSumas = (s: Database['public']['Views']['control_obra_mensual']['Row']): 
   hoteles: s.hoteles ?? 0,
 })
 
+type ObraControl = { id: string; gastos_generales_pct: number; importe_pedido: number }
+
 /**
- * Certificado y costes a origen de cada obra, para el listado y la portada.
- * Las sumas por mes vienen de SQL y la estructura se calcula con calcularObra, la misma función
+ * El cálculo completo de cada obra, para el listado y la portada.
+ * Las sumas por mes vienen de SQL y lo demás se calcula con calcularObra, la misma función
  * de la ficha: así el listado y la ficha no pueden diferir ni en un céntimo.
  * Con `soloEstas` se piden solo los meses de esas obras (para pocas obras: van en la URL).
  */
-export async function totalesAOrigen(
-  obras: { id: string; gastos_generales_pct: number; importe_pedido: number }[],
-  soloEstas = false,
-) {
-  if (obras.length === 0) return new Map<string, { certificado: number; costes: number }>()
+async function calculosPorObra(obras: ObraControl[], soloEstas: boolean) {
+  if (obras.length === 0) return new Map<string, ReturnType<typeof calcularObra>>()
   const sumas = await todasLasFilas((desde, hasta) => {
     let consulta = supabase.from('control_obra_mensual').select('*', { count: 'exact' })
     if (soloEstas) consulta = consulta.in('obra_id', obras.map((o) => o.id))
@@ -74,10 +74,88 @@ export async function totalesAOrigen(
   return new Map(
     obras.map((o) => {
       const meses = sumas.filter((s) => s.obra_id === o.id).map(aSumas)
-      const { totales } = calcularObra(meses, o.gastos_generales_pct, o.importe_pedido)
-      return [o.id, { certificado: totales.sumCert, costes: totales.sumTotMasEst }]
+      return [o.id, calcularObra(meses, o.gastos_generales_pct, o.importe_pedido)]
     }),
   )
+}
+
+/** Certificado y costes a origen (con estructura) de cada obra. */
+export async function totalesAOrigen(obras: ObraControl[], soloEstas = false) {
+  const calculos = await calculosPorObra(obras, soloEstas)
+  return new Map(
+    [...calculos].map(([id, c]) => [id, { certificado: c.totales.sumCert, costes: c.totales.sumTotMasEst }]),
+  )
+}
+
+export interface AvisoObra extends Aviso {
+  obra: { id: string; codigo: string; nombre: string }
+}
+
+/**
+ * Resumen de las obras en ejecución para la portada: totales a origen, lo certificado y el
+ * resultado de este mes y del anterior, y los avisos de margen y de presupuesto (calculos/avisos.ts).
+ * Los avisos de presupuesto solo se calculan si el usuario puede ver presupuestos.
+ */
+export async function resumenEnEjecucion(verPresupuestos: boolean) {
+  const { data: obras, error } = await supabase
+    .from('obras')
+    .select('id, codigo, nombre, gastos_generales_pct, importe_pedido, presupuesto_id')
+    .eq('estado', 'en_ejecucion')
+  if (error) throw error
+  // Pocas obras en ejecución: se piden solo sus meses. Con muchas, no cabrían en la URL
+  const calculos = await calculosPorObra(obras, obras.length <= 100)
+
+  const presupuestos = new Map<string, { base: number; costeDirecto: number }>()
+  const conPresupuesto = verPresupuestos ? obras.flatMap((o) => o.presupuesto_id ?? []) : []
+  if (conPresupuesto.length > 0) {
+    const totales = await supabase
+      .from('presupuestos_totales')
+      .select('presupuesto_id, base, coste_directo')
+      .in('presupuesto_id', conPresupuesto)
+    if (totales.error) throw totales.error
+    for (const t of totales.data) {
+      if (t.presupuesto_id) presupuestos.set(t.presupuesto_id, { base: t.base ?? 0, costeDirecto: t.coste_directo ?? 0 })
+    }
+  }
+
+  // El mes en curso, con la fecha del usuario (no en UTC: a medianoche del día 1 sería el mes anterior)
+  const hoy = new Date()
+  const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`
+  const delMes = (mes: string) => ({ mes, certificado: 0, resultado: 0 })
+  const actual = delMes(mesActual)
+  const anterior = delMes(mesAnterior(mesActual))
+
+  let certificado = 0
+  let costes = 0
+  const avisos: AvisoObra[] = []
+  for (const { presupuesto_id, ...obra } of obras) {
+    const { meses, totales } = calculos.get(obra.id)!
+    certificado += totales.sumCert
+    costes += totales.sumTotMasEst
+    for (const m of meses) {
+      const destino = m.mes === actual.mes ? actual : m.mes === anterior.mes ? anterior : null
+      if (destino) {
+        destino.certificado += m.certificacion
+        destino.resultado += m.resultadoMes
+      }
+    }
+    const deLaObra = avisosObra({
+      certificado: totales.sumCert,
+      costes: totales.sumTotMasEst,
+      costesSinEstructura: totales.sumDirectos + totales.sumDie + totales.sumHot,
+      presupuesto: presupuesto_id ? presupuestos.get(presupuesto_id) : null,
+    })
+    avisos.push(...deLaObra.map((a) => ({ ...a, obra })))
+  }
+  avisos.sort((a, b) => Number(b.nivel === 'grave') - Number(a.nivel === 'grave')) // los graves, primero
+
+  return {
+    certificado,
+    margen: certificado > 0 ? ((certificado - costes) / certificado) * 100 : null,
+    actual,
+    anterior,
+    avisos,
+  }
 }
 
 /** Obra con sus meses calculados (resultado, margen y acumulados a origen). */
