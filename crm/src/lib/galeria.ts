@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { aSlug, slugLibre } from './formato'
+import { idAleatorio } from './id'
 import { comprimir, rutaMiniatura } from './imagenes'
 import { supabase, type Fila, type NuevaFila } from './supabase'
 import { todasLasFilas } from './todas-las-filas'
@@ -77,7 +78,7 @@ export async function crearWebObra(datos: Omit<NuevaFila<'web_obras'>, 'slug'>):
 /** Comprime la foto (regla 9), la sube con su miniatura y la añade a la obra. */
 export async function subirFoto(webObraId: string, archivo: File, orden: number) {
   const { foto, miniatura } = await comprimir(archivo)
-  const ruta = `obras/${webObraId}/${crypto.randomUUID()}.jpg`
+  const ruta = `obras/${webObraId}/${idAleatorio()}.jpg`
   // Las rutas no se reutilizan: el navegador puede guardar las fotos un año
   const opciones = { contentType: 'image/jpeg', cacheControl: '31536000' }
   const subidas = await Promise.all([

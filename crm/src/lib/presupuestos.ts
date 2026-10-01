@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { Json } from './database.types'
 import { PRESUPUESTO_POR_DEFECTO } from './empresa'
+import { idAleatorio } from './id'
 import { supabase, type Fila } from './supabase'
 
 export const FAMILIAS = {
@@ -67,7 +68,7 @@ export interface PresupuestoEdicion {
   partidas: PartidaEdicion[]
 }
 
-export const nuevaClave = () => crypto.randomUUID()
+export const nuevaClave = idAleatorio
 
 export function lineaDePrecio(precio: Fila<'precios'>, rendimiento = 1): LineaEdicion {
   return {
