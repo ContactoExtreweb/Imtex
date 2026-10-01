@@ -79,8 +79,10 @@
     --border: oklch(0.915 0.008 286);
     --input: oklch(0.915 0.008 286);
     --ring: oklch(0.646 0.24 30);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
+    /* Gráficos: certificación (azul pizarra #545aa6) y costes (rojo de marca). Pareja validada con el
+       validador de la skill de visualización: daltonismo, contraste y luminosidad. */
+    --chart-1: oklch(0.5 0.12 278);
+    --chart-2: oklch(0.646 0.24 30);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);

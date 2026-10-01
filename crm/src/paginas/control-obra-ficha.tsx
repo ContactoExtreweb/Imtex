@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { GraficosObra } from '@/components/graficos-obra'
 import { HojaApuntes } from '@/components/hoja-apuntes'
 import { Pestanas } from '@/components/pestanas'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +11,7 @@ import { useSesion } from '@/lib/sesion'
 import { mensajeError } from '@/lib/supabase'
 import { useHojas, type IdHoja } from './control-obra-hojas'
 
-type Pestana = 'resumen' | IdHoja
+type Pestana = 'resumen' | 'graficos' | IdHoja
 type Calculo = ReturnType<typeof calcularObra>
 
 /** Control de una obra: resumen con la matriz mensual y las hojas de certificaciones y costes. */
@@ -24,6 +25,7 @@ export function ControlObraFicha() {
   // Cada hoja se enseña solo a quien puede ver su módulo
   const pestanas: { id: Pestana; texto: string; visible: boolean }[] = [
     { id: 'resumen', texto: 'Resumen', visible: true },
+    { id: 'graficos', texto: 'Gráficos', visible: true },
     { id: 'certificaciones', texto: 'Certificaciones', visible: puede('certificaciones', 'ver') },
     { id: 'personal', texto: 'Personal', visible: puede('partes_horas', 'ver') },
     { id: 'materiales', texto: 'Materiales', visible: true },
@@ -65,6 +67,8 @@ export function ControlObraFicha() {
 
       {activa === 'resumen' ? (
         <Resumen datos={control.data} gastosGeneralesPct={obra.gastos_generales_pct} importePedido={obra.importe_pedido} />
+      ) : activa === 'graficos' ? (
+        <GraficosObra datos={control.data} />
       ) : (
         // key: cada hoja empieza con su propio filtro de mes y sin diálogos abiertos
         <HojaApuntes key={activa} config={hojas[activa]} obraId={id} />
