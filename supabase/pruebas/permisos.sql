@@ -29,6 +29,14 @@ declare
   f_partida uuid;
   f_linea uuid;
   f_nota uuid;
+  f_obra_costes uuid;
+  f_certificaciones uuid;
+  f_partes_horas uuid;
+  f_materiales uuid;
+  f_subcontratas uuid;
+  f_alquileres uuid;
+  f_combustible uuid;
+  f_gastos_viaje uuid;
   f_nota_ajena uuid;
   n int;
   ok boolean;
@@ -81,6 +89,24 @@ begin
       insert into public.presupuesto_lineas (partida_id, descripcion) values (f_partida, 'Línea prueba')
         returning id into f_linea;
 
+      -- Control de obra: una obra aparte (la de arriba se borra en su prueba) con un apunte de cada tipo
+      insert into public.obras (codigo, nombre) values (gen_random_uuid()::text, 'Obra con costes')
+        returning id into f_obra_costes;
+      insert into public.certificaciones (obra_id, mes, numero, importe_origen) values (f_obra_costes, date '2026-01-01', 1, 100)
+        returning id into f_certificaciones;
+      insert into public.partes_horas (obra_id, mes, fecha, operario) values (f_obra_costes, date '2026-01-01', current_date, 'x')
+        returning id into f_partes_horas;
+      insert into public.materiales (obra_id, mes, fecha, importe) values (f_obra_costes, date '2026-01-01', current_date, 1)
+        returning id into f_materiales;
+      insert into public.subcontratas (obra_id, mes, fecha, importe) values (f_obra_costes, date '2026-01-01', current_date, 1)
+        returning id into f_subcontratas;
+      insert into public.alquileres (obra_id, mes, fecha, importe) values (f_obra_costes, date '2026-01-01', current_date, 1)
+        returning id into f_alquileres;
+      insert into public.combustible (obra_id, mes, fecha, tipo_vehiculo, importe) values (f_obra_costes, date '2026-01-01', current_date, 'furgon', 1)
+        returning id into f_combustible;
+      insert into public.gastos_viaje (obra_id, mes, fecha, tipo, importe) values (f_obra_costes, date '2026-01-01', current_date, 'dietas', 1)
+        returning id into f_gastos_viaje;
+
       -- Notas: una del propio usuario (si lo hay) y otra ajena
       f_nota := null;
       if uid is not null then
@@ -126,6 +152,35 @@ begin
           ('tarifas_combustible', 'insertar', 'insert into public.tarifas_combustible (precio_litro_ref, consumo_furgon_l100, consumo_camion_l100) values (1, 1, 1)', null),
           ('tarifas_combustible', 'editar', 'update public.tarifas_combustible set precio_litro_ref = precio_litro_ref', null),
           ('tarifas_combustible', 'borrar', 'delete from public.tarifas_combustible', null),
+
+          ('certificaciones', 'ver', 'select from public.certificaciones where id = $1', f_certificaciones),
+          ('certificaciones', 'insertar', 'insert into public.certificaciones (obra_id, mes, numero, importe_origen) values ($1, date ''2026-02-01'', 2, 200)', f_obra_costes),
+          ('certificaciones', 'editar', 'update public.certificaciones set mes = mes where id = $1', f_certificaciones),
+          ('certificaciones', 'borrar', 'delete from public.certificaciones where id = $1', f_certificaciones),
+          ('partes_horas', 'ver', 'select from public.partes_horas where id = $1', f_partes_horas),
+          ('partes_horas', 'insertar', 'insert into public.partes_horas (obra_id, mes, fecha, operario) values ($1, date ''2026-02-01'', current_date, ''x'')', f_obra_costes),
+          ('partes_horas', 'editar', 'update public.partes_horas set mes = mes where id = $1', f_partes_horas),
+          ('partes_horas', 'borrar', 'delete from public.partes_horas where id = $1', f_partes_horas),
+          ('materiales', 'ver', 'select from public.materiales where id = $1', f_materiales),
+          ('materiales', 'insertar', 'insert into public.materiales (obra_id, mes, fecha, importe) values ($1, date ''2026-02-01'', current_date, 1)', f_obra_costes),
+          ('materiales', 'editar', 'update public.materiales set mes = mes where id = $1', f_materiales),
+          ('materiales', 'borrar', 'delete from public.materiales where id = $1', f_materiales),
+          ('subcontratas', 'ver', 'select from public.subcontratas where id = $1', f_subcontratas),
+          ('subcontratas', 'insertar', 'insert into public.subcontratas (obra_id, mes, fecha, importe) values ($1, date ''2026-02-01'', current_date, 1)', f_obra_costes),
+          ('subcontratas', 'editar', 'update public.subcontratas set mes = mes where id = $1', f_subcontratas),
+          ('subcontratas', 'borrar', 'delete from public.subcontratas where id = $1', f_subcontratas),
+          ('alquileres', 'ver', 'select from public.alquileres where id = $1', f_alquileres),
+          ('alquileres', 'insertar', 'insert into public.alquileres (obra_id, mes, fecha, importe) values ($1, date ''2026-02-01'', current_date, 1)', f_obra_costes),
+          ('alquileres', 'editar', 'update public.alquileres set mes = mes where id = $1', f_alquileres),
+          ('alquileres', 'borrar', 'delete from public.alquileres where id = $1', f_alquileres),
+          ('combustible', 'ver', 'select from public.combustible where id = $1', f_combustible),
+          ('combustible', 'insertar', 'insert into public.combustible (obra_id, mes, fecha, tipo_vehiculo, importe) values ($1, date ''2026-02-01'', current_date, ''furgon'', 1)', f_obra_costes),
+          ('combustible', 'editar', 'update public.combustible set mes = mes where id = $1', f_combustible),
+          ('combustible', 'borrar', 'delete from public.combustible where id = $1', f_combustible),
+          ('gastos_viaje', 'ver', 'select from public.gastos_viaje where id = $1', f_gastos_viaje),
+          ('gastos_viaje', 'insertar', 'insert into public.gastos_viaje (obra_id, mes, fecha, tipo, importe) values ($1, date ''2026-02-01'', current_date, ''dietas'', 1)', f_obra_costes),
+          ('gastos_viaje', 'editar', 'update public.gastos_viaje set mes = mes where id = $1', f_gastos_viaje),
+          ('gastos_viaje', 'borrar', 'delete from public.gastos_viaje where id = $1', f_gastos_viaje),
 
           -- Antes que perfiles: borrar el perfil ajeno borraría su nota en cascada
           ('notas', 'ver', 'select from public.notas where id = $1', f_nota_ajena),
@@ -219,6 +274,13 @@ m (tabla, ver, editar) as (values
   ('presupuestos', array['presupuestos'], 'presupuestos'),
   ('presupuesto_partidas', array['presupuestos'], 'presupuestos'),
   ('presupuesto_lineas', array['presupuestos'], 'presupuestos'),
+  ('certificaciones', array['certificaciones'], 'certificaciones'),
+  ('partes_horas', array['partes_horas'], 'partes_horas'),
+  ('materiales', array['control_obra'], 'control_obra'),
+  ('subcontratas', array['control_obra'], 'control_obra'),
+  ('alquileres', array['control_obra'], 'control_obra'),
+  ('combustible', array['control_obra'], 'control_obra'),
+  ('gastos_viaje', array['control_obra'], 'control_obra'),
   ('notas', null, null),
   ('roles', null, null),
   ('permisos_rol', null, null)
