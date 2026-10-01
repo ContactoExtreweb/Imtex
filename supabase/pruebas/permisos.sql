@@ -43,6 +43,7 @@ declare
   f_foto_publicada uuid;
   f_foto_borrador uuid;
   f_objeto uuid;
+  f_obra_cierre uuid;
   n int;
   ok boolean;
 begin
@@ -131,6 +132,11 @@ begin
       insert into storage.objects (bucket_id, name) values ('galeria', 'prueba/' || gen_random_uuid())
         returning id into f_objeto;
 
+      -- Cierre de meses: una obra aparte con abril cerrado (en la de costes bloquearía sus pruebas)
+      insert into public.obras (codigo, nombre) values (gen_random_uuid()::text, 'Obra con cierre')
+        returning id into f_obra_cierre;
+      insert into public.meses_cerrados (obra_id, mes) values (f_obra_cierre, date '2026-04-01');
+
       -- Cambio de identidad
       if u.rol is null then
         perform set_config('request.jwt.claims', '', true);
@@ -198,6 +204,12 @@ begin
           ('gastos_viaje', 'insertar', 'insert into public.gastos_viaje (obra_id, mes, fecha, tipo, importe) values ($1, date ''2026-02-01'', current_date, ''dietas'', 1)', f_obra_costes),
           ('gastos_viaje', 'editar', 'update public.gastos_viaje set mes = mes where id = $1', f_gastos_viaje),
           ('gastos_viaje', 'borrar', 'delete from public.gastos_viaje where id = $1', f_gastos_viaje),
+
+          -- Cierre de meses: lo ve quien ve el control de obra; cerrar y reabrir, solo cierre_meses:editar
+          ('meses_cerrados', 'ver', 'select from public.meses_cerrados where obra_id = $1', f_obra_cierre),
+          ('meses_cerrados', 'insertar', 'insert into public.meses_cerrados (obra_id, mes) values ($1, date ''2026-05-01'')', f_obra_cierre),
+          ('meses_cerrados', 'editar', 'update public.meses_cerrados set cerrado_el = cerrado_el where obra_id = $1', f_obra_cierre),
+          ('meses_cerrados', 'borrar', 'delete from public.meses_cerrados where obra_id = $1 and mes = date ''2026-04-01''', f_obra_cierre),
 
           -- Antes que perfiles: borrar el perfil ajeno borraría su nota en cascada
           ('notas', 'ver', 'select from public.notas where id = $1', f_nota_ajena),
@@ -318,6 +330,7 @@ m (tabla, ver, editar) as (values
   ('web_obras', array['galeria'], 'galeria'),
   ('web_fotos', array['galeria'], 'galeria'),
   ('storage_galeria', array['galeria'], 'galeria'),
+  ('meses_cerrados', array['control_obra', 'cierre_meses'], 'cierre_meses'),
   ('notas', null, null),
   ('roles', null, null),
   ('permisos_rol', null, null)
@@ -331,6 +344,7 @@ c as (
       when r.tabla = 'notas' then r.accion in ('ver_propio', 'insertar') -- cada uno, solo las suyas
       when r.accion = 'ver_propio' then true
       when r.tabla = 'tarifas_combustible' and r.accion in ('insertar', 'borrar') then false
+      when r.tabla = 'meses_cerrados' and r.accion = 'editar' then false -- se cierra o se reabre, no se edita
       else r.activo and exists (
         select 1 from public.permisos_rol pr
         where pr.rol = r.rol

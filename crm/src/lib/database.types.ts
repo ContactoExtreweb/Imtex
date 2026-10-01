@@ -376,6 +376,35 @@ export type Database = {
           },
         ]
       }
+      meses_cerrados: {
+        Row: {
+          cerrado_el: string
+          cerrado_por: string | null
+          mes: string
+          obra_id: string
+        }
+        Insert: {
+          cerrado_el?: string
+          cerrado_por?: string | null
+          mes: string
+          obra_id: string
+        }
+        Update: {
+          cerrado_el?: string
+          cerrado_por?: string | null
+          mes?: string
+          obra_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meses_cerrados_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notas: {
         Row: {
           created_at: string
