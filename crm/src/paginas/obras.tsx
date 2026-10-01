@@ -58,7 +58,10 @@ export function Obras() {
             titulo={`${o.codigo} · ${o.nombre}`}
             detalle={[nombreCliente(o.cliente_id), euros(o.importe_pedido)].filter(Boolean).join(' · ')}
             extra={
-              <Badge variant={o.estado === 'terminada' ? 'secondary' : 'default'}>
+              <Badge
+                variant={o.estado === 'terminada' ? 'outline' : 'secondary'}
+                className={o.estado === 'terminada' ? 'border-transparent bg-exito/12 text-exito' : undefined}
+              >
                 {ESTADOS[o.estado as keyof typeof ESTADOS]}
               </Badge>
             }

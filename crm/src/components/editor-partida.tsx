@@ -88,10 +88,10 @@ export function EditorPartida({
               <Campo etiqueta={`Rendimiento (${l.unidad || 'ud'})`} className="max-w-32 min-w-0 flex-1">
                 <EntradaNumero valor={l.rendimiento} onCambio={(rendimiento) => cambiarLinea(i, { rendimiento })} />
               </Campo>
-              <span className="pb-1.5 text-muted-foreground">×</span>
+              <span className="pb-2.5 text-muted-foreground md:pb-1.5">×</span>
               <Campo etiqueta="Coste unitario (€)" className="max-w-32 min-w-0 flex-1">
                 {l.precio_id ? (
-                  <span className="flex h-8 items-center tabular-nums">{euros(l.coste_unitario)}</span>
+                  <span className="flex h-10 items-center tabular-nums md:h-8">{euros(l.coste_unitario)}</span>
                 ) : (
                   <EntradaNumero
                     valor={l.coste_unitario}
@@ -99,7 +99,7 @@ export function EditorPartida({
                   />
                 )}
               </Campo>
-              <span className="ml-auto pb-1.5 font-medium tabular-nums">
+              <span className="ml-auto pb-2.5 font-medium tabular-nums md:pb-1.5">
                 {euros(l.rendimiento * l.coste_unitario)}
               </span>
               {!soloLectura && (

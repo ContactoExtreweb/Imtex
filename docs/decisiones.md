@@ -34,3 +34,9 @@
 | 01/10/2026 | El enlace obra–presupuesto va solo en `obras.presupuesto_id` (B4 lo ponía también en `presupuestos.obra_id`) | Un único sitio que mantener; una obra por presupuesto |
 | 01/10/2026 | El test de cálculos ejecuta las funciones originales sacadas de `referencia/IMTEX_plantilla_presupuestos.html` | Comprueba la igualdad con la herramienta real, no con una copia de sus fórmulas |
 | 01/10/2026 | Los precios usados en partidas tipo no se pueden borrar: se desactivan | Así no se rompen las plantillas |
+| 01/10/2026 | Identidad de IMTEX en el CRM, sacada del manual de marca (`docs/marca-imtex.jpg`): rojo `#ff311e`, negro `#131116` y gris azulado `#444556`. Logo, lema, sellos de OCA e icono recortados del PDF a 5.672 px, con fondo transparente (`crm/src/assets/`) | El PDF es una imagen plana; no hay logo en vector. Cuando IMTEX lo pase en SVG, se sustituyen los PNG |
+| 01/10/2026 | Reparto del color: menú lateral sobre el negro de la marca; rojo para la acción principal, la selección y el foco; neutros con un punto del gris azulado | Herramienta de trabajo: el color marca acción y estado, no decora. La marca completa (logo, lema y franjas) va en el login |
+| 01/10/2026 | Botones en rojo oscurecido `oklch(0.561 0.21 30)` (texto blanco a 5,15:1). El rojo puro queda para logo, iconos, subrayados y foco | El rojo puro con texto blanco se queda en 3,7:1, por debajo del 4,5:1 de WCAG AA |
+| 01/10/2026 | Los estados no usan el rojo de marca: aceptado y terminada en verde, rechazado en el rojo de error, el resto en neutro | Un estado «aceptado» en rojo se leería como un problema |
+| 01/10/2026 | Campos y botones de 40 px de alto en móvil y 32 px en escritorio (se han tocado `button.tsx` e `input.tsx` de shadcn) | Regla 8: pensado primero para el móvil; 32 px es poco para el dedo |
+| 01/10/2026 | El presupuesto impreso usa el logo y los colores nuevos | La marca nueva sustituye a la de la herramienta antigua |

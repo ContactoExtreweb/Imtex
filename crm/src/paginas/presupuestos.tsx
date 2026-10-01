@@ -10,10 +10,18 @@ import { useSesion } from '@/lib/sesion'
 import { supabase } from '@/lib/supabase'
 import { useTabla } from '@/lib/tabla'
 
-const COLOR_ESTADO = { borrador: 'outline', enviado: 'secondary', aceptado: 'default', rechazado: 'destructive' } as const
+// El rojo de la marca es para acciones y selección; el estado lleva su propio código de color
+const COLOR_ESTADO = { borrador: 'outline', enviado: 'secondary', aceptado: 'outline', rechazado: 'destructive' } as const
 
 export function InsigniaEstado({ estado }: { estado: Estado }) {
-  return <Badge variant={COLOR_ESTADO[estado]}>{ESTADOS[estado]}</Badge>
+  return (
+    <Badge
+      variant={COLOR_ESTADO[estado]}
+      className={estado === 'aceptado' ? 'border-transparent bg-exito/12 text-exito' : undefined}
+    >
+      {ESTADOS[estado]}
+    </Badge>
+  )
 }
 
 export function Presupuestos() {

@@ -2,8 +2,8 @@ import { ArrowLeft, Printer } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import firma from '@/assets/firma-imtex.png'
-import logoImtex from '@/assets/logo-imtex.jpg'
-import logoOca from '@/assets/logo-oca.jpg'
+import logoImtex from '@/assets/logo-imtex.png'
+import sellosOca from '@/assets/sellos-oca.png'
 import { Button } from '@/components/ui/button'
 import { partidaCostes, sumaResumen } from '@/lib/calculos/presupuesto'
 import { EMPRESA } from '@/lib/empresa'
@@ -36,24 +36,24 @@ export function PresupuestoImprimir() {
 
   const cabecera = (
     <>
-      <div className="mb-4 flex items-start justify-between gap-6 border-b-2 border-[#0f1b2d] pb-3">
+      <div className="mb-4 flex items-start justify-between gap-6 border-b-2 border-[#131116] pb-3">
         <div>
           <div className="flex items-center gap-4">
             <img src={logoImtex} alt={EMPRESA.nombre} className="mb-1 h-[66px] max-w-[280px] object-contain object-left-top" />
-            <img src={logoOca} alt="Certificaciones OCA 9001/14001" className="mb-1 h-[70px] max-w-[210px] object-contain" />
+            <img src={sellosOca} alt="Certificaciones OCA ISO 9001 e ISO 14001" className="mb-1 h-[70px] max-w-[210px] object-contain" />
           </div>
           <p className="whitespace-pre-line text-[10.5px] text-[#64758a]">
             {[EMPRESA.direccion, EMPRESA.poblacion, `${EMPRESA.telefono} · ${EMPRESA.web}`].join('\n')}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xl font-bold tracking-[2px] text-[#d81e05]">PRESUPUESTO</p>
-          <p className="text-[13px] font-bold text-[#0f1b2d]">Nº {p.codigo || '—'}</p>
+          <p className="text-xl font-bold tracking-[2px] text-[#ff311e]">PRESUPUESTO</p>
+          <p className="text-[13px] font-bold text-[#131116]">Nº {p.codigo || '—'}</p>
           <p className="text-[11px] text-[#5b6d80]">Fecha: {fecha(p.fecha)}</p>
         </div>
       </div>
       {p.titulo && (
-        <p className="mb-3 border-l-4 border-[#d81e05] bg-[#f6f4f3] px-4 py-3 text-sm font-bold text-[#0f1b2d]">
+        <p className="mb-3 border-l-4 border-[#ff311e] bg-[#f6f4f3] px-4 py-3 text-sm font-bold text-[#131116]">
           Obra: {p.titulo}
         </p>
       )}
@@ -132,7 +132,7 @@ export function PresupuestoImprimir() {
                     <tr key={partida.clave}>
                       <td className="text-center align-top font-bold">{partida.codigo || '—'}</td>
                       <td>
-                        <span className="font-bold text-[#0f1b2d]">{partida.titulo || '(sin título)'}</span>
+                        <span className="font-bold text-[#131116]">{partida.titulo || '(sin título)'}</span>
                         <span className="block text-[11px] italic text-[#5b6d80]">{partida.medicion}</span>
                       </td>
                       <td className="text-center">{medicion.format(cantidad)}</td>
@@ -188,7 +188,7 @@ function Hoja({ children }: { children: ReactNode }) {
 
 function Seccion({ children }: { children: ReactNode }) {
   return (
-    <h2 className="mb-3 border-b border-[#e4e8ef] pb-1.5 text-sm font-bold uppercase tracking-wide text-[#0f1b2d]">
+    <h2 className="mb-3 border-b border-[#e4e8ef] pb-1.5 text-sm font-bold uppercase tracking-wide text-[#131116]">
       {children}
     </h2>
   )

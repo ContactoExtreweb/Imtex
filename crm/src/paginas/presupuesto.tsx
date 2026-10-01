@@ -307,7 +307,7 @@ function EditorPresupuesto({ inicial }: { inicial: PresupuestoEdicion }) {
             key={t}
             role="tab"
             aria-selected={pestana === t}
-            className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground aria-selected:border-primary aria-selected:text-foreground"
+            className="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground aria-selected:border-marca aria-selected:text-foreground"
             onClick={() => setPestana(t)}
           >
             {{ datos: 'Datos', partidas: `Partidas (${p.partidas.length})`, resumen: 'Resumen' }[t]}

@@ -14,6 +14,8 @@ import {
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, Navigate, Outlet, useLocation } from 'react-router'
+import logoClaro from '@/assets/logo-imtex-claro.png'
+import logo from '@/assets/logo-imtex.png'
 import { Button } from '@/components/ui/button'
 import {
   Sidebar,
@@ -110,7 +112,10 @@ export function Layout() {
       <SidebarInset>
         <header className="flex h-12 items-center gap-2 border-b px-3">
           <SidebarTrigger />
-          <span className="font-semibold">IMTEX · Gestión</span>
+          {/* En el móvil el menú está plegado: la marca va aquí */}
+          <Link to="/" className="md:hidden">
+            <img src={logo} alt="IMTEX" className="h-6 w-auto" />
+          </Link>
         </header>
         <Outlet />
       </SidebarInset>
@@ -126,7 +131,11 @@ function Menu() {
   const secciones = useSecciones()
   const enlace = (a: string, texto: string, Icono: LucideIcon) => (
     <SidebarMenuItem key={a}>
-      <SidebarMenuButton asChild isActive={a === '/' ? pathname === a : pathname.startsWith(a)}>
+      <SidebarMenuButton
+        asChild
+        isActive={a === '/' ? pathname === a : pathname.startsWith(a)}
+        className="data-[active=true]:[&>svg]:text-marca"
+      >
         <Link to={a} onClick={() => setOpenMobile(false)}>
           <Icono /> {texto}
         </Link>
@@ -136,7 +145,11 @@ function Menu() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="px-4 py-3 font-semibold">IMTEX · Gestión</SidebarHeader>
+      <SidebarHeader className="px-4 pt-4 pb-2">
+        <Link to="/" onClick={() => setOpenMobile(false)}>
+          <img src={logoClaro} alt="IMTEX" className="h-11 w-auto" />
+        </Link>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
@@ -155,11 +168,15 @@ function Menu() {
       <SidebarFooter className="gap-2 p-4">
         <div className="text-sm">
           <p className="truncate font-medium">{perfil?.nombre}</p>
-          <p className="text-muted-foreground">{roles?.find((r) => r.codigo === perfil?.rol)?.nombre}</p>
+          <p className="text-sidebar-foreground/70">{roles?.find((r) => r.codigo === perfil?.rol)?.nombre}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={salir}>
-          <LogOut /> Salir
-        </Button>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={salir}>
+              <LogOut /> Salir
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   )
@@ -180,8 +197,8 @@ export function Inicio() {
           {s.titulo && <h2 className="text-sm font-medium text-muted-foreground">{s.titulo}</h2>}
           <div className="grid gap-2 sm:grid-cols-2">
             {s.enlaces.map(({ a, texto, icono: Icono }) => (
-              <Link key={a} to={a} className="flex items-center gap-3 rounded-lg border p-4 hover:bg-muted">
-                <Icono className="size-5" /> {texto}
+              <Link key={a} to={a} className="flex items-center gap-3 rounded-lg border p-4 font-medium hover:bg-muted">
+                <Icono className="size-5 text-marca" /> {texto}
               </Link>
             ))}
           </div>

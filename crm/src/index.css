@@ -6,6 +6,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    --color-marca: var(--marca);
+    --color-pizarra: var(--pizarra);
+    --color-exito: var(--exito);
     --font-heading: var(--font-sans);
     --font-sans: 'Geist Variable', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
@@ -49,88 +52,87 @@
 }
 
 :root {
+    /* Marca IMTEX (manual de marca, octubre de 2026): rojo #ff311e, negro #131116, gris azulado #444556.
+       Contrastes comprobados (WCAG AA) en docs/decisiones.md. */
+    --marca: oklch(0.646 0.24 30); /* rojo puro: logo, iconos, subrayados y foco; no para texto pequeño (3,7:1) */
+    --pizarra: oklch(0.396 0.029 282);
+    --exito: oklch(0.47 0.12 152);
+
     --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
+    --foreground: oklch(0.182 0.011 303); /* negro de marca */
     --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
+    --card-foreground: oklch(0.182 0.011 303);
     --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.182 0.011 303);
+    --primary: oklch(0.561 0.21 30); /* rojo de marca oscurecido: texto blanco encima a 5,15:1 */
+    --primary-foreground: oklch(1 0 0);
+    /* Neutros con un punto del gris azulado de la marca, para que casen con el menú */
+    --secondary: oklch(0.968 0.005 286);
+    --secondary-foreground: oklch(0.182 0.011 303);
+    --muted: oklch(0.968 0.005 286);
+    --muted-foreground: oklch(0.501 0.024 282);
+    --accent: oklch(0.968 0.005 286);
+    --accent-foreground: oklch(0.182 0.011 303);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --border: oklch(0.915 0.008 286);
+    --input: oklch(0.915 0.008 286);
+    --ring: oklch(0.646 0.24 30);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    /* Menú lateral sobre el negro de la marca */
+    --sidebar: oklch(0.182 0.011 303);
+    --sidebar-foreground: oklch(0.9 0.012 286);
+    --sidebar-primary: oklch(0.646 0.24 30);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.27 0.022 284);
+    --sidebar-accent-foreground: oklch(1 0 0);
+    --sidebar-border: oklch(0.27 0.022 284);
+    --sidebar-ring: oklch(0.646 0.24 30);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+    /* Lo que pinta el navegador también es de la marca */
+    caret-color: var(--primary);
+    accent-color: var(--primary);
+  }
+  ::selection {
+    background: oklch(0.646 0.24 30 / 0.2);
+  }
 }
+
+/* Franjas de la esquina del login: se despliegan una vez desde la esquina */
+@keyframes desplegar-franjas {
+  from {
+    clip-path: polygon(0 100%, 0 100%, 0 100%);
+  }
+  to {
+    clip-path: polygon(0 -80%, 0 100%, 180% 100%);
+  }
+}
+.franjas-marca {
+  clip-path: polygon(0 -80%, 0 100%, 180% 100%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .franjas-marca {
+    animation: desplegar-franjas 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
 /* Presupuesto impreso (paginas/presupuesto-imprimir.tsx). Mismas reglas que la herramienta de IMTEX. */
 .tabla-presupuesto th {
-  background: #0f1b2d;
+  background: #131116;
   color: #fff;
   padding: 8px;
   text-align: left;
@@ -149,21 +151,21 @@
 .tabla-presupuesto tr.total td {
   font-weight: 800;
   background: #eef4fa;
-  border-top: 2px solid #0f1b2d;
+  border-top: 2px solid #131116;
   font-size: 12.5px;
   text-align: right;
 }
 .tabla-presupuesto tr.iva td {
-  color: #d81e05;
+  color: #d42515; /* rojo de texto: 5,15:1 sobre blanco */
   font-weight: 700;
   background: #fff4f2;
-  border-top: 1px solid #d81e05;
+  border-top: 1px solid #ff311e;
   text-align: right;
 }
 .tabla-presupuesto tr.iva.final td {
   font-size: 14px;
   font-weight: 800;
-  border-top: 2px solid #d81e05;
+  border-top: 2px solid #ff311e;
 }
 
 @media print {

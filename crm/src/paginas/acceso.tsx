@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import lema from '@/assets/lema-imtex.png'
+import logo from '@/assets/logo-imtex.png'
 import { Campo } from '@/components/campo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,17 +32,46 @@ function mensajeAuth(error: AuthError): string {
   }
 }
 
+/**
+ * Pantallas de acceso con la composición de la tarjeta de IMTEX: logo, lema y las franjas de la esquina.
+ * En escritorio la marca va a la izquierda y el formulario a la derecha; en el móvil, una debajo de otra.
+ */
 function PantallaAcceso({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
-    <main className="grid min-h-dvh place-items-center p-4">
-      <div className="grid w-full max-w-sm gap-6 rounded-xl border p-6 shadow-sm">
-        <div>
-          <p className="text-sm font-semibold tracking-wide text-muted-foreground">IMTEX · Gestión</p>
-          <h1 className="text-2xl font-semibold">{titulo}</h1>
-        </div>
-        {children}
+    <main className="relative grid min-h-dvh content-start overflow-hidden lg:grid-cols-[1.1fr_1fr] lg:content-stretch">
+      <div className="grid justify-items-center gap-4 px-6 pt-12 pb-8 lg:content-center lg:pb-48">
+        <img src={logo} alt="IMTEX" className="w-56 lg:w-[26rem]" />
+        <img
+          src={lema}
+          alt="Soluciones técnicas para industria y construcción"
+          className="w-full max-w-sm lg:max-w-[30rem]"
+        />
       </div>
+      <div className="relative z-10 grid justify-items-center px-6 pb-36 lg:content-center lg:border-l lg:bg-background lg:pb-6">
+        <div className="grid w-full max-w-sm gap-6">
+          <h1 className="text-2xl font-semibold">{titulo}</h1>
+          {children}
+        </div>
+      </div>
+      <FranjasMarca />
     </main>
+  )
+}
+
+/** Las franjas rojas y grises de la esquina inferior izquierda de la tarjeta de IMTEX. Decorativas. */
+function FranjasMarca() {
+  return (
+    <svg
+      viewBox="0 0 1000 563"
+      aria-hidden="true"
+      className="franjas-marca pointer-events-none absolute bottom-0 left-0 w-[64%] max-w-xs lg:w-[38%] lg:max-w-2xl"
+    >
+      <polygon points="0,50 900,563 800,563 0,66" className="fill-pizarra" />
+      <polygon points="0,78 760,563 330,563 0,250" className="fill-marca" />
+      <polygon points="0,250 330,563 100,563 0,470" className="fill-pizarra" />
+      <polygon points="0,318 245,527 0,352" className="fill-background" />
+      <polygon points="0,470 100,563 0,563" className="fill-marca" />
+    </svg>
   )
 }
 
