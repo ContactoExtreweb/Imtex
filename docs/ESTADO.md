@@ -1,6 +1,6 @@
 # Estado del proyecto IMTEX
 
-Actualizado el 01/10/2026 por la noche, desde el PC de casa. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
+Actualizado el 02/10/2026, desde el PC de la oficina. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
 El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [decisiones.md](decisiones.md).
 
 ## Dónde está cada cosa
@@ -64,6 +64,14 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Identidad de IMTEX: logo, colores, login con la composición de la tarjeta y logo de fondo en escritorio.
 - Portada con resumen según los permisos, accesos y notas rápidas personales.
 
+**10. Revisión del CRM en el móvil** (02/10/2026)
+- Revisadas todas las pantallas a 320, 375 y 768 px con los datos de dev: ninguna se sale de la pantalla.
+- Las cifras de la portada y del resumen de la obra van en el componente `Cifras`: en el móvil, una fila por cifra; en pantallas anchas, el número se encoge para caber en su celda. Probado con importes de millones.
+- Los listados ya no cortan el texto en el móvil: el título ocupa hasta dos líneas y el detalle (importes, fechas) se ve entero.
+- Botones pequeños, el del menú y el de cerrar diálogos miden al menos 36 px en el móvil.
+- La pestaña activa se desliza hasta quedar a la vista. Las dos hojas de impresión se leen también en el móvil.
+- No se pudo revisar la ficha de la galería: en dev no hay ninguna obra publicada en la web.
+
 ## Pendiente
 
 **De Saúl, ahora: probar lo que no ha visto con la sesión iniciada.** Claude no puede entrar con los usuarios, así que las pantallas de los puntos 5 a 8 solo están comprobadas con tests y con los datos de dev. Los pasos están en «Qué probar».
@@ -90,6 +98,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Comprobaciones automáticas en GitHub (build, lint y tests en cada PR).
 - Proteger en la base de datos los presupuestos enviados y aceptados: hoy solo lo impide la pantalla.
 - Guardar quién modificó cada apunte y el valor anterior.
+- Tablet en vertical (768 px o más): los botones y las casillas tienen el tamaño de escritorio (32 px). Si IMTEX va a usar tablets, se agrandan según el tipo de puntero (`pointer-coarse`) en vez de según el ancho.
 - Cargar los gráficos solo al entrar en Control de obra: el JavaScript pesa 1,3 MB.
 - Pruebas de recorrido completo con un usuario de prueba.
 - Actualizar las dependencias de `web/`: `npm audit` da 8 avisos en el adaptador de Netlify.
