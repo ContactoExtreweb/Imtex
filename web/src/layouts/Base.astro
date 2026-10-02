@@ -1,0 +1,54 @@
+---
+import fuente from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url'
+import Cabecera from '../components/Cabecera.astro'
+import Pie from '../components/Pie.astro'
+import { EMPRESA } from '../lib/empresa'
+import '../styles/global.css'
+
+interface Props {
+  titulo: string
+  descripcion: string
+  /** Imagen para compartir (URL absoluta). Por defecto, el logo. */
+  imagen?: string
+}
+
+const { titulo, descripcion, imagen } = Astro.props
+// Un solo dominio: la canónica siempre apunta a www.imtexsl.com
+const canonica = new URL(Astro.url.pathname, EMPRESA.dominio).href
+const tituloCompleto = titulo.includes('IMTEX') ? titulo : `${titulo} · IMTEX`
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descripcion} />
+    <link rel="canonical" href={canonica} />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preload" href={fuente} as="font" type="font/woff2" crossorigin />
+    <meta name="theme-color" content="#131116" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content={EMPRESA.nombre} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={canonica} />
+    {imagen && <meta property="og:image" content={imagen} />}
+    <slot name="head" />
+  </head>
+  <body>
+    <a
+      href="#contenido"
+      class="rotulo sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-tinta focus:px-4 focus:py-3 focus:text-papel"
+    >
+      Saltar al contenido
+    </a>
+    <Cabecera />
+    <main id="contenido">
+      <slot />
+    </main>
+    <Pie />
+  </body>
+</html>

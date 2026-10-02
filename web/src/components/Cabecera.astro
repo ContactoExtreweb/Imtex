@@ -1,0 +1,95 @@
+---
+import { Image } from 'astro:assets'
+import logo from '../assets/logo-imtex.png'
+import { EMPRESA, NAVEGACION } from '../lib/empresa'
+
+const ruta = Astro.url.pathname
+const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
+---
+
+<header class="sticky top-0 z-40 border-b border-(--filete) bg-papel">
+  <div class="contenedor flex h-(--alto-cabecera) items-center gap-6">
+    <a href="/" class="shrink-0" aria-label="IMTEX, inicio">
+      <Image src={logo} alt="IMTEX" height={72} class="h-9 w-auto" loading="eager" />
+    </a>
+
+    <nav aria-label="Principal" class="ml-auto hidden lg:block">
+      <ul class="flex items-center gap-7">
+        {
+          NAVEGACION.map((n) => (
+            <li>
+              <a
+                href={n.a}
+                aria-current={activa(n.a) ? 'page' : undefined}
+                class="rotulo relative py-2 no-underline after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-left after:scale-x-0 after:bg-rojo after:transition-transform after:duration-300 after:ease-(--ease-encaje) hover:after:scale-x-100 aria-[current=page]:after:scale-x-100"
+              >
+                {n.texto}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a href={EMPRESA.telefonoEnlace} class="rotulo ml-auto flex min-h-11 min-w-11 items-center justify-center gap-2 text-[0.9375rem] no-underline lg:ml-0"
+      aria-label={`Llamar al ${EMPRESA.telefono}`}>
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="size-4.5 fill-none stroke-rojo-tinta stroke-2">
+        <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" stroke-linejoin="round"></path>
+      </svg>
+      <span class="max-sm:sr-only">{EMPRESA.telefono}</span>
+    </a>
+    <a href="/contacto" class="boton max-lg:hidden">Pedir presupuesto</a>
+
+    {/* Móvil: el menú es un popover nativo, sin JavaScript */}
+    <button
+      type="button"
+      popovertarget="menu-movil"
+      class="rotulo -mr-2 flex size-11 items-center justify-center lg:hidden"
+      aria-label="Abrir el menú"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current stroke-2">
+        <path d="M3 7h18M3 12h18M3 17h18"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div
+  id="menu-movil"
+  popover
+  class="sobre-tinta fixed inset-0 m-0 size-full max-h-none max-w-none bg-tinta p-0 text-papel backdrop:bg-tinta lg:hidden"
+>
+  <div class="contenedor flex h-full flex-col pb-8">
+    <div class="flex h-(--alto-cabecera) items-center justify-between">
+      <span class="rotulo">Menú</span>
+      <button
+        type="button"
+        popovertarget="menu-movil"
+        popovertargetaction="hide"
+        class="-mr-2 flex size-11 items-center justify-center"
+        aria-label="Cerrar el menú"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current stroke-2">
+          <path d="M5 5l14 14M19 5 5 19"></path>
+        </svg>
+      </button>
+    </div>
+    <nav aria-label="Principal, móvil" class="mt-4">
+      <ul class="border-t border-papel/20">
+        {
+          NAVEGACION.map((n) => (
+            <li class="border-b border-papel/20">
+              <a href={n.a} class="titular block py-4 text-4xl no-underline aria-[current=page]:text-rojo" aria-current={activa(n.a) ? 'page' : undefined}>
+                {n.texto}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <div class="mt-auto grid gap-3">
+      <a href="/contacto" class="boton">Pedir presupuesto</a>
+      <a href={EMPRESA.telefonoEnlace} class="rotulo py-3 text-center text-base no-underline">{EMPRESA.telefono}</a>
+    </div>
+  </div>
+</div>

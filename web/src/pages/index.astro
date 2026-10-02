@@ -1,17 +1,172 @@
 ---
-import '../styles/global.css';
+import { Image } from 'astro:assets'
+import iso14001 from '../assets/empresa/14001.jpg'
+import iso9001 from '../assets/empresa/9001.jpg'
+import Fases from '../components/Fases.astro'
+import Base from '../layouts/Base.astro'
+import { CLASIFICACION, EMPRESA, FABRICANTES, SERVICIOS } from '../lib/empresa'
+import { CACHE_GALERIA, obrasPublicadas, urlFoto, urlMiniatura, type Obra } from '../lib/galeria'
+
+// Las obras destacadas salen de la galería del CRM: se sirve bajo demanda, con caché de unos minutos
+export const prerender = false
+
+let obras: Obra[] = []
+try {
+  obras = await obrasPublicadas()
+} catch (error) {
+  console.error(error) // sin galería, la portada sale igual, sin el bloque de obras
+}
+const destacadas = obras.filter((o) => o.destacada && o.fotos.length > 0).slice(0, 6)
+Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
 ---
 
-<html lang="es">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>IMTEX</title>
-	</head>
-	<body>
-		<h1 class="text-3xl font-bold">IMTEX</h1>
-	</body>
-</html>
+<Base
+  titulo="IMTEX · Impermeabilización, reparación y refuerzo de estructuras"
+  descripcion="Empresa aplicadora de Villanueva de la Serena (Badajoz) con más de 25 años de experiencia: impermeabilización, reparación y refuerzo de estructuras de hormigón, y resinas epoxi y poliuretano para industria y construcción."
+>
+  <Fases />
+
+  {/* Banda del lema, como en la marca: roja, inclinada, en mayúsculas condensadas */}
+  <div class="overflow-hidden py-10 lg:py-16" aria-hidden="true">
+    <div class="-mx-[8%] -rotate-2 bg-rojo py-4 lg:py-6">
+      <p class="titular deriva text-center text-[clamp(1.4rem,3.8vw,3.4rem)] whitespace-nowrap text-white">{EMPRESA.lema}</p>
+    </div>
+  </div>
+
+  {/* Servicios: un índice, no cuatro tarjetas */}
+  <section class="contenedor py-14 lg:py-24">
+    <h2 class="titular text-[clamp(2.2rem,5vw,4.5rem)]">Qué hacemos</h2>
+    <ul class="mt-10 border-t border-tinta">
+      {
+        SERVICIOS.map((s) => (
+          <li class="border-b border-(--filete)">
+            <a href={`/servicios/${s.slug}`} class="group grid gap-x-10 gap-y-3 py-7 no-underline lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)_auto] lg:items-baseline lg:py-9">
+              <h3 class="titular text-[clamp(1.75rem,3.2vw,2.9rem)] transition-colors duration-300 group-hover:text-rojo-tinta">{s.nombre}</h3>
+              <p class="max-w-[58ch] text-pizarra">{s.resumen}</p>
+              <span class="rotulo flex items-center gap-2 text-rojo-tinta">
+                Ver sistemas
+                <svg aria-hidden="true" viewBox="0 0 24 24" class="size-4 fill-none stroke-current stroke-2 transition-transform duration-300 ease-(--ease-encaje) group-hover:translate-x-1.5">
+                  <path d="M4 12h15M13 6l6 6-6 6" />
+                </svg>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* Obras de referencia, sobre negro: láminas a la misma escala y con la misma etiqueta */}
+  {
+    destacadas.length > 0 && (
+      <section class="sobre-tinta bg-tinta py-14 text-papel lg:py-24">
+        <div class="contenedor">
+          <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+            <h2 class="titular max-w-[14ch] text-[clamp(2.2rem,5vw,4.5rem)]">Obras de referencia</h2>
+            <p class="max-w-[44ch] text-papel/75">
+              {obras.length} obras documentadas, de 2010 a hoy: centrales, aeropuertos, presas, depósitos y edificios en España y Portugal.
+            </p>
+          </div>
+          <ul class="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {destacadas.map((o) => (
+              <li>
+                <a href={`/obras/${o.slug}`} class="group block no-underline">
+                  <div class="registro overflow-hidden bg-pizarra">
+                    <img
+                      src={urlMiniatura(o.fotos[0].storage_path)}
+                      srcset={`${urlMiniatura(o.fotos[0].storage_path)} 480w, ${urlFoto(o.fotos[0].storage_path)} ${o.fotos[0].ancho}w`}
+                      sizes="(min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw"
+                      alt={o.fotos[0].alt || o.titulo}
+                      width={o.fotos[0].ancho}
+                      height={o.fotos[0].alto}
+                      loading="lazy"
+                      decoding="async"
+                      class="aspect-[5/3] w-full object-cover transition-transform duration-700 ease-(--ease-encaje) group-hover:scale-[1.04]"
+                    />
+                  </div>
+                  <p class="rotulo mt-4 flex justify-between gap-4 border-t border-papel/25 pt-3 text-papel/70">
+                    <span>{o.ubicacion}</span>
+                    <span>{o.anio}</span>
+                  </p>
+                  <h3 class="titular mt-2 text-3xl transition-colors duration-300 group-hover:text-rojo">{o.titulo}</h3>
+                  <p class="mt-2 text-papel/75">{o.resumen}</p>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a href="/obras" class="boton mt-12">Ver las {obras.length} obras</a>
+        </div>
+      </section>
+    )
+  }
+
+  {/* Quién homologa y certifica: una ficha de datos */}
+  <section class="contenedor grid gap-x-16 gap-y-10 py-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:py-24">
+    <div>
+      <h2 class="titular text-[clamp(2.2rem,5vw,4.5rem)]">Quién nos homologa y certifica</h2>
+      <p class="mt-6 max-w-[48ch] text-lg text-pizarra">
+        Los fabricantes nos homologan como aplicadores de sus sistemas. La calidad y la gestión ambiental las audita OCA Global.
+      </p>
+      <a href="/empresa" class="enlace mt-6 inline-block py-2">Conocer la empresa</a>
+    </div>
+    <dl class="border-t border-tinta">
+      <div class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
+        <dt class="rotulo pt-1 text-pizarra">Aplicador homologado</dt>
+        <dd class="titular text-[clamp(1.5rem,2.6vw,2.25rem)] leading-tight">{FABRICANTES.join(' · ')}</dd>
+      </div>
+      <div class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
+        <dt class="rotulo pt-1 text-pizarra">Asociación</dt>
+        <dd>Club DIR, asociación de empresas aplicadoras de productos químicos para la construcción.</dd>
+      </div>
+      <div class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
+        <dt class="rotulo pt-1 text-pizarra">Certificaciones</dt>
+        <dd class="grid gap-4">
+          <p>ISO 9001 de calidad e ISO 14001 de gestión ambiental, certificadas por OCA Global.</p>
+          <div class="flex flex-wrap gap-4">
+            <Image src={iso9001} alt="Certificado ISO 9001 de OCA Global" width={280} class="h-auto w-36 border border-(--filete) sm:w-44" />
+            <Image src={iso14001} alt="Certificado ISO 14001 de OCA Global" width={280} class="h-auto w-36 border border-(--filete) sm:w-44" />
+          </div>
+        </dd>
+      </div>
+      <div class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
+        <dt class="rotulo pt-1 text-pizarra">Clasificación de empresa</dt>
+        <dd class="titular text-[clamp(1.5rem,2.6vw,2.25rem)] leading-tight tabular-nums">{CLASIFICACION.join(' · ')}</dd>
+      </div>
+      <div class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
+        <dt class="rotulo pt-1 text-pizarra">Experiencia</dt>
+        <dd>Más de 25 años, con sede en {EMPRESA.localidad} ({EMPRESA.provincia}).</dd>
+      </div>
+    </dl>
+  </section>
+
+  {/* Particulares: un apartado sencillo */}
+  <section class="border-y border-(--filete) bg-papel-2">
+    <div class="contenedor grid gap-x-16 gap-y-6 py-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center lg:py-16">
+      <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">¿Una vivienda o una comunidad de vecinos?</h2>
+      <div>
+        <p class="max-w-[60ch] text-lg text-pizarra">
+          Terrazas, cubiertas, garajes, piscinas y humedades: aplicamos los mismos sistemas que en una obra industrial, a la escala de tu casa.
+        </p>
+        <a href="/particulares" class="enlace mt-4 inline-block py-2">Ver qué hacemos para particulares</a>
+      </div>
+    </div>
+  </section>
+
+  {/* Cierre: el contacto, con las franjas de la marca */}
+  <section class="relative overflow-hidden">
+    <div class="franjas absolute inset-y-0 right-0 hidden w-[38%] [mask-image:linear-gradient(to_right,transparent,black_55%)] lg:block" aria-hidden="true"></div>
+    <div class="contenedor relative py-16 lg:py-28">
+      <h2 class="titular max-w-[14ch] text-[clamp(2.6rem,6.4vw,5.75rem)]">Cuéntanos tu obra</h2>
+      <p class="mt-6 max-w-[50ch] text-lg text-pizarra">
+        Estudiamos el soporte y te pasamos un presupuesto sin compromiso. Hemos trabajado de Bilbao a La Palma, y en Lisboa.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+        <a href="/contacto" class="boton">Pedir presupuesto</a>
+        <a href={EMPRESA.telefonoEnlace} class="titular text-4xl no-underline hover:text-rojo-tinta">{EMPRESA.telefono}</a>
+      </div>
+      <p class="mt-6">
+        <a href={`mailto:${EMPRESA.email}`} class="enlace">{EMPRESA.email}</a>
+      </p>
+    </div>
+  </section>
+</Base>

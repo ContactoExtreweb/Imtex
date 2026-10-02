@@ -1,0 +1,238 @@
+---
+// Portada: el titular y, a su lado, la pieza de losa en 3D que recorre las fases de una obra.
+// La columna de texto baja con normalidad; la pieza se queda fija y avanza de fase con el scroll.
+// Sin WebGL, con las animaciones reducidas o en un equipo flojo, el mismo panel enseña la foto real de cada fase.
+import { Image } from 'astro:assets'
+import f1 from '../assets/fases/1-soporte.jpg'
+import f2 from '../assets/fases/2-saneado.jpg'
+import f3 from '../assets/fases/3-reparacion.jpg'
+import f4 from '../assets/fases/4-imprimacion.jpg'
+import f5 from '../assets/fases/5-membrana.jpg'
+import f6 from '../assets/fases/6-acabado.jpg'
+import { EMPRESA, FABRICANTES } from '../lib/empresa'
+
+const FASES = [
+  {
+    nombre: 'Soporte',
+    dato: 'Estudio técnico',
+    texto: 'Hormigón con fisuras, desconchones y armaduras a la vista. Cada obra empieza con un estudio técnico del soporte.',
+    foto: f1,
+    obra: 'E.T.A.P. de Torrelaguna',
+  },
+  {
+    nombre: 'Saneado',
+    dato: '1.000 atm',
+    texto: 'Hidrolimpieza a alta presión, hasta 1.000 atm, para eliminar los tratamientos antiguos, y repicado del hormigón suelto o en mal estado.',
+    foto: f2,
+    obra: 'E.T.A.P. de Torrelaguna',
+  },
+  {
+    nombre: 'Reparación',
+    dato: 'Mortero R4',
+    texto: 'Lijado y pasivado de las armaduras, y reconstrucción de la geometría original con mortero de reparación estructural de clase R4, según UNE-EN 1504.',
+    foto: f3,
+    obra: 'E.T.A.P. de Torrelaguna',
+  },
+  {
+    nombre: 'Imprimación',
+    dato: 'Epoxi',
+    texto: 'Imprimación epoxi elegida según el soporte: hormigón, metal o lámina asfáltica.',
+    foto: f4,
+    obra: 'Central Nuclear de Almaraz',
+  },
+  {
+    nombre: 'Membrana',
+    dato: 'Poliurea en caliente',
+    texto: 'Membrana de poliurea proyectada en caliente con equipo de proyección especial, sobre toda la superficie.',
+    foto: f5,
+    obra: 'Central Nuclear de Almaraz',
+  },
+  {
+    nombre: 'Acabado',
+    dato: 'Alifático UV',
+    texto: 'Revestimiento de poliuretano alifático que protege la membrana de la radiación UV. En cubiertas transitables, capa de rodadura para peatones y vehículos.',
+    foto: f6,
+    obra: 'C. C. Plaza Mayor, Málaga',
+  },
+]
+const dos = (n: number) => String(n).padStart(2, '0')
+---
+
+<section data-fases class="contenedor grid lg:grid-cols-2 lg:gap-x-12">
+  <div class="@container lg:pb-24">
+    {/* Primer pantallazo */}
+    <div class="flex min-h-[calc(58svh-var(--alto-cabecera))] flex-col justify-center py-10 lg:min-h-[calc(100svh-var(--alto-cabecera))] lg:py-16">
+      {/* El tamaño sale del ancho de la columna: «impermeabilización» tiene que caber entera */}
+      <h1 class="titular text-[clamp(2.25rem,11.4cqi,5.75rem)]">Impermeabilización, reparación y refuerzo de estructuras</h1>
+      <p class="mt-6 max-w-[52ch] text-lg text-pizarra">
+        Más de 25 años aplicando los sistemas de {FABRICANTES.slice(0, -1).join(', ')} y {FABRICANTES.at(-1)} en cubiertas, depósitos, balsas,
+        canales y estructuras de hormigón. De la Central Nuclear de Almaraz al aeropuerto de Sevilla.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+        <a href="/contacto" class="boton">Pedir presupuesto</a>
+        <a href={EMPRESA.telefonoEnlace} class="rotulo py-3 text-base no-underline hover:text-rojo-tinta">{EMPRESA.telefono}</a>
+      </div>
+    </div>
+
+    <h2 class="titular max-w-[16ch] text-[clamp(1.9rem,3.6vw,3.25rem)]">De hormigón dañado a cubierta impermeable, en seis fases</h2>
+    <ol class="mt-4">
+      {
+        FASES.map((f, i) => (
+          <li data-fase class="group flex min-h-[62svh] flex-col justify-center border-t border-(--filete) py-10 lg:min-h-[78svh]">
+            {/* El número es parte del título: el orden de las fases es información */}
+            <h3 class="titular flex items-baseline gap-[0.35em] text-[clamp(2.2rem,4.6vw,4rem)]">
+              <span class="text-pizarra/45 transition-colors duration-500 ease-(--ease-encaje) group-data-activa:text-rojo-tinta">{dos(i + 1)}</span>
+              {f.nombre}
+            </h3>
+            <p class="mt-4 max-w-[46ch] text-lg text-pizarra">{f.texto}</p>
+            {/* El dato de la fase espera en gris y se enciende al llegar */}
+            <p class="titular mt-8 text-[clamp(1.6rem,3vw,2.6rem)] text-pizarra/30 transition-colors duration-500 ease-(--ease-encaje) group-data-activa:text-rojo-tinta">
+              {f.dato}
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+
+  {/* La pieza: arriba y fija en el móvil, a la derecha en escritorio */}
+  <div class="sticky top-(--alto-cabecera) z-10 order-first -mx-(--margen) h-[42svh] border-b border-(--filete) bg-papel [--margen:clamp(1.25rem,4vw,3rem)] lg:order-none lg:mx-0 lg:h-[calc(100svh-var(--alto-cabecera))] lg:border-0">
+    <div class="relative flex h-full flex-col">
+      <div class="relative min-h-0 flex-1">
+        {/* Fotos reales de cada fase: llenan el panel si no hay 3D; con 3D pasan a una esquina */}
+        <figure data-fotos class="absolute inset-0 transition-all duration-700 ease-(--ease-encaje)">
+          {
+            FASES.map((f, i) => (
+              <Image
+                src={f.foto}
+                alt={`${f.nombre}: ${f.obra}`}
+                widths={[480, 900]}
+                sizes="(min-width: 64rem) 46vw, 100vw"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                data-foto
+                class:list={['absolute inset-0 size-full object-cover transition-opacity duration-500', i > 0 && 'opacity-0']}
+              />
+            ))
+          }
+          <figcaption data-pie class="rotulo absolute bottom-0 left-0 bg-tinta px-2.5 py-1.5 text-[0.6875rem] text-papel">
+            {FASES[0].obra}
+          </figcaption>
+        </figure>
+        <canvas
+          data-pieza
+          class="absolute inset-0 hidden size-full cursor-grab touch-pan-y opacity-0 transition-opacity duration-700 active:cursor-grabbing"
+          aria-label="Modelo de una losa de hormigón que pasa por las seis fases de la obra. Se puede girar arrastrando."
+          role="img"></canvas>
+      </div>
+
+      {/* Regla de fases: la misma escala para las seis; la activa, en rojo */}
+      <ol class="grid shrink-0 grid-cols-6 border-t border-(--filete) px-(--margen) lg:px-0" aria-label="Fases">
+        {
+          FASES.map((f, i) => (
+            <li
+              data-marca
+              aria-current={i === 0 ? 'step' : undefined}
+              class="rotulo relative border-l border-(--filete) py-2.5 pl-2 text-[0.6875rem] text-pizarra/70 transition-colors duration-500 ease-(--ease-encaje) before:absolute before:-top-px before:left-0 before:h-0.5 before:w-full before:origin-left before:scale-x-0 before:bg-rojo before:transition-transform before:duration-500 before:ease-(--ease-encaje) [&[aria-current]]:text-tinta [&[aria-current]]:before:scale-x-100 lg:py-4 lg:text-xs"
+            >
+              <span class="block tabular-nums">{dos(i + 1)}</span>
+              <span class="hidden sm:block">{f.dato}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  const raiz = document.querySelector<HTMLElement>('[data-fases]')!
+  const bloques = [...raiz.querySelectorAll<HTMLElement>('[data-fase]')]
+  const marcas = [...raiz.querySelectorAll<HTMLElement>('[data-marca]')]
+  const fotos = [...raiz.querySelectorAll<HTMLImageElement>('[data-foto]')]
+  const pie = raiz.querySelector<HTMLElement>('[data-pie]')!
+  const lienzo = raiz.querySelector<HTMLCanvasElement>('[data-pieza]')!
+  const escritorio = matchMedia('(min-width: 64rem)')
+  let pieza: { progreso(p: number): void } | null = null
+  let activa = -1
+
+  /** Fase en la que está la lectura, con decimales: 0 en el titular, 5 en la última */
+  function progreso() {
+    // En el móvil la pieza tapa la parte de arriba: la línea de lectura va más abajo
+    const linea = innerHeight * (escritorio.matches ? 0.5 : 0.74)
+    const centros = bloques.map((b) => {
+      const r = b.getBoundingClientRect()
+      return r.top + r.height / 2
+    })
+    if (linea <= centros[0]) return 0
+    for (let i = 0; i < centros.length - 1; i++) {
+      if (linea < centros[i + 1]) return i + (linea - centros[i]) / (centros[i + 1] - centros[i])
+    }
+    return centros.length - 1
+  }
+
+  function actualizar() {
+    const p = progreso()
+    pieza?.progreso(p)
+    const i = Math.round(p)
+    if (i === activa) return
+    activa = i
+    bloques.forEach((b, j) => b.toggleAttribute('data-activa', j === i))
+    marcas.forEach((m, j) => (j <= i ? m.setAttribute('aria-current', j === i ? 'step' : 'true') : m.removeAttribute('aria-current')))
+    fotos.forEach((f, j) => f.classList.toggle('opacity-0', j !== i))
+    pie.textContent = fotos[i].alt.split(': ')[1] ?? ''
+  }
+
+  let pendiente = false
+  addEventListener(
+    'scroll',
+    () => {
+      if (pendiente) return
+      pendiente = true
+      requestAnimationFrame(() => {
+        pendiente = false
+        actualizar()
+      })
+    },
+    { passive: true },
+  )
+  addEventListener('resize', actualizar)
+  actualizar()
+
+  // El 3D solo donde merece la pena: con animaciones permitidas, sin ahorro de datos y con memoria suficiente
+  const nav = navigator as Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number }
+  const puede = !matchMedia('(prefers-reduced-motion: reduce)').matches && !nav.connection?.saveData && (nav.deviceMemory ?? 8) >= 4
+  if (puede) {
+    const cargar = async () => {
+      try {
+        const { montarPieza } = await import('../scripts/pieza')
+        lienzo.classList.remove('hidden')
+        pieza = montarPieza(lienzo)
+        pieza.progreso(progreso())
+        raiz.toggleAttribute('data-con-pieza', true)
+        requestAnimationFrame(() => lienzo.classList.remove('opacity-0'))
+      } catch {
+        lienzo.classList.add('hidden') // sin WebGL: se quedan las fotos
+      }
+    }
+    // Después de que la página esté lista, para no competir con el texto y las fotos
+    const alEstarLibre = (window as Window & { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => void }).requestIdleCallback
+    if (alEstarLibre) alEstarLibre(cargar, { timeout: 2500 })
+    else setTimeout(cargar, 600)
+  }
+</script>
+
+<style>
+  /* Con la pieza en marcha, la foto real de la fase pasa a una esquina del panel */
+  [data-con-pieza] [data-fotos] {
+    inset: auto auto 0.75rem 0.75rem;
+    width: 34%;
+    aspect-ratio: 5 / 3;
+    box-shadow: 0 10px 24px -12px color-mix(in oklab, var(--color-tinta) 55%, transparent);
+  }
+  @media (min-width: 64rem) {
+    [data-con-pieza] [data-fotos] {
+      inset: auto auto 1.5rem 0;
+      width: 38%;
+    }
+  }
+</style>

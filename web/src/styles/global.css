@@ -1,1 +1,179 @@
 @import "tailwindcss";
+/* Archivo variable (ancho y peso), autoalojada: condensada para titulares, normal para leer */
+@import "@fontsource-variable/archivo/wdth.css";
+
+@theme {
+  /* Marca IMTEX 2026 (docs/marca-imtex.jpg) */
+  --color-papel: #eef0f2;
+  --color-papel-2: #e1e4e9;
+  --color-tinta: #131116;
+  --color-pizarra: #444556;
+  --color-rojo: #ff311e;
+  /* El rojo de marca no llega a 4,5:1 sobre claro: este es el de texto pequeño y enlaces */
+  --color-rojo-tinta: #c0200f;
+
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Las cosas encajan en su sitio: salida exponencial, sin rebote */
+  --ease-encaje: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  :root {
+    --alto-cabecera: 3.75rem;
+    /* Filete de la retícula */
+    --filete: color-mix(in oklab, var(--color-tinta) 16%, transparent);
+    scrollbar-color: var(--color-pizarra) var(--color-papel-2);
+  }
+
+  html {
+    scroll-padding-top: calc(var(--alto-cabecera) + 1rem);
+  }
+
+  body {
+    background: var(--color-papel);
+    color: var(--color-tinta);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-rojo);
+    color: var(--color-tinta);
+  }
+
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 0.08em;
+  }
+
+  input,
+  textarea {
+    caret-color: var(--color-rojo-tinta);
+  }
+}
+
+@layer components {
+  /* Titulares: la misma voz que la banda del lema */
+  .titular {
+    font-stretch: 62%;
+    font-weight: 800;
+    line-height: 0.94;
+    letter-spacing: -0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  /* Rótulos y datos: condensada, en mayúsculas, con cifras tabulares */
+  .rotulo {
+    font-stretch: 75%;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .contenedor {
+    width: 100%;
+    max-width: 84rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  /* Botón principal: rojo de marca con tinta negra (5,6:1) */
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    min-height: 3rem;
+    padding: 0.7rem 1.4rem;
+    background: var(--color-rojo);
+    color: var(--color-tinta);
+    font-stretch: 75%;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition:
+      background-color 0.25s var(--ease-encaje),
+      color 0.25s var(--ease-encaje);
+  }
+  .boton:hover {
+    background: var(--color-tinta);
+    color: var(--color-papel);
+  }
+  .boton:active {
+    transform: translateY(1px);
+  }
+  /* Sobre fondo negro, al pasar por encima se aclara */
+  .sobre-tinta .boton:hover {
+    background: var(--color-papel);
+    color: var(--color-tinta);
+  }
+
+  .enlace {
+    color: var(--color-rojo-tinta);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .enlace:hover {
+    color: var(--color-tinta);
+  }
+
+  /* Franjas diagonales de la marca */
+  .franjas {
+    background-image: repeating-linear-gradient(
+      -55deg,
+      var(--color-rojo) 0 1.1rem,
+      transparent 1.1rem 1.6rem,
+      var(--color-pizarra) 1.6rem 2.1rem,
+      transparent 2.1rem 3.4rem
+    );
+  }
+}
+
+/* Entradas al bajar, solo donde el navegador sabe atarlas al scroll y el visitante no las ha desactivado.
+   El contenido es visible por defecto: sin soporte, simplemente no se anima. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .registro {
+      animation: registro linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+    @keyframes registro {
+      from {
+        clip-path: inset(0 100% 0 0);
+      }
+      to {
+        clip-path: inset(0 0 0 0);
+      }
+    }
+
+    .deriva {
+      animation: deriva linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+    @keyframes deriva {
+      from {
+        translate: 6% 0;
+      }
+      to {
+        translate: -6% 0;
+      }
+    }
+  }
+}

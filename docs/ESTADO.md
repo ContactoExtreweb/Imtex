@@ -1,6 +1,6 @@
 # Estado del proyecto IMTEX
 
-Actualizado el 02/10/2026, desde el PC de la oficina. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
+Actualizado el 02/10/2026 por la tarde, desde el PC de la oficina. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
 El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [decisiones.md](decisiones.md).
 
 ## Dónde está cada cosa
@@ -8,7 +8,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 | Qué | Dónde |
 |---|---|
 | Código | GitHub, `ContactoExtreweb/Imtex` (privado) |
-| Rama con todo el trabajo | **`feat/bajas`**. Incluye las anteriores: `feat/cierre-meses`, `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
+| Rama con todo el trabajo | **`feat/web`** (la web pública, en marcha). Incluye `feat/bajas` y las anteriores: `feat/cierre-meses`, `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
 | `main` | Llega hasta Presupuestos. Lo demás se fusiona cuando Saúl lo pruebe |
 | Base de datos de desarrollo | Supabase, proyecto `imtex-dev`, ref `vrhpxwnzthenjxubagys` (Fráncfort). Tiene aplicadas todas las migraciones del repo |
 | Base de datos de producción | Sin crear todavía |
@@ -80,6 +80,14 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Bucket `bajas` privado: los archivos se abren con un enlace firmado que caduca a la hora.
 - Para que un trabajador pueda subir los suyos necesita usuario y que su ficha de Ajustes → Trabajadores esté enlazada a ese usuario.
 - No incluye: avisar a administración cuando se sube un papel, agrupar por proceso de baja ni borrado automático.
+
+**12. Web pública (en marcha, rama `feat/web`)**. Plan aprobado el 02/10/2026; va por pasos con paradas.
+- Hecho: `web/PRODUCT.md`, lectura de la galería con `fetch` (`web/src/lib/galeria.ts`), redirecciones 301 (`web/public/_redirects`), sistema visual (Archivo variable autoalojada, colores de marca) con cabecera y pie, y **portada**.
+- **Las 22 obras de la web antigua están en la galería de dev**: 205 fotos con miniatura en el bucket y las fichas publicadas, seis destacadas. Se repite con `web/scripts/importar-obras.mjs` (leer → fotos → sql) y `supabase/seed_web_obras.sql`; las instrucciones para subir las fotos están en la cabecera del script.
+- **Dirección de diseño elegida por Saúl: «La obra por fases»** (skill impeccable; contrato en `web/.impeccable/surfaces/`). La portada lleva una losa de hormigón en 3D (three.js, hecha con código en `web/src/scripts/pieza.ts`) que pasa por seis fases reales de obra al bajar. Sin WebGL, con animaciones reducidas o poca memoria, salen las fotos reales de cada fase.
+- **Pendiente de Saúl: dar el visto bueno a la portada** (`npm run dev` en `web/`, http://localhost:4321). Después: resto de páginas, formulario, SEO y cierre (pasos 3 a 6 del plan).
+- Sin comprobar todavía: Lighthouse, y el aspecto en un móvil de verdad.
+- A confirmar con IMTEX: fechas de CETARSA (2012-2022 o 2012-2024), razón social exacta, que el acabado de la pieza 3D en rojo les encaje, y qué hacen para particulares.
 
 ## Pendiente
 

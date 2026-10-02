@@ -31,3 +31,6 @@ pnpm-debug.log*
 .impeccable/config.local.json
 # fotos bajadas de la web antigua para importarlas
 .importacion/
+
+# Local Netlify folder
+.netlify
