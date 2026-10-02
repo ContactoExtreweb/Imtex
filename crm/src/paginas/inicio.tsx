@@ -4,6 +4,7 @@ import { Plus, Trash2, TriangleAlert } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
+import { Cifras } from '@/components/cifras'
 import { ConfirmarBorrado } from '@/components/listado'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -162,32 +163,11 @@ export function Inicio() {
         {cifras.length === 0 ? (
           <p className="text-sm text-muted-foreground">Todavía no hay apartados disponibles para tu perfil.</p>
         ) : (
-          <ul className="grid grid-cols-2 border-t border-l sm:grid-cols-3">
-            {cifras.map((c) => {
-              const contenido = (
-                <>
-                  <span className="text-2xl font-semibold tabular-nums">{c.valor ?? '–'}</span>
-                  <span className="text-sm text-muted-foreground">{c.etiqueta}</span>
-                  {c.nota && <span className="text-xs text-muted-foreground tabular-nums">{c.nota}</span>}
-                </>
-              )
-              const clases = 'flex h-full flex-col gap-0.5 p-4'
-              return (
-                <li key={c.etiqueta} className="border-r border-b">
-                  {c.a ? (
-                    <Link to={c.a} className={`${clases} hover:bg-muted`}>
-                      {contenido}
-                    </Link>
-                  ) : (
-                    <div className={clases}>{contenido}</div>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
+          <Cifras cifras={cifras} />
         )}
 
-        <div className="grid gap-8 sm:grid-cols-2">
+        {/* Dos columnas solo si caben de verdad: con el menú abierto (tablet) el hueco es estrecho */}
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(17rem,100%),1fr))] gap-8">
           {ve.obras && (
             <Lista titulo="Obras en ejecución" a="/obras">
               {r?.obras?.length === 0 && (
@@ -272,7 +252,7 @@ function Avisos({ avisos, conPresupuestos }: { avisos: AvisoObra[]; conPresupues
                   className={`mt-0.5 size-4 shrink-0 ${a.nivel === 'grave' ? 'text-destructive' : 'text-aviso'}`}
                 />
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium">
+                  <span className="block text-sm font-medium max-sm:line-clamp-2 sm:truncate">
                     {a.obra.codigo} · {a.obra.nombre}
                   </span>
                   <span className="block text-sm text-muted-foreground">{a.texto}</span>
@@ -321,11 +301,11 @@ function Fila({
     <li>
       <Link to={a} className="flex items-center gap-3 px-3 py-2 hover:bg-muted">
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium">{titulo}</span>
+          <span className="block text-sm font-medium max-sm:line-clamp-2 sm:truncate">{titulo}</span>
           {detalle && <span className="block text-xs text-muted-foreground">{detalle}</span>}
         </span>
         {extra}
-        <span className="text-sm font-medium tabular-nums">{dato}</span>
+        <span className="shrink-0 text-sm font-medium whitespace-nowrap tabular-nums">{dato}</span>
       </Link>
     </li>
   )

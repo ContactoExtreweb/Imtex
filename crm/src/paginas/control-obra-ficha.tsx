@@ -1,6 +1,7 @@
 import { ArrowLeft, Download, Lock, LockOpen, Printer } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { Cifras } from '@/components/cifras'
 import { ComparativaObra } from '@/components/comparativa-obra'
 import { GraficosObra } from '@/components/graficos-obra'
 import { HojaApuntes } from '@/components/hoja-apuntes'
@@ -175,14 +176,7 @@ function Resumen({
 
   return (
     <div className="grid gap-6">
-      <dl className="grid grid-cols-2 border-t border-l sm:grid-cols-3">
-        {indicadores.map((i) => (
-          <div key={i.etiqueta} className="flex flex-col-reverse justify-end gap-0.5 border-r border-b bg-background p-4">
-            <dt className="text-sm text-muted-foreground">{i.etiqueta}</dt>
-            <dd className={`text-xl font-semibold tabular-nums ${i.color}`}>{i.valor}</dd>
-          </div>
-        ))}
-      </dl>
+      <Cifras cifras={indicadores} />
 
       {meses.length === 0 ? (
         <p className="text-sm text-muted-foreground">
