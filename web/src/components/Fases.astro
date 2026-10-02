@@ -1,5 +1,5 @@
 ---
-// Portada: el titular y, a su lado, la pieza de losa en 3D que recorre las fases de una obra.
+// Portada: el logo y el titular y, a su lado, la pieza en 3D (una esquina de cubierta) que recorre las fases de una obra.
 // La columna de texto baja con normalidad; la pieza se queda fija y avanza de fase con el scroll.
 // Sin WebGL, con las animaciones reducidas o en un equipo flojo, el mismo panel enseña la foto real de cada fase.
 import { Image } from 'astro:assets'
@@ -9,6 +9,8 @@ import f3 from '../assets/fases/3-reparacion.jpg'
 import f4 from '../assets/fases/4-imprimacion.jpg'
 import f5 from '../assets/fases/5-membrana.jpg'
 import f6 from '../assets/fases/6-acabado.jpg'
+import logoClaro from '../assets/logo-imtex-claro.png'
+import logo from '../assets/logo-imtex.png'
 import { EMPRESA, FABRICANTES } from '../lib/empresa'
 
 const FASES = [
@@ -58,12 +60,18 @@ const FASES = [
 const dos = (n: number) => String(n).padStart(2, '0')
 ---
 
-<section data-fases class="contenedor grid lg:grid-cols-2 lg:gap-x-12">
+{/* La pieza ocupa más de media pantalla y llega hasta el borde derecho */}
+<section
+  data-fases
+  class="mx-auto grid w-full max-w-[120rem] px-(--margen) [--margen:clamp(1.25rem,4vw,3rem)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-x-8 lg:pr-0"
+>
   <div class="@container lg:pb-24">
     {/* Primer pantallazo */}
     <div class="flex min-h-[calc(58svh-var(--alto-cabecera))] flex-col justify-center py-10 lg:min-h-[calc(100svh-var(--alto-cabecera))] lg:py-16">
+      {/* El logo abre la página, a gran tamaño */}
+      <Image src={logo} alt="IMTEX" width={520} loading="eager" class="mb-8 h-auto w-[min(72%,19rem)] lg:mb-10 lg:w-[min(78%,26rem)]" />
       {/* El tamaño sale del ancho de la columna: «impermeabilización» tiene que caber entera */}
-      <h1 class="titular text-[clamp(2.25rem,11.4cqi,5.75rem)]">Impermeabilización, reparación y refuerzo de estructuras</h1>
+      <h1 class="titular text-[clamp(2rem,10.6cqi,4.75rem)]">Impermeabilización, reparación y refuerzo de estructuras</h1>
       <p class="mt-6 max-w-[52ch] text-lg text-pizarra">
         Más de 25 años aplicando los sistemas de {FABRICANTES.slice(0, -1).join(', ')} y {FABRICANTES.at(-1)} en cubiertas, depósitos, balsas,
         canales y estructuras de hormigón. De la Central Nuclear de Almaraz al aeropuerto de Sevilla.
@@ -96,7 +104,7 @@ const dos = (n: number) => String(n).padStart(2, '0')
   </div>
 
   {/* La pieza: arriba y fija en el móvil, a la derecha en escritorio */}
-  <div class="sticky top-(--alto-cabecera) z-10 order-first -mx-(--margen) h-[42svh] border-b border-(--filete) bg-papel [--margen:clamp(1.25rem,4vw,3rem)] lg:order-none lg:mx-0 lg:h-[calc(100svh-var(--alto-cabecera))] lg:border-0">
+  <div class="sticky top-(--alto-cabecera) z-10 order-first -mx-(--margen) h-[46svh] border-b border-(--filete) bg-papel lg:order-none lg:mx-0 lg:h-[calc(100svh-var(--alto-cabecera))] lg:border-0">
     <div class="relative flex h-full flex-col">
       <div class="relative min-h-0 flex-1">
         {/* Fotos reales de cada fase: llenan el panel si no hay 3D; con 3D pasan a una esquina */}
@@ -120,8 +128,9 @@ const dos = (n: number) => String(n).padStart(2, '0')
         </figure>
         <canvas
           data-pieza
+          data-logo={logoClaro.src}
           class="absolute inset-0 hidden size-full cursor-grab touch-pan-y opacity-0 transition-opacity duration-700 active:cursor-grabbing"
-          aria-label="Modelo de una losa de hormigón que pasa por las seis fases de la obra. Se puede girar arrastrando."
+          aria-label="Maqueta de una cubierta de hormigón que pasa por las seis fases de la obra, con las herramientas trabajando. Se puede girar arrastrando."
           role="img"></canvas>
       </div>
 
@@ -152,7 +161,7 @@ const dos = (n: number) => String(n).padStart(2, '0')
   const pie = raiz.querySelector<HTMLElement>('[data-pie]')!
   const lienzo = raiz.querySelector<HTMLCanvasElement>('[data-pieza]')!
   const escritorio = matchMedia('(min-width: 64rem)')
-  let pieza: { progreso(p: number): void } | null = null
+  let pieza: { progreso(p: number): void; saltar(p: number): void } | null = null
   let activa = -1
 
   /** Fase en la que está la lectura, con decimales: 0 en el titular, 5 en la última */
@@ -206,8 +215,10 @@ const dos = (n: number) => String(n).padStart(2, '0')
       try {
         const { montarPieza } = await import('../scripts/pieza')
         lienzo.classList.remove('hidden')
-        pieza = montarPieza(lienzo)
-        pieza.progreso(progreso())
+        pieza = montarPieza(lienzo, { logo: lienzo.dataset.logo! })
+        pieza.saltar(progreso())
+        // En desarrollo, para revisar una fase concreta desde la consola: __pieza.saltar(3.6)
+        if (import.meta.env.DEV) Object.assign(window, { __pieza: pieza })
         raiz.toggleAttribute('data-con-pieza', true)
         requestAnimationFrame(() => lienzo.classList.remove('opacity-0'))
       } catch {
@@ -224,15 +235,15 @@ const dos = (n: number) => String(n).padStart(2, '0')
 <style>
   /* Con la pieza en marcha, la foto real de la fase pasa a una esquina del panel */
   [data-con-pieza] [data-fotos] {
-    inset: auto auto 0.75rem 0.75rem;
-    width: 34%;
+    inset: auto auto 0.6rem 0.6rem;
+    width: 30%;
     aspect-ratio: 5 / 3;
     box-shadow: 0 10px 24px -12px color-mix(in oklab, var(--color-tinta) 55%, transparent);
   }
   @media (min-width: 64rem) {
     [data-con-pieza] [data-fotos] {
-      inset: auto auto 1.5rem 0;
-      width: 38%;
+      inset: auto auto 1.25rem 0;
+      width: 25%;
     }
   }
 </style>

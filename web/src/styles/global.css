@@ -20,7 +20,7 @@
 
 @layer base {
   :root {
-    --alto-cabecera: 3.75rem;
+    --alto-cabecera: 4rem;
     /* Filete de la retícula */
     --filete: color-mix(in oklab, var(--color-tinta) 16%, transparent);
     scrollbar-color: var(--color-pizarra) var(--color-papel-2);
