@@ -55,7 +55,7 @@ export function ControlObraImprimir() {
       {/* Esta hoja va apaisada; el resto de impresiones (el presupuesto) siguen en vertical */}
       <style>{'@media print { @page { size: A4 landscape; margin: 10mm 12mm; } }'}</style>
 
-      <div className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background p-3 print:hidden">
+      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b bg-background p-3 print:hidden">
         <Button variant="outline" asChild>
           <Link to={`/control-obra/${obra.id}`}>
             <ArrowLeft /> Volver
@@ -67,8 +67,8 @@ export function ControlObraImprimir() {
       </div>
 
       <div className="mx-auto max-w-[1180px] p-4 text-[11px] leading-snug text-[#1c2632] print:max-w-none print:p-0">
-        <section className="hoja mb-8 overflow-x-auto rounded-lg bg-white px-8 py-7 shadow-lg print:overflow-visible">
-          <div className="mb-3 flex items-start justify-between gap-6 border-b-2 border-[#131116] pb-3">
+        <section className="hoja mb-8 overflow-x-auto rounded-lg bg-white px-4 py-5 shadow-lg sm:px-8 sm:py-7 print:overflow-visible">
+          <div className="mb-3 flex flex-wrap items-start justify-between gap-x-6 gap-y-3 border-b-2 border-[#131116] pb-3">
             <div>
               <img src={logoImtex} alt={EMPRESA.nombre} className="h-[56px] w-auto" />
               <p className="mt-2 flex flex-wrap items-center gap-x-3 text-[10px] font-medium text-[#131116]">
@@ -96,7 +96,7 @@ export function ControlObraImprimir() {
             {obra.estado === 'terminada' ? 'Terminada' : 'En ejecución'}
           </p>
 
-          <dl className="mb-4 grid grid-cols-3 gap-x-6 gap-y-1">
+          <dl className="mb-4 grid gap-x-6 gap-y-1 sm:grid-cols-3">
             {indicadoresObra(datos, obra.gastos_generales_pct, obra.importe_pedido).map((i) => (
               <div key={i.etiqueta} className="flex items-baseline justify-between gap-3 border-b border-[#e3e8ee] py-1">
                 <dt className="text-[#40566d]">{i.etiqueta}</dt>

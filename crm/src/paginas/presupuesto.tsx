@@ -230,7 +230,7 @@ function EditorPresupuesto({ inicial }: { inicial: PresupuestoEdicion }) {
   return (
     <div className="mx-auto grid w-full max-w-4xl gap-4 p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="mr-auto min-w-0 truncate text-xl font-semibold">
+        <h1 className="mr-auto min-w-0 text-xl font-semibold">
           {p.codigo} {p.titulo && `· ${p.titulo}`}
         </h1>
         <InsigniaEstado estado={p.estado} />
@@ -353,7 +353,7 @@ function EditorPresupuesto({ inicial }: { inicial: PresupuestoEdicion }) {
           <Campo etiqueta="Forma de pago">
             <Input {...texto('forma_pago')} />
           </Campo>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 items-end gap-3">
             <Campo etiqueta="IVA %">
               <EntradaNumero valor={p.iva_pct} onCambio={(iva_pct) => cambiar({ iva_pct })} />
             </Campo>

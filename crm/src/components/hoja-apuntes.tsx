@@ -202,7 +202,8 @@ function FormularioApunte({
       onSubmit={enviar}
       onCerrar={onCerrar}
     >
-      <div className="grid grid-cols-2 gap-3">
+      {/* Lado a lado solo si cada campo tiene al menos 10rem: el de mes muestra «octubre de 2026» */}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-3">
         <Campo etiqueta="Fecha">
           <Input
             type="date"

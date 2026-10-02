@@ -90,8 +90,9 @@ export function FilaListado({
     <li className="flex items-center gap-3 px-3 py-2">
       {antes}
       <button type="button" className="min-w-0 flex-1 py-1 text-left" onClick={onAbrir}>
-        <p className="truncate font-medium">{titulo}</p>
-        {detalle && <p className="truncate text-sm text-muted-foreground">{detalle}</p>}
+        {/* En el móvil no se corta: el título ocupa hasta dos líneas y el detalle (importes, fechas) las que necesite */}
+        <p className="font-medium max-sm:line-clamp-2 sm:truncate">{titulo}</p>
+        {detalle && <p className="text-sm text-muted-foreground sm:truncate">{detalle}</p>}
       </button>
       {extra}
       {onBorrar && (

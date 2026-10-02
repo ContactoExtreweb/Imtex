@@ -88,7 +88,7 @@ export function GraficosObra({ datos }: { datos: Calculo }) {
         <BarChart data={porMes} margin={MARGEN} barGap={2}>
           <CartesianGrid vertical={false} stroke="var(--border)" />
           <XAxis dataKey="mes" tickFormatter={mesCorto} tick={EJE} tickLine={false} axisLine={{ stroke: 'var(--border)' }} />
-          <YAxis tickFormatter={(v) => compacto.format(v)} tick={EJE} tickLine={false} axisLine={false} width={52} />
+          <YAxis tickFormatter={(v) => compacto.format(v)} tick={EJE} tickLine={false} axisLine={false} width={58} />
           <Tooltip content={<Detalle formato={euros} />} cursor={{ fill: 'var(--muted)' }} />
           <Bar dataKey="certificacion" name="Certificación" fill={CERTIFICACION} radius={[4, 4, 0, 0]} maxBarSize={24} isAnimationActive={false} />
           <Bar dataKey="costes" name="Costes" fill={COSTES} radius={[4, 4, 0, 0]} maxBarSize={24} isAnimationActive={false} />
@@ -106,7 +106,7 @@ export function GraficosObra({ datos }: { datos: Calculo }) {
         <LineChart data={porMes} margin={{ ...MARGEN, right: 96 }}>
           <CartesianGrid vertical={false} stroke="var(--border)" />
           <XAxis dataKey="mes" tickFormatter={mesCorto} tick={EJE} tickLine={false} axisLine={{ stroke: 'var(--border)' }} />
-          <YAxis tickFormatter={(v) => compacto.format(v)} tick={EJE} tickLine={false} axisLine={false} width={52} />
+          <YAxis tickFormatter={(v) => compacto.format(v)} tick={EJE} tickLine={false} axisLine={false} width={58} />
           <Tooltip content={<Detalle formato={euros} />} cursor={{ stroke: 'var(--muted-foreground)' }} />
           <Line
             dataKey="certOrigen"
@@ -132,7 +132,7 @@ export function GraficosObra({ datos }: { datos: Calculo }) {
       <Grafico titulo="Costes a origen por tipo" nota="De mayor a menor.">
         <BarChart data={reparto} layout="vertical" margin={{ ...MARGEN, right: 96 }}>
           <XAxis type="number" hide />
-          <YAxis type="category" dataKey="tipo" tick={{ ...EJE, fill: 'var(--foreground)' }} tickLine={false} axisLine={false} width={96} />
+          <YAxis type="category" dataKey="tipo" tick={{ ...EJE, fill: 'var(--foreground)' }} tickLine={false} axisLine={false} width={100} />
           <Tooltip content={<Detalle formato={euros} />} cursor={{ fill: 'var(--muted)' }} />
           <Bar dataKey="valor" name="Coste" fill={COSTES} radius={[0, 4, 4, 0]} barSize={14} isAnimationActive={false}>
             <LabelList
@@ -149,7 +149,7 @@ export function GraficosObra({ datos }: { datos: Calculo }) {
         <LineChart data={porMes} margin={{ ...MARGEN, right: 64 }}>
           <CartesianGrid vertical={false} stroke="var(--border)" />
           <XAxis dataKey="mes" tickFormatter={mesCorto} tick={EJE} tickLine={false} axisLine={{ stroke: 'var(--border)' }} />
-          <YAxis tickFormatter={(v) => `${v} %`} tick={EJE} tickLine={false} axisLine={false} width={52} />
+          <YAxis tickFormatter={(v) => `${v} %`} tick={EJE} tickLine={false} axisLine={false} width={58} />
           <Tooltip content={<Detalle formato={pct} />} cursor={{ stroke: 'var(--muted-foreground)' }} />
           <ReferenceLine
             y={MARGEN_OBJETIVO}

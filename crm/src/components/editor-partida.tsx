@@ -38,19 +38,21 @@ export function EditorPartida({
 
   return (
     <fieldset disabled={soloLectura} className="grid gap-3 rounded-lg border p-3">
-      <div className="flex items-end gap-2">
+      {/* En el móvil los botones de la partida bajan a su propia línea para no estrechar el título */}
+      <div className="flex flex-wrap items-end gap-2">
         <Campo etiqueta="Código" className="w-24">
           <Input value={partida.codigo} onChange={(e) => cambiar({ codigo: e.target.value })} />
         </Campo>
-        <Campo etiqueta="Título" className="min-w-0 flex-1">
+        <Campo etiqueta="Título" className="min-w-40 flex-1">
           <Input value={partida.titulo} onChange={(e) => cambiar({ titulo: e.target.value })} />
         </Campo>
-        {!soloLectura && acciones}
+        {!soloLectura && acciones && <div className="ml-auto flex">{acciones}</div>}
       </div>
       <Campo etiqueta="Descripción y medición">
         <Textarea rows={2} value={partida.medicion} onChange={(e) => cambiar({ medicion: e.target.value })} />
       </Campo>
-      <div className="grid grid-cols-3 gap-2">
+      {/* items-end: si una etiqueta ocupa dos líneas, las casillas siguen alineadas */}
+      <div className="grid grid-cols-3 items-end gap-2">
         <Campo etiqueta="Medición (ud)">
           <EntradaNumero valor={partida.cantidad} onCambio={(cantidad) => cambiar({ cantidad })} />
         </Campo>
@@ -84,12 +86,13 @@ export function EditorPartida({
               </div>
             )}
             {/* Cada casilla con su nombre: rendimiento × coste unitario = importe */}
-            <div className="flex items-end gap-2 text-sm">
-              <Campo etiqueta={`Rendimiento (${l.unidad || 'ud'})`} className="max-w-32 min-w-0 flex-1">
+            {/* Si no caben en una línea (móvil), el importe y la papelera bajan a la siguiente */}
+            <div className="flex flex-wrap items-end gap-2 text-sm">
+              <Campo etiqueta={`Rendimiento (${l.unidad || 'ud'})`} className="min-w-0 flex-1 basis-24 sm:max-w-32">
                 <EntradaNumero valor={l.rendimiento} onCambio={(rendimiento) => cambiarLinea(i, { rendimiento })} />
               </Campo>
               <span className="pb-2.5 text-muted-foreground md:pb-1.5">×</span>
-              <Campo etiqueta="Coste unitario (€)" className="max-w-32 min-w-0 flex-1">
+              <Campo etiqueta="Coste unitario (€)" className="min-w-0 flex-1 basis-24 sm:max-w-32">
                 {l.precio_id ? (
                   <span className="flex h-10 items-center tabular-nums md:h-8">{euros(l.coste_unitario)}</span>
                 ) : (
