@@ -44,6 +44,12 @@ declare
   f_foto_borrador uuid;
   f_objeto uuid;
   f_obra_cierre uuid;
+  f_trabajador_baja uuid;
+  f_baja_ajena uuid;
+  f_baja_propia uuid;
+  f_baja_en_su_nombre uuid;
+  f_objeto_baja uuid;
+  f_objeto_baja_propio uuid;
   n int;
   ok boolean;
 begin
@@ -59,7 +65,8 @@ begin
         ('anon', null, null)
       ) as v(usuario, rol, activo)
     loop
-      -- Datos de prueba, creados como postgres (sin RLS)
+      -- Datos de prueba, creados como postgres (sin RLS) y sin la identidad de la vuelta anterior
+      perform set_config('request.jwt.claims', '', true);
       uid := null;
       f_propia := null;
       if u.rol is not null then
@@ -137,6 +144,29 @@ begin
         returning id into f_obra_cierre;
       insert into public.meses_cerrados (obra_id, mes) values (f_obra_cierre, date '2026-04-01');
 
+      -- Bajas: un papel de otro trabajador y, si hay usuario, dos de su ficha: el que subió él
+      -- y el que le subieron en su nombre. Y un archivo de cada carpeta en el bucket.
+      -- Ficha aparte: la de arriba se borra en su prueba, y una ficha con papeles no se deja borrar.
+      insert into public.trabajadores (nombre) values ('Trabajador con baja') returning id into f_trabajador_baja;
+      insert into public.bajas_documentos (trabajador_id, tipo, ruta, nombre_archivo, tipo_mime, tamano, subido_por)
+        values (f_trabajador_baja, 'baja', f_trabajador_baja || '/' || gen_random_uuid(), 'x.pdf', 'application/pdf', 1, otro)
+        returning id into f_baja_ajena;
+      insert into storage.objects (bucket_id, name) values ('bajas', f_trabajador_baja || '/' || gen_random_uuid())
+        returning id into f_objeto_baja;
+      f_baja_propia := null;
+      f_baja_en_su_nombre := null;
+      f_objeto_baja_propio := null;
+      if uid is not null then
+        insert into public.bajas_documentos (trabajador_id, tipo, ruta, nombre_archivo, tipo_mime, tamano, subido_por)
+          values (f_propia, 'baja', f_propia || '/' || gen_random_uuid(), 'x.pdf', 'application/pdf', 1, uid)
+          returning id into f_baja_propia;
+        insert into public.bajas_documentos (trabajador_id, tipo, ruta, nombre_archivo, tipo_mime, tamano, subido_por)
+          values (f_propia, 'alta', f_propia || '/' || gen_random_uuid(), 'x.pdf', 'application/pdf', 1, otro)
+          returning id into f_baja_en_su_nombre;
+        insert into storage.objects (bucket_id, name) values ('bajas', f_propia || '/' || gen_random_uuid())
+          returning id into f_objeto_baja_propio;
+      end if;
+
       -- Cambio de identidad
       if u.rol is null then
         perform set_config('request.jwt.claims', '', true);
@@ -210,6 +240,20 @@ begin
           ('meses_cerrados', 'insertar', 'insert into public.meses_cerrados (obra_id, mes) values ($1, date ''2026-05-01'')', f_obra_cierre),
           ('meses_cerrados', 'editar', 'update public.meses_cerrados set cerrado_el = cerrado_el where obra_id = $1', f_obra_cierre),
           ('meses_cerrados', 'borrar', 'delete from public.meses_cerrados where obra_id = $1 and mes = date ''2026-04-01''', f_obra_cierre),
+
+          -- Bajas: cada uno ve, sube y borra lo suyo; lo de los demás, con el módulo bajas. No se edita.
+          ('bajas_documentos', 'ver', 'select from public.bajas_documentos where id = $1', f_baja_ajena),
+          ('bajas_documentos', 'ver_propio', 'select from public.bajas_documentos where id = $1', f_baja_propia),
+          ('bajas_documentos', 'insertar', 'insert into public.bajas_documentos (trabajador_id, tipo, ruta, nombre_archivo, tipo_mime, tamano) values ($1, ''baja'', $1::text || ''/'' || gen_random_uuid(), ''x'', ''application/pdf'', 1)', f_trabajador_baja),
+          ('bajas_documentos', 'insertar_propio', 'insert into public.bajas_documentos (trabajador_id, tipo, ruta, nombre_archivo, tipo_mime, tamano) values ($1, ''baja'', $1::text || ''/'' || gen_random_uuid(), ''x'', ''application/pdf'', 1)', f_propia),
+          ('bajas_documentos', 'editar', 'update public.bajas_documentos set tipo = tipo where id = $1', f_baja_propia),
+          ('bajas_documentos', 'borrar_en_su_nombre', 'delete from public.bajas_documentos where id = $1', f_baja_en_su_nombre),
+          ('bajas_documentos', 'borrar_propio', 'delete from public.bajas_documentos where id = $1', f_baja_propia),
+          ('bajas_documentos', 'borrar', 'delete from public.bajas_documentos where id = $1', f_baja_ajena),
+          ('storage_bajas', 'ver', 'select from storage.objects where id = $1', f_objeto_baja),
+          ('storage_bajas', 'ver_propio', 'select from storage.objects where id = $1', f_objeto_baja_propio),
+          ('storage_bajas', 'insertar', 'insert into storage.objects (bucket_id, name) values (''bajas'', $1::text || ''/'' || gen_random_uuid())', f_trabajador_baja),
+          ('storage_bajas', 'insertar_propio', 'insert into storage.objects (bucket_id, name) values (''bajas'', coalesce($1::text, ''x'') || ''/'' || gen_random_uuid())', f_propia),
 
           -- Antes que perfiles: borrar el perfil ajeno borraría su nota en cascada
           ('notas', 'ver', 'select from public.notas where id = $1', f_nota_ajena),
@@ -311,7 +355,7 @@ m (tabla, ver, editar) as (values
   ('clientes', array['clientes'], 'clientes'),
   ('obras', array['obras'], 'obras'),
   ('categorias_profesionales', array['ajustes', 'control_obra'], 'ajustes'),
-  ('trabajadores', array['ajustes', 'control_obra'], 'ajustes'),
+  ('trabajadores', array['ajustes', 'control_obra', 'bajas'], 'ajustes'),
   ('tarifas_combustible', array['ajustes', 'control_obra'], 'ajustes'),
   ('perfiles', array['usuarios'], 'usuarios'),
   ('precios', array['base_precios', 'presupuestos'], 'base_precios'),
@@ -331,6 +375,8 @@ m (tabla, ver, editar) as (values
   ('web_fotos', array['galeria'], 'galeria'),
   ('storage_galeria', array['galeria'], 'galeria'),
   ('meses_cerrados', array['control_obra', 'cierre_meses'], 'cierre_meses'),
+  ('bajas_documentos', array['bajas'], 'bajas'),
+  ('storage_bajas', array['bajas'], 'bajas'),
   ('notas', null, null),
   ('roles', null, null),
   ('permisos_rol', null, null)
@@ -342,6 +388,10 @@ c as (
       when r.rol is null then false                                   -- anon
       when r.tabla in ('roles', 'permisos_rol') then r.accion = 'ver' -- solo lectura
       when r.tabla = 'notas' then r.accion in ('ver_propio', 'insertar') -- cada uno, solo las suyas
+      -- Bajas: lo propio, cualquier usuario activo; nadie edita un papel subido
+      when r.tabla in ('bajas_documentos', 'storage_bajas')
+        and r.accion in ('ver_propio', 'insertar_propio', 'borrar_propio') then r.activo
+      when r.tabla = 'bajas_documentos' and r.accion = 'editar' then false
       when r.accion = 'ver_propio' then true
       when r.tabla = 'tarifas_combustible' and r.accion in ('insertar', 'borrar') then false
       when r.tabla = 'meses_cerrados' and r.accion = 'editar' then false -- se cierra o se reabre, no se edita

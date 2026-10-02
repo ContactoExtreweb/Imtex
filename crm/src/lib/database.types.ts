@@ -89,6 +89,63 @@ export type Database = {
           },
         ]
       }
+      bajas_documentos: {
+        Row: {
+          comentario: string | null
+          id: string
+          nombre_archivo: string
+          ruta: string
+          subido_el: string
+          subido_por: string | null
+          subido_por_nombre: string
+          tamano: number
+          tipo: string
+          tipo_mime: string
+          trabajador_id: string
+        }
+        Insert: {
+          comentario?: string | null
+          id?: string
+          nombre_archivo: string
+          ruta: string
+          subido_el?: string
+          subido_por?: string | null
+          subido_por_nombre?: string
+          tamano: number
+          tipo: string
+          tipo_mime: string
+          trabajador_id: string
+        }
+        Update: {
+          comentario?: string | null
+          id?: string
+          nombre_archivo?: string
+          ruta?: string
+          subido_el?: string
+          subido_por?: string | null
+          subido_por_nombre?: string
+          tamano?: number
+          tipo?: string
+          tipo_mime?: string
+          trabajador_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bajas_documentos_subido_por_fkey"
+            columns: ["subido_por"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bajas_documentos_trabajador_id_fkey"
+            columns: ["trabajador_id"]
+            isOneToOne: false
+            referencedRelation: "trabajadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categorias_profesionales: {
         Row: {
           activa: boolean
