@@ -16,6 +16,7 @@ export type Modulo =
   | 'certificaciones'
   | 'cierre_meses'
   | 'galeria'
+  | 'bajas'
 export type Accion = 'ver' | 'editar'
 
 export interface Sesion {

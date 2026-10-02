@@ -18,6 +18,17 @@ export const euros = (valor: number) => formatoEuros.format(valor)
 /** «2026-09-29» (columna date de Postgres) → «29/09/2026» */
 export const fecha = (iso: string) => formatoFecha.format(new Date(iso))
 
+const formatoFechaHora = new Intl.DateTimeFormat('es-ES', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
+/** Instante (columna timestamptz) → «02/10/2026, 09:35», en la hora de quien mira */
+export const fechaHora = (iso: string) => formatoFechaHora.format(new Date(iso))
+
 /**
  * Lee lo que se escribe en un campo numérico: «1.234,56», «18,5» o «18.5».
  * Si hay coma, es el decimal y los puntos son de miles; si no, el punto es el decimal.
