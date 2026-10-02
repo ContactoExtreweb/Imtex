@@ -76,7 +76,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Apartado «Bajas» en el menú, para todos los usuarios. Cada trabajador sube sus papeles (tipo de parte, comentario y archivo) y ve su historial con la fecha y la hora de subida.
 - Gerencia y administración (módulo `bajas`) ven el historial de todos, con filtros por trabajador y tipo, y pueden subir un papel en nombre de un trabajador. Queda escrito quién lo subió.
 - La fecha y el autor los pone la base de datos. Un papel no se edita: se borra y se sube otro. El trabajador borra solo lo que subió él.
-- Formatos: fotos (pasan a JPEG), PDF, Word, OpenDocument y texto. 10 MB por archivo.
+- Formatos: fotos (pasan a JPEG), PDF, Word, OpenDocument y texto. 25 MB por archivo.
 - Bucket `bajas` privado: los archivos se abren con un enlace firmado que caduca a la hora.
 - Para que un trabajador pueda subir los suyos necesita usuario y que su ficha de Ajustes → Trabajadores esté enlazada a ese usuario.
 - No incluye: avisar a administración cuando se sube un papel, agrupar por proceso de baja ni borrado automático.
@@ -207,7 +207,7 @@ Vite enseña la dirección de red (por ejemplo, `http://192.168.1.143:5173`): á
 1. Ajustes → Trabajadores: abre (o crea) tu ficha y en «Usuario del programa» elige tu usuario. Haz lo mismo con una ficha para `encargado@prueba.es`.
 2. Como gerencia, entra en **Bajas**. Debe haber dos pestañas: «Mis papeles» y «De todos los trabajadores».
 3. En «Mis papeles», elige «Parte de baja» y sube una foto desde el móvil, un PDF y un Word. Cada uno debe aparecer arriba con la fecha y la hora. Tócalos: la foto y el PDF se abren, el Word se descarga con su nombre.
-4. Prueba un archivo no admitido (un Excel) y uno de más de 10 MB: debe decir por qué no lo sube.
+4. Prueba un archivo no admitido (un Excel) y uno de más de 25 MB: debe decir por qué no lo sube.
 5. En «De todos los trabajadores», pulsa **Subir papel**, elige un trabajador sin usuario y sube algo. Debe salir «Subido … por» con tu nombre.
 6. Entra como `encargado@prueba.es`: solo ve sus papeles, puede subir y borrar los suyos, y no ve la pestaña de todos. Si gerencia le subió uno en su nombre, lo ve pero no tiene papelera.
 7. Como gerencia, borra un papel. Intenta borrar en Ajustes una ficha de trabajador con papeles: no debe dejar.

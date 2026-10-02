@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import {
   ACEPTA,
   borrarDocumento,
+  MAX_MB,
   subirDocumento,
   TIPOS_PARTE,
   useBajas,
@@ -264,7 +265,7 @@ function Subir({
                   : 'Elige primero el tipo de parte'}
             </span>
             <span className="text-sm text-muted-foreground">
-              Foto, PDF o documento de Word, de 10 MB como mucho. Puedes elegir varios a la vez.
+              Foto, PDF o documento de Word, de {MAX_MB} MB como mucho. Puedes elegir varios a la vez.
             </span>
           </>
         )}

@@ -15,7 +15,8 @@ export const TIPOS_PARTE = {
 } as const
 export type TipoParte = keyof typeof TIPOS_PARTE
 
-export const MAX_BYTES = 10 * 1024 * 1024 // el mismo tope que el bucket
+/** Tope por archivo, en MB. El mismo que el bucket (migración `bajas_tope_25mb`): se cambian a la vez. */
+export const MAX_MB = 25
 
 // Documentos que se suben tal cual (los mismos tipos que admite el bucket). Las fotos van aparte:
 // se convierten a JPEG. Manda la extensión: el móvil no siempre dice de qué tipo es el archivo.
@@ -116,7 +117,7 @@ export async function subirDocumento(trabajadorId: string, tipo: TipoParte, come
       }
     : { blob: archivo as Blob, ...clase, nombre: archivo.name }
   if (blob.size === 0) throw new Error('el archivo está vacío.')
-  if (blob.size > MAX_BYTES) throw new Error('pesa más de 10 MB.')
+  if (blob.size > MAX_MB * 1024 * 1024) throw new Error(`pesa más de ${MAX_MB} MB.`)
 
   const ruta = `${trabajadorId}/${idAleatorio()}.${ext}`
   const subida = await almacen().upload(ruta, blob, { contentType: mime })
