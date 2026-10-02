@@ -1,7 +1,20 @@
 # Estado del proyecto IMTEX
 
-Actualizado el 02/10/2026 por la tarde, desde el PC de la oficina. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
+Actualizado el viernes 02/10/2026 a última hora, desde el PC de la oficina. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
 El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [decisiones.md](decisiones.md).
+
+## Para el fin de semana (por dónde empezar en casa)
+
+Todo está subido a GitHub en la rama **`feat/web`**. No hay nada a medias.
+
+1. Trae la rama e instala lo nuevo (los comandos están en «Cómo arrancar en otro ordenador»). **En casa falta `web/.env`**: no está en git.
+2. Arranca la web (`cd web && npm run dev`) y mírala en http://localhost:4321. Los pasos están en «Qué probar → Web pública».
+3. Lo que Claude necesita de ti para seguir:
+   - Qué cambiarías de la web (portada, páginas, textos, animaciones).
+   - Si el acabado de la maqueta 3D se queda en gris pizarra o lo prefieres rojo.
+   - Probar las bajas en el CRM con archivos de verdad («Qué probar → Bajas»).
+4. Lo que hay que pedir o confirmar con IMTEX está al final del punto 12 de «Hecho».
+5. Para seguir con Claude en casa: abre Claude Code en la carpeta del repo y dile «Lee `docs/ESTADO.md` y seguimos con la web».
 
 ## Dónde está cada cosa
 
@@ -145,13 +158,17 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 
 Hace falta Git, Node 22 o superior y Claude Code.
 
-**Si el repo ya está en ese ordenador** (la oficina), basta con traer la rama e instalar lo nuevo:
+**Si el repo ya está en ese ordenador**, basta con traer la rama e instalar lo nuevo:
 ```bash
-git fetch && git checkout feat/cierre-meses && git pull
+git fetch && git checkout feat/web && git pull
 ```
 ```bash
 cd crm && npm install
 ```
+```bash
+cd web && npm install
+```
+Si en ese ordenador no existe `web/.env`, créalo copiando `web/.env.example` y rellena las dos primeras líneas con los mismos valores que `crm/.env` (la URL y la clave publicable; solo cambia el prefijo, `PUBLIC_` en vez de `VITE_`). Claude puede hacerlo si se lo pides. Sin ese fichero la web arranca, pero no salen las obras.
 
 **Si se empieza de cero:**
 1. Clonar el repo y cambiar a la rama de trabajo:
@@ -159,7 +176,7 @@ cd crm && npm install
    git clone https://github.com/ContactoExtreweb/Imtex.git
    ```
    ```bash
-   cd Imtex && git checkout feat/cierre-meses
+   cd Imtex && git checkout feat/web
    ```
 2. Instalar dependencias:
    ```bash
@@ -181,6 +198,10 @@ cd crm && npm install
 5. Arrancar el CRM y abrir http://localhost:5173:
    ```bash
    cd crm && npm run dev
+   ```
+6. Arrancar la web y abrir http://localhost:4321 (en otra terminal; pueden estar los dos a la vez):
+   ```bash
+   cd web && npm run dev
    ```
 
 Si al clonar Git no encuentra el repo, es que está usando otra cuenta de GitHub: la que tiene acceso es `Saulcorreyerop`.
@@ -253,6 +274,9 @@ Cómo se ha trabajado hasta ahora, por si Claude no lo recuerda en ese ordenador
 - Se trabaja desde dos ordenadores (casa y oficina). Al terminar cada bloque se actualiza este documento y se sube la rama.
 
 ## Trampas conocidas
+
+- **Si la web se ve sin estilos en alguna página nueva, o la maqueta 3D no carga** (en la consola sale «504 Outdated Optimize Dep»), para el servidor, borra `web/node_modules/.vite` y vuelve a arrancar. Pasa al añadir páginas o dependencias con el servidor en marcha.
+- **No arranques dos servidores de la web a la vez** en la misma carpeta: se pisan y se quedan colgados.
 
 - **La API de Supabase da como mucho 1.000 filas por petición** y corta el resto sin avisar. Para listados que pueden crecer, usa `todasLasFilas` (`crm/src/lib/todas-las-filas.ts`); para sumas, una vista SQL.
 - **`crypto.randomUUID()` solo existe en HTTPS o en localhost.** Entrando desde el móvil por la IP no está. Usa `idAleatorio` (`crm/src/lib/id.ts`).
