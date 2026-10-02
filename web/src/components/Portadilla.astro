@@ -1,0 +1,60 @@
+---
+// Arranque de las páginas interiores: migas, titular grande y una entradilla.
+// Devuelve también las migas como datos estructurados (BreadcrumbList).
+import { EMPRESA } from '../lib/empresa'
+
+interface Miga {
+  texto: string
+  a?: string
+}
+interface Props {
+  titulo: string
+  /** Camino hasta la página, sin el inicio ni la propia página */
+  migas?: Miga[]
+}
+const { titulo, migas = [] } = Astro.props
+const camino: Miga[] = [{ texto: 'Inicio', a: '/' }, ...migas, { texto: titulo }]
+const datos = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: camino.map((m, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: m.texto,
+    item: new URL(m.a ?? Astro.url.pathname, EMPRESA.dominio).href,
+  })),
+}
+---
+
+<header class="contenedor pt-8 pb-10 lg:pt-12 lg:pb-14">
+  <nav aria-label="Estás en">
+    <ol class="rotulo flex flex-wrap gap-x-2 gap-y-1 text-pizarra">
+      {
+        camino.map((m, i) => (
+          <li class="flex items-center gap-2">
+            {i > 0 && <span aria-hidden="true">/</span>}
+            {m.a ? (
+              <a href={m.a} class="inline-block py-3 no-underline hover:text-tinta hover:underline">
+                {m.texto}
+              </a>
+            ) : (
+              <span aria-current="page" class="inline-block py-3 text-tinta">
+                {m.texto}
+              </span>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+  <h1 class="titular mt-3 max-w-[20ch] text-[clamp(2.5rem,7vw,5.75rem)]">{titulo}</h1>
+  {
+    Astro.slots.has('default') && (
+      <div class="mt-6 max-w-[62ch] text-lg text-pizarra">
+        <slot />
+      </div>
+    )
+  }
+  <div class="traza mt-10 h-0.5 bg-rojo" aria-hidden="true"></div>
+</header>
+<script type="application/ld+json" set:html={JSON.stringify(datos).replace(/</g, '\\u003c')} />

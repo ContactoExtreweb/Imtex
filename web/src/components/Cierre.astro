@@ -1,0 +1,28 @@
+---
+// El cierre de todas las páginas: el contacto, con el logo y las franjas de la marca
+import { EMPRESA } from '../lib/empresa'
+import Logo from './Logo.astro'
+
+interface Props {
+  titulo?: string
+}
+const { titulo = 'Cuéntanos tu obra' } = Astro.props
+---
+
+<section class="relative overflow-hidden border-t border-(--filete)">
+  <div class="franjas absolute inset-y-0 right-0 hidden w-[38%] [mask-image:linear-gradient(to_right,transparent,black_55%)] lg:block" aria-hidden="true"></div>
+  <div class="contenedor relative py-16 lg:py-28">
+    <Logo ancho={640} class="mb-10 h-auto w-[min(70%,22rem)]" />
+    <h2 class="titular max-w-[14ch] text-[clamp(2.6rem,6.4vw,5.75rem)]">{titulo}</h2>
+    <p class="mt-6 max-w-[50ch] text-lg text-pizarra">
+      Estudiamos el soporte y te pasamos un presupuesto sin compromiso. Hemos trabajado de Bilbao a La Palma, y en Lisboa.
+    </p>
+    <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+      <a href="/contacto" class="boton">Pedir presupuesto</a>
+      <a href={EMPRESA.telefonoEnlace} class="titular text-4xl no-underline hover:text-rojo-tinta">{EMPRESA.telefono}</a>
+    </div>
+    <p class="mt-6">
+      <a href={`mailto:${EMPRESA.email}`} class="enlace">{EMPRESA.email}</a>
+    </p>
+  </div>
+</section>

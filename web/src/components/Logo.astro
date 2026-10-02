@@ -1,0 +1,19 @@
+---
+// El logo de IMTEX según el tema: letras blancas en el oscuro (por defecto) y negras en el claro.
+// Sobre los bloques que siempre son oscuros (el pie), `fijo` deja solo el de letras blancas.
+import { Image } from 'astro:assets'
+import letrasBlancas from '../assets/logo-imtex-claro.png'
+import letrasNegras from '../assets/logo-imtex.png'
+
+interface Props {
+  class?: string
+  /** Ancho al que se genera la imagen (el tamaño en pantalla lo da la clase) */
+  ancho?: number
+  carga?: 'eager' | 'lazy'
+  fijo?: boolean
+}
+const { class: clase, ancho = 400, carga = 'lazy', fijo = false } = Astro.props
+---
+
+<Image src={letrasBlancas} alt="IMTEX" width={ancho} loading={carga} class:list={[clase, !fijo && 'claro:hidden']} />
+{!fijo && <Image src={letrasNegras} alt="IMTEX" width={ancho} loading={carga} class:list={[clase, 'hidden claro:block']} />}

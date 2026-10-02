@@ -2,11 +2,12 @@
 import { Image } from 'astro:assets'
 import iso14001 from '../assets/empresa/14001.jpg'
 import iso9001 from '../assets/empresa/9001.jpg'
-import logo from '../assets/logo-imtex.png'
+import Cierre from '../components/Cierre.astro'
 import Fases from '../components/Fases.astro'
+import TarjetaObra from '../components/TarjetaObra.astro'
 import Base from '../layouts/Base.astro'
-import { CLASIFICACION, EMPRESA, FABRICANTES, SERVICIOS } from '../lib/empresa'
-import { CACHE_GALERIA, obrasPublicadas, urlFoto, urlMiniatura, type Obra } from '../lib/galeria'
+import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO, SERVICIOS } from '../lib/empresa'
+import { CACHE_GALERIA, obrasPublicadas, type Obra } from '../lib/galeria'
 
 // Las obras destacadas salen de la galería del CRM: se sirve bajo demanda, con caché de unos minutos
 export const prerender = false
@@ -24,6 +25,7 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
 <Base
   titulo="IMTEX · Impermeabilización, reparación y refuerzo de estructuras"
   descripcion="Empresa aplicadora de Villanueva de la Serena (Badajoz) con más de 25 años de experiencia: impermeabilización, reparación y refuerzo de estructuras de hormigón, y resinas epoxi y poliuretano para industria y construcción."
+  datos={[NEGOCIO]}
 >
   <Fases />
 
@@ -57,41 +59,21 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
     </ul>
   </section>
 
-  {/* Obras de referencia, sobre negro: láminas a la misma escala y con la misma etiqueta */}
+  {/* Obras de referencia, en un bloque invertido: láminas a la misma escala y con la misma etiqueta */}
   {
     destacadas.length > 0 && (
-      <section class="sobre-tinta bg-tinta py-14 text-papel lg:py-24">
+      <section class="sobre-noche bg-noche py-14 text-claro lg:py-24">
         <div class="contenedor">
           <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
             <h2 class="titular max-w-[14ch] text-[clamp(2.2rem,5vw,4.5rem)]">Obras de referencia</h2>
-            <p class="max-w-[44ch] text-papel/75">
+            <p class="max-w-[44ch] text-claro/75">
               {obras.length} obras documentadas, de 2010 a hoy: centrales, aeropuertos, presas, depósitos y edificios en España y Portugal.
             </p>
           </div>
           <ul class="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {destacadas.map((o) => (
               <li>
-                <a href={`/obras/${o.slug}`} class="group block no-underline">
-                  <div class="registro overflow-hidden bg-pizarra">
-                    <img
-                      src={urlMiniatura(o.fotos[0].storage_path)}
-                      srcset={`${urlMiniatura(o.fotos[0].storage_path)} 480w, ${urlFoto(o.fotos[0].storage_path)} ${o.fotos[0].ancho}w`}
-                      sizes="(min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw"
-                      alt={o.fotos[0].alt || o.titulo}
-                      width={o.fotos[0].ancho}
-                      height={o.fotos[0].alto}
-                      loading="lazy"
-                      decoding="async"
-                      class="aspect-[5/3] w-full object-cover transition-transform duration-700 ease-(--ease-encaje) group-hover:scale-[1.04]"
-                    />
-                  </div>
-                  <p class="rotulo mt-4 flex justify-between gap-4 border-t border-papel/25 pt-3 text-papel/70">
-                    <span>{o.ubicacion}</span>
-                    <span>{o.anio}</span>
-                  </p>
-                  <h3 class="titular mt-2 text-3xl transition-colors duration-300 group-hover:text-rojo">{o.titulo}</h3>
-                  <p class="mt-2 text-papel/75">{o.resumen}</p>
-                </a>
+                <TarjetaObra obra={o} />
               </li>
             ))}
           </ul>
@@ -141,7 +123,7 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
   </section>
 
   {/* Particulares: un apartado sencillo */}
-  <section class="border-y border-(--filete) bg-papel-2">
+  <section class="border-t border-(--filete) bg-papel-2">
     <div class="contenedor grid gap-x-16 gap-y-6 py-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center lg:py-16">
       <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">¿Una vivienda o una comunidad de vecinos?</h2>
       <div>
@@ -153,22 +135,5 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
     </div>
   </section>
 
-  {/* Cierre: el contacto, con las franjas de la marca */}
-  <section class="relative overflow-hidden">
-    <div class="franjas absolute inset-y-0 right-0 hidden w-[38%] [mask-image:linear-gradient(to_right,transparent,black_55%)] lg:block" aria-hidden="true"></div>
-    <div class="contenedor relative py-16 lg:py-28">
-      <Image src={logo} alt="IMTEX" width={640} class="mb-10 h-auto w-[min(70%,22rem)]" />
-      <h2 class="titular max-w-[14ch] text-[clamp(2.6rem,6.4vw,5.75rem)]">Cuéntanos tu obra</h2>
-      <p class="mt-6 max-w-[50ch] text-lg text-pizarra">
-        Estudiamos el soporte y te pasamos un presupuesto sin compromiso. Hemos trabajado de Bilbao a La Palma, y en Lisboa.
-      </p>
-      <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
-        <a href="/contacto" class="boton">Pedir presupuesto</a>
-        <a href={EMPRESA.telefonoEnlace} class="titular text-4xl no-underline hover:text-rojo-tinta">{EMPRESA.telefono}</a>
-      </div>
-      <p class="mt-6">
-        <a href={`mailto:${EMPRESA.email}`} class="enlace">{EMPRESA.email}</a>
-      </p>
-    </div>
-  </section>
+  <Cierre />
 </Base>

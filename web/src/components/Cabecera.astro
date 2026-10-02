@@ -1,16 +1,16 @@
 ---
-import { Image } from 'astro:assets'
-import logo from '../assets/logo-imtex.png'
 import { EMPRESA, NAVEGACION } from '../lib/empresa'
+import Logo from './Logo.astro'
 
 const ruta = Astro.url.pathname
 const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
 ---
 
-<header class="sticky top-0 z-40 border-b border-(--filete) bg-papel">
-  <div class="contenedor flex h-(--alto-cabecera) items-center gap-6">
+{/* La cabecera no se mueve al pasar de una página a otra (view-transition-name) */}
+<header class="sticky top-0 z-40 border-b border-(--filete) bg-papel [view-transition-name:cabecera]">
+  <div class="contenedor flex h-(--alto-cabecera) items-center gap-5">
     <a href="/" class="shrink-0" aria-label="IMTEX, inicio">
-      <Image src={logo} alt="IMTEX" height={96} class="h-10 w-auto lg:h-12" loading="eager" />
+      <Logo ancho={220} carga="eager" class="h-10 w-auto lg:h-12" />
     </a>
 
     <nav aria-label="Principal" class="ml-auto hidden lg:block">
@@ -31,22 +31,34 @@ const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
       </ul>
     </nav>
 
-    <a href={EMPRESA.telefonoEnlace} class="rotulo ml-auto flex min-h-11 min-w-11 items-center justify-center gap-2 text-[0.9375rem] no-underline lg:ml-0"
-      aria-label={`Llamar al ${EMPRESA.telefono}`}>
+    <a
+      href={EMPRESA.telefonoEnlace}
+      class="rotulo ml-auto flex min-h-11 min-w-11 items-center justify-center gap-2 text-[0.9375rem] no-underline lg:ml-0"
+      aria-label={`Llamar al ${EMPRESA.telefono}`}
+    >
       <svg aria-hidden="true" viewBox="0 0 24 24" class="size-4.5 fill-none stroke-rojo-tinta stroke-2">
         <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" stroke-linejoin="round"></path>
       </svg>
       <span class="max-sm:sr-only">{EMPRESA.telefono}</span>
     </a>
+
+    {/* Tema: oscuro por defecto; el botón pasa al claro y vuelve. El texto lo pone el script. */}
+    <button type="button" data-tema-cambio class="flex size-11 items-center justify-center" aria-label="Cambiar al tema claro">
+      {/* Sol: se ve en el tema oscuro (lleva al claro) */}
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="size-5 fill-none stroke-current stroke-2 claro:hidden">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke-linecap="round"></path>
+      </svg>
+      {/* Luna: se ve en el tema claro (lleva al oscuro) */}
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="hidden size-5 fill-none stroke-current stroke-2 claro:block">
+        <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+
     <a href="/contacto" class="boton max-lg:hidden">Pedir presupuesto</a>
 
     {/* Móvil: el menú es un popover nativo, sin JavaScript */}
-    <button
-      type="button"
-      popovertarget="menu-movil"
-      class="rotulo -mr-2 flex size-11 items-center justify-center lg:hidden"
-      aria-label="Abrir el menú"
-    >
+    <button type="button" popovertarget="menu-movil" class="-mr-2 flex size-11 items-center justify-center lg:hidden" aria-label="Abrir el menú">
       <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current stroke-2">
         <path d="M3 7h18M3 12h18M3 17h18"></path>
       </svg>
@@ -54,31 +66,21 @@ const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
   </div>
 </header>
 
-<div
-  id="menu-movil"
-  popover
-  class="sobre-tinta fixed inset-0 m-0 size-full max-h-none max-w-none bg-tinta p-0 text-papel backdrop:bg-tinta lg:hidden"
->
+<div id="menu-movil" popover class="sobre-noche fixed inset-0 m-0 size-full max-h-none max-w-none bg-noche p-0 text-claro backdrop:bg-noche lg:hidden">
   <div class="contenedor flex h-full flex-col pb-8">
     <div class="flex h-(--alto-cabecera) items-center justify-between">
       <span class="rotulo">Menú</span>
-      <button
-        type="button"
-        popovertarget="menu-movil"
-        popovertargetaction="hide"
-        class="-mr-2 flex size-11 items-center justify-center"
-        aria-label="Cerrar el menú"
-      >
+      <button type="button" popovertarget="menu-movil" popovertargetaction="hide" class="-mr-2 flex size-11 items-center justify-center" aria-label="Cerrar el menú">
         <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current stroke-2">
           <path d="M5 5l14 14M19 5 5 19"></path>
         </svg>
       </button>
     </div>
     <nav aria-label="Principal, móvil" class="mt-4">
-      <ul class="border-t border-papel/20">
+      <ul class="border-t border-claro/20">
         {
           NAVEGACION.map((n) => (
-            <li class="border-b border-papel/20">
+            <li class="border-b border-claro/20">
               <a href={n.a} class="titular block py-4 text-4xl no-underline aria-[current=page]:text-rojo" aria-current={activa(n.a) ? 'page' : undefined}>
                 {n.texto}
               </a>
@@ -93,3 +95,25 @@ const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
     </div>
   </div>
 </div>
+
+<script>
+  const raiz = document.documentElement
+  const boton = document.querySelector<HTMLButtonElement>('[data-tema-cambio]')!
+  const pintar = () => {
+    const claro = raiz.dataset.tema === 'claro'
+    boton.setAttribute('aria-label', claro ? 'Cambiar al tema oscuro' : 'Cambiar al tema claro')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', claro ? '#eef0f2' : '#131116')
+  }
+  boton.addEventListener('click', () => {
+    const claro = raiz.dataset.tema !== 'claro'
+    if (claro) raiz.dataset.tema = 'claro'
+    else delete raiz.dataset.tema
+    try {
+      localStorage.setItem('tema', claro ? 'claro' : 'oscuro')
+    } catch {
+      // sin almacenamiento (navegación privada): el cambio vale para esta página
+    }
+    pintar()
+  })
+  pintar()
+</script>

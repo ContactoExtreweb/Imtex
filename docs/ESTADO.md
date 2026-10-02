@@ -81,13 +81,17 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Para que un trabajador pueda subir los suyos necesita usuario y que su ficha de Ajustes → Trabajadores esté enlazada a ese usuario.
 - No incluye: avisar a administración cuando se sube un papel, agrupar por proceso de baja ni borrado automático.
 
-**12. Web pública (en marcha, rama `feat/web`)**. Plan aprobado el 02/10/2026; va por pasos con paradas.
-- Hecho: `web/PRODUCT.md`, lectura de la galería con `fetch` (`web/src/lib/galeria.ts`), redirecciones 301 (`web/public/_redirects`), sistema visual (Archivo variable autoalojada, colores de marca) con cabecera y pie, y **portada**.
-- **Las 22 obras de la web antigua están en la galería de dev**: 205 fotos con miniatura en el bucket y las fichas publicadas, seis destacadas. Se repite con `web/scripts/importar-obras.mjs` (leer → fotos → sql) y `supabase/seed_web_obras.sql`; las instrucciones para subir las fotos están en la cabecera del script.
-- **Dirección de diseño elegida por Saúl: «La obra por fases»** (skill impeccable; contrato en `web/.impeccable/surfaces/`). La portada lleva una maqueta 3D de una esquina de cubierta (three.js, hecha con código en `web/src/scripts/pieza.ts`): al bajar pasa por seis fases reales de obra, con las herramientas trabajando (lanza, llana, rodillo, pistola), un encuadre de cámara por fase y el logo de IMTEX pintado al final. Segunda versión, rehecha el 02/10 porque a Saúl la primera le pareció poco vistosa y con cambios mínimos entre fases; también pidió más peso del logo (cabecera, portada, cierre y pie). En desarrollo, `__pieza.saltar(3.6)` en la consola lleva a una fase concreta. Sin WebGL, con animaciones reducidas o poca memoria, salen las fotos reales de cada fase.
-- **Pendiente de Saúl: dar el visto bueno a la portada** (`npm run dev` en `web/`, http://localhost:4321). Después: resto de páginas, formulario, SEO y cierre (pasos 3 a 6 del plan).
-- Sin comprobar todavía: Lighthouse, y el aspecto en un móvil de verdad.
-- A confirmar con IMTEX: fechas de CETARSA (2012-2022 o 2012-2024), razón social exacta, que el acabado de la pieza 3D en rojo les encaje, y qué hacen para particulares.
+**12. Web pública (rama `feat/web`)**. Plan aprobado el 02/10/2026. **Todas las páginas están hechas; falta el visto bueno de Saúl y lo de producción.**
+- **Diseño**: dirección «La obra por fases», elegida por Saúl con la skill impeccable (contrato en `web/.impeccable/surfaces/`, producto en `web/PRODUCT.md`). Tipografía Archivo variable autoalojada. **Tema oscuro por defecto**, con botón en la cabecera para pasar al claro (se recuerda en el navegador).
+- **Portada**: maqueta 3D de una esquina de cubierta (three.js, hecha con código en `web/src/scripts/pieza.ts`) que al bajar pasa por seis fases reales de obra, con las herramientas trabajando, un encuadre de cámara por fase y el logo de IMTEX pintado al final. Saúl la dio por buena. Sin WebGL, con animaciones reducidas o poca memoria, salen las fotos reales de cada fase. En desarrollo, `__pieza.saltar(3.6)` en la consola lleva a una fase concreta.
+- **Páginas**: `/servicios` y sus cuatro fichas, `/obras` (con filtro por servicio) y la ficha de cada obra (datos, trabajos paso a paso y visor de fotos), `/empresa`, `/particulares`, `/contacto`, los tres legales y el 404.
+- **Animaciones**: paso de una página a otra con barrido, y la foto de una obra viaja del listado a su ficha (transiciones de vista nativas del navegador, sin JavaScript); fotos que se destapan y se mueven algo más despacio que la página; números de paso que se encienden al pasar. Todo se apaga si el visitante tiene las animaciones desactivadas, y en navegadores sin soporte simplemente no se anima.
+- **Galería**: las 22 obras de la web antigua están en dev (205 fotos con miniatura, fichas publicadas, seis destacadas). Se repite con `web/scripts/importar-obras.mjs` (leer → fotos → sql) y `supabase/seed_web_obras.sql`; las instrucciones para subir las fotos están en la cabecera del script. La web lee la galería con `fetch` (`web/src/lib/galeria.ts`): lo que se publica en el CRM sale sin volver a desplegar (caché de 5 minutos).
+- **Formulario de contacto** (`web/src/pages/api/contacto.ts`): valida, tiene campo trampa y tiempo mínimo contra robots, y envía con Resend. **Sin `RESEND_API_KEY` no envía**: avisa y enseña teléfono y email. Funciona también sin JavaScript.
+- **SEO**: título, descripción y canónica (`www.imtexsl.com`) por página, Open Graph, datos estructurados (empresa, servicios y migas), `/sitemap.xml` con las obras publicadas, `robots.txt` y las redirecciones 301 de la web antigua (`web/public/_redirects`).
+- **Sin comprobar**: Lighthouse, un móvil de verdad, las animaciones en movimiento (Claude solo ve capturas fijas) y el envío real del formulario.
+- **A confirmar con IMTEX**: fechas de CETARSA (2012-2022 o 2012-2024); razón social exacta y datos del Registro Mercantil para el aviso legal; que los legales los revise su asesoría; el texto de `/particulares` (es una suposición razonable de lo que hacen en viviendas); qué significan exactamente los códigos de clasificación; permiso para logotipos de fabricantes (hoy van en texto); fotos a más resolución y logo en vector. El mapa de contacto señala el centro del polígono, no la parcela 31.
+- En el bucket de dev quedan 8 archivos duplicados en `obras/obras/viaducto-casatejada/`, de una subida a la carpeta equivocada. No molestan.
 
 ## Pendiente
 
@@ -122,11 +126,14 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Pruebas de recorrido completo con un usuario de prueba.
 - Actualizar las dependencias de `web/`: `npm audit` da 8 avisos en el adaptador de Netlify.
 
-**Web corporativa** (prompts 4 y 5). Es lo siguiente grande.
-- Páginas públicas de la galería (`/obras` y `/obras/[slug]`): leen `web_obras` y `web_fotos`. El panel ya está hecho en el CRM.
-- Diseño, textos de empresa y servicios, las 22 obras, SEO y redirecciones desde Joomla.
-- Va con retraso respecto al presupuesto (revisión el 12/10 y producción el 19/10), porque se decidió hacer antes el CRM.
-- Material que hay que pedir a IMTEX: logo en vector, fotos de obras a buena resolución, datos del Registro Mercantil, email del formulario de contacto y acceso al DNS.
+**Web corporativa, para ponerla en producción** (PLAN.md C1). El desarrollo está hecho (punto 12 de «Hecho»).
+- Visto bueno de Saúl y de IMTEX a textos, fotos y legales.
+- Netlify: sitio `imtex-web` con base `web/` y sus variables (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `RESEND_API_KEY`, `CONTACTO_EMAIL_DESTINO`).
+- Resend: sin la cuenta y el dominio de envío, el formulario no manda correos.
+- Galería en producción: repetir la importación de las 22 obras contra `imtex-prod`.
+- Lighthouse en móvil ≥ 90 y revisión en un iPhone.
+- DNS (solo los registros de la web; el MX no se toca), SSL y Search Console.
+- Material que hay que pedir a IMTEX: logo en vector, fotos de obras a buena resolución, datos del Registro Mercantil y acceso al DNS.
 
 **Tienda online**
 - Aparcada. La llevará Pedro, fuera de este repo.
@@ -220,13 +227,22 @@ Vite enseña la dirección de red (por ejemplo, `http://192.168.1.143:5173`): á
 6. Entra como `encargado@prueba.es`: solo ve sus papeles, puede subir y borrar los suyos, y no ve la pestaña de todos. Si gerencia le subió uno en su nombre, lo ve pero no tiene papelera.
 7. Como gerencia, borra un papel. Intenta borrar en Ajustes una ficha de trabajador con papeles: no debe dejar.
 
+**Web pública** (`cd web && npm run dev`, http://localhost:4321)
+1. Portada: baja despacio y mira las seis fases de la maqueta 3D. Gírala arrastrando. Recarga la página a media lectura: debe aparecer ya en esa fase.
+2. Cambia al tema claro con el botón del sol y recarga: debe recordarlo. Vuelve al oscuro.
+3. Obras: filtra por servicio, abre una obra (la foto debe «viajar» a la ficha en Chrome o Edge), abre el visor de fotos y pasa con las flechas.
+4. En el CRM, despublica una obra y comprueba que desaparece de la web (tarda hasta 5 minutos en producción; en local, al recargar).
+5. Contacto: envía el formulario vacío, con un email mal escrito y bien relleno. Sin clave de Resend debe decir que aún no está conectado.
+6. Pruébalo todo en el móvil (`npm run dev -- --host` y la dirección de red).
+7. Escribe una dirección que no exista (`/obras/no-existe`): debe salir la página 404 de la web.
+
 ## Cómo seguir con Claude
 
 Abre Claude Code en la carpeta del repo y dile qué quieres. Ejemplos:
 - «Lee `docs/ESTADO.md` y dime por dónde vamos.»
 - «He probado control de obra y falla esto: …»
 - «Fusiona `feat/bajas` en `main`.» Esa rama lo incluye todo.
-- «Empezamos con la web: prompt 4 de `docs/PLAN.md`.»
+- «He visto la web y cambiaría esto: …»
 
 Cómo se ha trabajado hasta ahora, por si Claude no lo recuerda en ese ordenador:
 - Todo en una misma conversación, encadenando los bloques del plan.

@@ -10,8 +10,8 @@ import f4 from '../assets/fases/4-imprimacion.jpg'
 import f5 from '../assets/fases/5-membrana.jpg'
 import f6 from '../assets/fases/6-acabado.jpg'
 import logoClaro from '../assets/logo-imtex-claro.png'
-import logo from '../assets/logo-imtex.png'
 import { EMPRESA, FABRICANTES } from '../lib/empresa'
+import Logo from './Logo.astro'
 
 const FASES = [
   {
@@ -60,16 +60,25 @@ const FASES = [
 const dos = (n: number) => String(n).padStart(2, '0')
 ---
 
-{/* La pieza ocupa más de media pantalla y llega hasta el borde derecho */}
+{/* La pieza ocupa más de media pantalla y llega hasta el borde derecho, también en pantallas muy anchas:
+    el texto se queda alineado con el resto de la web y el panel crece hacia la derecha. */}
 <section
   data-fases
-  class="mx-auto grid w-full max-w-[120rem] px-(--margen) [--margen:clamp(1.25rem,4vw,3rem)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-x-8 lg:pr-0"
+  class="grid w-full px-(--margen) [--margen:clamp(1.25rem,4vw,3rem)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-x-8 lg:pr-0 lg:pl-[max(var(--margen),calc(50vw-42rem+var(--margen)))]"
 >
+  {/* Antes de pintar: si el equipo puede con el 3D, la foto de la fase no llena el panel mientras carga */}
+  <script is:inline>
+    {
+      const n = navigator
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !(n.connection && n.connection.saveData) && (n.deviceMemory || 8) >= 4)
+        document.currentScript.parentElement.setAttribute('data-espera-pieza', '')
+    }
+  </script>
   <div class="@container lg:pb-24">
     {/* Primer pantallazo */}
     <div class="flex min-h-[calc(58svh-var(--alto-cabecera))] flex-col justify-center py-10 lg:min-h-[calc(100svh-var(--alto-cabecera))] lg:py-16">
       {/* El logo abre la página, a gran tamaño */}
-      <Image src={logo} alt="IMTEX" width={520} loading="eager" class="mb-8 h-auto w-[min(72%,19rem)] lg:mb-10 lg:w-[min(78%,26rem)]" />
+      <Logo ancho={520} carga="eager" class="mb-8 h-auto w-[min(72%,19rem)] lg:mb-10 lg:w-[min(78%,26rem)]" />
       {/* El tamaño sale del ancho de la columna: «impermeabilización» tiene que caber entera */}
       <h1 class="titular text-[clamp(2rem,10.6cqi,4.75rem)]">Impermeabilización, reparación y refuerzo de estructuras</h1>
       <p class="mt-6 max-w-[52ch] text-lg text-pizarra">
@@ -122,7 +131,7 @@ const dos = (n: number) => String(n).padStart(2, '0')
               />
             ))
           }
-          <figcaption data-pie class="rotulo absolute bottom-0 left-0 bg-tinta px-2.5 py-1.5 text-[0.6875rem] text-papel">
+          <figcaption data-pie class="rotulo absolute bottom-0 left-0 bg-negro px-2.5 py-1.5 text-[0.6875rem] text-claro">
             {FASES[0].obra}
           </figcaption>
         </figure>
@@ -207,10 +216,9 @@ const dos = (n: number) => String(n).padStart(2, '0')
   addEventListener('resize', actualizar)
   actualizar()
 
-  // El 3D solo donde merece la pena: con animaciones permitidas, sin ahorro de datos y con memoria suficiente
-  const nav = navigator as Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number }
-  const puede = !matchMedia('(prefers-reduced-motion: reduce)').matches && !nav.connection?.saveData && (nav.deviceMemory ?? 8) >= 4
-  if (puede) {
+  // El 3D solo donde merece la pena: con animaciones permitidas, sin ahorro de datos y con memoria suficiente.
+  // Lo decide el script en línea de arriba, antes de pintar.
+  if (raiz.hasAttribute('data-espera-pieza')) {
     const cargar = async () => {
       try {
         const { montarPieza } = await import('../scripts/pieza')
@@ -222,7 +230,9 @@ const dos = (n: number) => String(n).padStart(2, '0')
         raiz.toggleAttribute('data-con-pieza', true)
         requestAnimationFrame(() => lienzo.classList.remove('opacity-0'))
       } catch {
-        lienzo.classList.add('hidden') // sin WebGL: se quedan las fotos
+        // Sin WebGL: se quedan las fotos, a panel completo
+        lienzo.classList.add('hidden')
+        raiz.removeAttribute('data-espera-pieza')
       }
     }
     // Después de que la página esté lista, para no competir con el texto y las fotos
@@ -233,15 +243,19 @@ const dos = (n: number) => String(n).padStart(2, '0')
 </script>
 
 <style>
-  /* Con la pieza en marcha, la foto real de la fase pasa a una esquina del panel */
-  [data-con-pieza] [data-fotos] {
+  /* Con la pieza (en marcha o cargando), la foto real de la fase va en una esquina del panel.
+     Mientras carga no se ve: así no aparece la foto a panel completo y luego salta. */
+  [data-espera-pieza]:not([data-con-pieza]) [data-fotos] {
+    opacity: 0;
+  }
+  [data-espera-pieza] [data-fotos] {
     inset: auto auto 0.6rem 0.6rem;
     width: 30%;
     aspect-ratio: 5 / 3;
-    box-shadow: 0 10px 24px -12px color-mix(in oklab, var(--color-tinta) 55%, transparent);
+    box-shadow: 0 10px 24px -12px color-mix(in oklab, var(--color-negro) 70%, transparent);
   }
   @media (min-width: 64rem) {
-    [data-con-pieza] [data-fotos] {
+    [data-espera-pieza] [data-fotos] {
       inset: auto auto 1.25rem 0;
       width: 25%;
     }

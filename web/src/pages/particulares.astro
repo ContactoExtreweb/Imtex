@@ -1,0 +1,78 @@
+---
+import { Image } from 'astro:assets'
+import Cierre from '../components/Cierre.astro'
+import Portadilla from '../components/Portadilla.astro'
+import Base from '../layouts/Base.astro'
+import { EMPRESA } from '../lib/empresa'
+import { caratulaServicio } from '../lib/fotos-servicios'
+
+// Trabajos habituales en viviendas y comunidades, con el sistema de la casa que se aplica en cada uno.
+// Pendiente de confirmar con IMTEX (docs/ESTADO.md).
+const TRABAJOS = [
+  { que: 'Terrazas y cubiertas', como: 'Láminas impermeabilizantes y membranas de poliuretano o poliurea, según el soporte y si se va a pisar.' },
+  { que: 'Garajes y sótanos', como: 'Inyecciones de resina para cortar filtraciones y morteros impermeables en muros y soleras.' },
+  { que: 'Piscinas', como: 'Lámina de PVC con sistema liner, o mortero impermeable en el vaso.' },
+  { que: 'Depósitos y aljibes', como: 'Morteros impermeables y láminas aptas para agua potable.' },
+  { que: 'Estructuras de hormigón', como: 'Reparación de forjados, pilares y voladizos con armaduras a la vista, y refuerzo con fibra de carbono si hace falta.' },
+  { que: 'Suelos de garaje y trastero', como: 'Pavimentos continuos de resina epoxi o poliuretano.' },
+]
+const PASOS = [
+  'Nos cuentas qué pasa: dónde entra el agua, desde cuándo y qué se ha hecho antes. Unas fotos ayudan.',
+  'Vamos a verlo y estudiamos el soporte.',
+  'Te pasamos un presupuesto sin compromiso, con el sistema que proponemos y por qué.',
+]
+---
+
+<Base
+  titulo="Particulares y comunidades"
+  descripcion="Impermeabilización de terrazas, cubiertas, garajes y piscinas, y reparación de estructuras para viviendas y comunidades de vecinos, con los mismos sistemas que IMTEX aplica en obra industrial."
+>
+  <Portadilla titulo="Particulares y comunidades">
+    Una terraza que filtra, un garaje con humedades o una piscina que pierde agua se resuelven con los mismos sistemas que una obra industrial, a otra escala.
+  </Portadilla>
+
+  <section class="contenedor grid gap-x-16 gap-y-10 pb-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:pb-24">
+    <div class="registro aspect-[5/3] self-start overflow-hidden bg-gris lg:sticky lg:top-[calc(var(--alto-cabecera)+2rem)]">
+      <Image src={caratulaServicio('impermeabilizacion')} alt="Impermeabilización de una cubierta" widths={[480, 900]} sizes="(min-width: 64rem) 34rem, 92vw" loading="eager" class="size-full object-cover" />
+    </div>
+    <div>
+      <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">Qué solemos hacer</h2>
+      <dl class="mt-6 border-t border-tinta">
+        {
+          TRABAJOS.map((t) => (
+            <div class="grid gap-x-8 gap-y-1 border-b border-(--filete) py-5 sm:grid-cols-[13rem_1fr]">
+              <dt class="titular text-2xl">{t.que}</dt>
+              <dd class="text-pizarra">{t.como}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <section class="border-t border-(--filete) bg-papel-2">
+    <div class="contenedor grid gap-x-16 gap-y-8 py-14 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:py-20">
+      <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">Cómo pedirlo</h2>
+      <div>
+        <ol class="border-t border-tinta">
+          {
+            PASOS.map((p, n) => (
+              <li class="grid grid-cols-[3.5rem_1fr] items-baseline gap-4 border-b border-(--filete) py-5">
+                <span class="titular paso text-4xl text-pizarra/45" aria-hidden="true">
+                  {`0${n + 1}`}
+                </span>
+                <span class="max-w-[56ch] text-lg">{p}</span>
+              </li>
+            ))
+          }
+        </ol>
+        <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <a href="/contacto" class="boton">Pedir presupuesto</a>
+          <a href={EMPRESA.telefonoEnlace} class="titular py-2 text-3xl no-underline hover:text-rojo-tinta">{EMPRESA.telefono}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Cierre titulo="¿Lo vemos?" />
+</Base>

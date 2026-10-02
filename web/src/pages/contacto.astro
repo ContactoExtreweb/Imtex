@@ -1,0 +1,159 @@
+---
+import Portadilla from '../components/Portadilla.astro'
+import Base from '../layouts/Base.astro'
+import { EMPRESA, NEGOCIO, SERVICIOS, UBICACION } from '../lib/empresa'
+
+// Bajo demanda: el formulario lleva la hora de carga, y sin JavaScript el resultado llega en ?estado=
+export const prerender = false
+
+const MENSAJES: Record<string, { texto: string; malo?: boolean }> = {
+  ok: { texto: 'Mensaje enviado. Te contestaremos lo antes posible.' },
+  revisa: { texto: 'Revisa el formulario: faltan el nombre, un email válido, el mensaje o la casilla de privacidad.', malo: true },
+  'sin-envio': {
+    texto: `El formulario todavía no está conectado al correo. Llámanos al ${EMPRESA.telefono} o escribe a ${EMPRESA.email}.`,
+    malo: true,
+  },
+  error: { texto: `No se ha podido enviar. Vuelve a intentarlo, llama al ${EMPRESA.telefono} o escribe a ${EMPRESA.email}.`, malo: true },
+}
+const estado = MENSAJES[Astro.url.searchParams.get('estado') ?? '']
+// Encuadre del mapa: unos 600 m alrededor del polígono
+const caja = [UBICACION.lon - 0.012, UBICACION.lat - 0.007, UBICACION.lon + 0.012, UBICACION.lat + 0.007].join(',')
+---
+
+<Base
+  titulo="Contacto"
+  descripcion={`Pide presupuesto a IMTEX: ${EMPRESA.telefono}, ${EMPRESA.email}. ${EMPRESA.direccion}, ${EMPRESA.cp} ${EMPRESA.localidad} (${EMPRESA.provincia}).`}
+  datos={[NEGOCIO]}
+>
+  <Portadilla titulo="Cuéntanos tu obra">
+    Dinos qué hay que impermeabilizar, reparar o reforzar. Estudiamos el soporte y te pasamos un presupuesto sin compromiso.
+  </Portadilla>
+
+  <div class="contenedor grid gap-x-16 gap-y-14 pb-16 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:pb-28">
+    <form id="formulario" action="/api/contacto" method="post" class="grid content-start gap-5" data-formulario>
+      <p data-estado role={estado?.malo ? 'alert' : 'status'} class:list={['px-4 py-3 text-lg font-semibold', estado ? (estado.malo ? 'bg-rojo text-negro' : 'bg-tinta text-papel') : 'hidden']}>
+        {estado?.texto}
+      </p>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <label class="grid gap-1.5">
+          <span class="rotulo">Nombre</span>
+          <input class="campo" name="nombre" required minlength="2" maxlength="120" autocomplete="name" />
+        </label>
+        <label class="grid gap-1.5">
+          <span class="rotulo">Empresa <span class="text-pizarra normal-case">(opcional)</span></span>
+          <input class="campo" name="empresa" maxlength="120" autocomplete="organization" />
+        </label>
+        <label class="grid gap-1.5">
+          <span class="rotulo">Email</span>
+          <input class="campo" type="email" name="email" required maxlength="160" autocomplete="email" />
+        </label>
+        <label class="grid gap-1.5">
+          <span class="rotulo">Teléfono <span class="text-pizarra normal-case">(opcional)</span></span>
+          <input class="campo" type="tel" name="telefono" maxlength="40" autocomplete="tel" />
+        </label>
+      </div>
+      <label class="grid gap-1.5">
+        <span class="rotulo">De qué se trata</span>
+        <select class="campo" name="asunto">
+          {SERVICIOS.map((s) => <option>{s.nombre}</option>)}
+          <option>Vivienda o comunidad de vecinos</option>
+          <option>Otra consulta</option>
+        </select>
+      </label>
+      <label class="grid gap-1.5">
+        <span class="rotulo">Mensaje</span>
+        <textarea class="campo min-h-44" name="mensaje" required minlength="10" maxlength="5000" placeholder="Qué estructura es, dónde está, qué superficie tiene y qué le pasa."></textarea>
+      </label>
+
+      {/* Trampa para robots: fuera de la vista y del tabulador. Una persona no la rellena. */}
+      <div class="absolute -left-[9999px]" aria-hidden="true">
+        <label>
+          No rellenes este campo
+          <input name="web" tabindex="-1" autocomplete="off" />
+        </label>
+      </div>
+      <input type="hidden" name="t" value={Date.now()} />
+
+      <label class="flex items-start gap-3">
+        <input type="checkbox" name="privacidad" value="si" required class="mt-1 size-5 accent-rojo" />
+        <span class="text-pizarra">
+          He leído la <a href="/privacidad" class="enlace">política de privacidad</a> y acepto que IMTEX use estos datos para contestarme.
+        </span>
+      </label>
+      <div>
+        <button class="boton" type="submit">Enviar</button>
+      </div>
+    </form>
+
+    <aside class="grid content-start gap-8">
+      <dl class="border-t border-tinta">
+        <div class="border-b border-(--filete) py-5">
+          <dt class="rotulo text-pizarra">Teléfono</dt>
+          <dd class="mt-1">
+            <a href={EMPRESA.telefonoEnlace} class="titular text-4xl no-underline hover:text-rojo-tinta">{EMPRESA.telefono}</a>
+          </dd>
+        </div>
+        <div class="border-b border-(--filete) py-5">
+          <dt class="rotulo text-pizarra">Email</dt>
+          <dd class="mt-1">
+            <a href={`mailto:${EMPRESA.email}`} class="enlace text-lg">{EMPRESA.email}</a>
+          </dd>
+        </div>
+        <div class="border-b border-(--filete) py-5">
+          <dt class="rotulo text-pizarra">Dirección</dt>
+          <dd class="mt-1 text-lg">
+            {EMPRESA.direccion}
+            <br />
+            {EMPRESA.cp}
+            {EMPRESA.localidad} ({EMPRESA.provincia})
+            <br />
+            <a href={EMPRESA.mapa} class="enlace inline-block py-2.5" rel="noopener">Cómo llegar</a>
+          </dd>
+        </div>
+      </dl>
+      {/* Mapa de OpenStreetMap, sin cookies de seguimiento. El marcador señala el polígono, no la parcela. */}
+      <iframe
+        title="Mapa: Polígono Industrial Cagancha, Villanueva de la Serena"
+        src={`https://www.openstreetmap.org/export/embed.html?bbox=${caja}&layer=mapnik&marker=${UBICACION.lat},${UBICACION.lon}`}
+        loading="lazy"
+        referrerpolicy="no-referrer"
+        class="aspect-[4/3] w-full border border-(--filete)"></iframe>
+    </aside>
+  </div>
+</Base>
+
+<script>
+  // Con JavaScript, el formulario se envía sin salir de la página y lo escrito no se pierde si falla.
+  const form = document.querySelector<HTMLFormElement>('[data-formulario]')
+  if (form) {
+    const aviso = form.querySelector<HTMLElement>('[data-estado]')!
+    const boton = form.querySelector<HTMLButtonElement>('button[type=submit]')!
+    const TEXTOS: Record<string, string> = {
+      ok: 'Mensaje enviado. Te contestaremos lo antes posible.',
+      revisa: 'Revisa el formulario: faltan el nombre, un email válido, el mensaje o la casilla de privacidad.',
+      'sin-envio': 'El formulario todavía no está conectado al correo. Llámanos o escríbenos al email de la derecha.',
+      error: 'No se ha podido enviar. Vuelve a intentarlo, o llámanos.',
+    }
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault()
+      boton.disabled = true
+      boton.textContent = 'Enviando…'
+      let estado = 'error'
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } })
+        estado = (await res.json()).estado ?? 'error'
+      } catch {
+        // sin conexión: se queda en «error»
+      }
+      const bien = estado === 'ok'
+      aviso.textContent = TEXTOS[estado] ?? TEXTOS.error
+      aviso.setAttribute('role', bien ? 'status' : 'alert')
+      aviso.className = `px-4 py-3 text-lg font-semibold ${bien ? 'bg-tinta text-papel' : 'bg-rojo text-negro'}`
+      aviso.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      if (bien) form.reset()
+      boton.disabled = false
+      boton.textContent = 'Enviar'
+    })
+  }
+</script>

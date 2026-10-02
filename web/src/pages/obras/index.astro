@@ -1,0 +1,84 @@
+---
+import Cierre from '../../components/Cierre.astro'
+import Portadilla from '../../components/Portadilla.astro'
+import TarjetaObra from '../../components/TarjetaObra.astro'
+import Base from '../../layouts/Base.astro'
+import { SERVICIOS } from '../../lib/empresa'
+import { CACHE_GALERIA, obrasPublicadas, type Obra } from '../../lib/galeria'
+
+// Bajo demanda: lo que IMTEX publica en el CRM sale aquí sin volver a desplegar
+export const prerender = false
+
+let obras: Obra[] = []
+let fallo = false
+try {
+  obras = (await obrasPublicadas()).filter((o) => o.fotos.length > 0)
+} catch (error) {
+  console.error(error)
+  fallo = true
+}
+Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
+
+// Filtro por servicio, con enlaces normales: /obras?servicio=impermeabilizacion
+const filtro = SERVICIOS.find((s) => s.slug === Astro.url.searchParams.get('servicio'))
+const visibles = filtro ? obras.filter((o) => o.servicio === filtro.categoria) : obras
+const filtros = [
+  { a: '/obras', texto: 'Todas', n: obras.length, activo: !filtro },
+  ...SERVICIOS.map((s) => ({
+    a: `/obras?servicio=${s.slug}`,
+    texto: s.nombre,
+    n: obras.filter((o) => o.servicio === s.categoria).length,
+    activo: filtro?.slug === s.slug,
+  })).filter((f) => f.n > 0),
+]
+---
+
+<Base
+  titulo={filtro ? `Obras de ${filtro.nombre.toLowerCase()}` : 'Obras de referencia'}
+  descripcion="Obras de referencia de IMTEX desde 2010: Central Nuclear de Almaraz, aeropuertos de Sevilla y Bilbao, transvase Tajo-Segura, E.T.A.P. de Torrelaguna, Bodegas Williams & Humbert y más."
+>
+  <Portadilla titulo="Obras de referencia">
+    {obras.length} obras documentadas, de 2010 a hoy: qué había, qué se hizo y con qué sistema, paso a paso.
+  </Portadilla>
+
+  <section class="contenedor pb-16 lg:pb-28">
+    <nav aria-label="Filtrar por servicio">
+      <ul class="flex flex-wrap gap-2">
+        {
+          filtros.map((f) => (
+            <li>
+              <a
+                href={f.a}
+                aria-current={f.activo ? 'true' : undefined}
+                class="rotulo flex min-h-11 items-center gap-2 border border-(--filete) px-4 no-underline transition-colors duration-200 hover:border-tinta aria-[current]:border-rojo aria-[current]:bg-rojo aria-[current]:text-negro"
+              >
+                {f.texto}
+                <span class="tabular-nums opacity-70">{f.n}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    {fallo && <p role="alert" class="mt-10 text-lg">No se han podido cargar las obras. Vuelve a intentarlo en unos minutos.</p>}
+    {
+      !fallo && visibles.length === 0 && (
+        <p class="mt-10 text-lg text-pizarra">
+          Todavía no hay obras publicadas en este apartado. <a href="/obras" class="enlace">Ver todas</a>
+        </p>
+      )
+    }
+    <ul class="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        visibles.map((o) => (
+          <li>
+            <TarjetaObra obra={o} />
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <Cierre />
+</Base>

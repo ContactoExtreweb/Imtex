@@ -1,0 +1,97 @@
+---
+import { Image } from 'astro:assets'
+import Cierre from '../../components/Cierre.astro'
+import Portadilla from '../../components/Portadilla.astro'
+import TarjetaObra from '../../components/TarjetaObra.astro'
+import Base from '../../layouts/Base.astro'
+import { EMPRESA, SERVICIOS } from '../../lib/empresa'
+import { fotosServicio } from '../../lib/fotos-servicios'
+import { CACHE_GALERIA, obrasPublicadas, type Obra } from '../../lib/galeria'
+
+// Bajo demanda: las obras relacionadas salen de la galería del CRM
+export const prerender = false
+
+const servicio = SERVICIOS.find((s) => s.slug === Astro.params.slug)
+// Sin cuerpo: Astro enseña la página 404 de la web
+if (!servicio) return new Response(null, { status: 404 })
+
+let obras: Obra[] = []
+try {
+  obras = (await obrasPublicadas()).filter((o) => o.servicio === servicio.categoria && o.fotos.length > 0)
+} catch (error) {
+  console.error(error)
+}
+Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
+
+const fotos = fotosServicio(servicio.slug)
+const datos = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: servicio.nombre,
+  description: servicio.resumen,
+  provider: { '@id': `${EMPRESA.dominio}/#empresa` },
+  areaServed: ['ES', 'PT'],
+  url: new URL(`/servicios/${servicio.slug}`, EMPRESA.dominio).href,
+}
+---
+
+<Base titulo={servicio.nombre} descripcion={`${servicio.resumen} ${servicio.sistemas.slice(0, 2).join('. ')}.`} datos={[datos]}>
+  <Portadilla titulo={servicio.nombre} migas={[{ texto: 'Servicios', a: '/servicios' }]}>
+    {servicio.resumen}
+  </Portadilla>
+
+  <section class="contenedor grid gap-x-16 gap-y-8 pb-14 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:pb-24">
+    <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">Sistemas que aplicamos</h2>
+    <ol class="border-t border-tinta">
+      {
+        servicio.sistemas.map((x) => (
+          <li class="border-b border-(--filete) py-5 text-xl leading-snug lg:py-6 lg:text-2xl">{x}</li>
+        ))
+      }
+    </ol>
+  </section>
+
+  {/* Cinta de fotos: se desliza de lado, con el dedo o con la rueda, y cada foto encaja en su sitio */}
+  <section aria-label={`Fotos de ${servicio.nombre.toLowerCase()}`} class="pb-14 lg:pb-24">
+    <ul class="flex snap-x snap-mandatory gap-4 overflow-x-auto px-[max(1.25rem,calc(50vw-42rem+3rem))] pb-4 [scrollbar-width:thin]" tabindex="0">
+      {
+        fotos.map((f, i) => (
+          <li class="w-[82vw] shrink-0 snap-center sm:w-[30rem] lg:w-[38rem]">
+            <Image
+              src={f}
+              alt={`${servicio.nombre}, trabajo ${i + 1}`}
+              widths={[480, 900]}
+              sizes="(min-width: 64rem) 38rem, (min-width: 40rem) 30rem, 82vw"
+              loading="lazy"
+              class="aspect-[5/3] w-full object-cover"
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {
+    obras.length > 0 && (
+      <section class="sobre-noche bg-noche py-14 text-claro lg:py-24">
+        <div class="contenedor">
+          <h2 class="titular max-w-[16ch] text-[clamp(2.2rem,5vw,4.5rem)]">Obras de {servicio.nombre.toLowerCase()}</h2>
+          <ul class="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {obras.slice(0, 6).map((o) => (
+              <li>
+                <TarjetaObra obra={o} />
+              </li>
+            ))}
+          </ul>
+          {obras.length > 6 && (
+            <a href={`/obras?servicio=${servicio.slug}`} class="boton mt-12">
+              Ver las {obras.length} obras
+            </a>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  <Cierre />
+</Base>

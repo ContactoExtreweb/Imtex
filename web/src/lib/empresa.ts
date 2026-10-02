@@ -84,3 +84,32 @@ export const SERVICIOS = [
     ],
   },
 ] as const
+
+/** Dónde está IMTEX en el mapa: el centro del polígono, según OpenStreetMap (no la parcela exacta) */
+export const UBICACION = { lat: 38.968439, lon: -5.8016799 }
+
+/** Datos estructurados de la empresa (schema.org) para la portada y el contacto */
+export const NEGOCIO = {
+  '@context': 'https://schema.org',
+  '@type': 'GeneralContractor',
+  '@id': `${EMPRESA.dominio}/#empresa`,
+  name: EMPRESA.nombre,
+  legalName: EMPRESA.razonSocial,
+  alternateName: EMPRESA.nombreLargo,
+  slogan: EMPRESA.lema,
+  url: EMPRESA.dominio,
+  telephone: '+34924841246',
+  email: EMPRESA.email,
+  vatID: `ES${EMPRESA.cif}`,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: EMPRESA.direccion,
+    postalCode: EMPRESA.cp,
+    addressLocality: EMPRESA.localidad,
+    addressRegion: EMPRESA.provincia,
+    addressCountry: 'ES',
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: UBICACION.lat, longitude: UBICACION.lon },
+  areaServed: ['ES', 'PT'],
+  sameAs: [EMPRESA.linkedin, EMPRESA.youtube],
+}

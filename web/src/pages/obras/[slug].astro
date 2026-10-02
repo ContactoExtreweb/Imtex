@@ -1,0 +1,226 @@
+---
+import Cierre from '../../components/Cierre.astro'
+import Portadilla from '../../components/Portadilla.astro'
+import Base from '../../layouts/Base.astro'
+import { SERVICIOS as FICHAS } from '../../lib/empresa'
+import { CACHE_GALERIA, obrasPublicadas, partirDescripcion, urlFoto, urlMiniatura } from '../../lib/galeria'
+
+// Bajo demanda: la ficha sale de la galería del CRM. Un borrador o una obra que no existe da 404.
+export const prerender = false
+
+let obras
+try {
+  obras = (await obrasPublicadas()).filter((o) => o.fotos.length > 0)
+} catch (error) {
+  console.error(error)
+  return new Response('No se ha podido cargar la obra. Vuelve a intentarlo en unos minutos.', { status: 503 })
+}
+const i = obras.findIndex((o) => o.slug === Astro.params.slug)
+// Sin cuerpo: Astro enseña la página 404 de la web
+if (i < 0) return new Response(null, { status: 404 })
+Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
+
+const obra = obras[i]
+const anterior = obras[i - 1]
+const siguiente = obras[i + 1]
+const servicio = FICHAS.find((s) => s.categoria === obra.servicio)
+const { parrafos, pasos } = partirDescripcion(obra.descripcion)
+const [portada, ...resto] = obra.fotos
+const dos = (n: number) => String(n).padStart(2, '0')
+---
+
+<Base
+  titulo={`${obra.titulo}${obra.ubicacion ? `, ${obra.ubicacion}` : ''}`}
+  descripcion={obra.resumen ?? parrafos[0] ?? `Obra de IMTEX: ${obra.titulo}.`}
+  imagen={urlFoto(portada.storage_path)}
+>
+  <Portadilla titulo={obra.titulo} migas={[{ texto: 'Obras', a: '/obras' }]}>
+    {obra.resumen}
+  </Portadilla>
+
+  <article>
+    {/* La portada: la misma foto que en el listado, que viaja hasta aquí al abrir la ficha */}
+    <div class="contenedor">
+      <img
+        src={urlFoto(portada.storage_path)}
+        alt={portada.alt || obra.titulo}
+        width={portada.ancho}
+        height={portada.alto}
+        fetchpriority="high"
+        style={`view-transition-name: obra-${obra.slug}`}
+        class="aspect-[5/3] w-full bg-gris object-cover lg:aspect-[2/1]"
+      />
+    </div>
+
+    <div class="contenedor grid gap-x-16 gap-y-10 py-12 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:py-20">
+      {/* Ficha de datos: la misma etiqueta en todas las obras */}
+      <dl class="self-start border-t border-tinta lg:sticky lg:top-[calc(var(--alto-cabecera)+2rem)]">
+        {
+          [
+            ['Lugar', obra.ubicacion],
+            ['Año', obra.anio],
+          ].map(
+            ([nombre, valor]) =>
+              valor && (
+                <div class="grid grid-cols-[7rem_1fr] gap-2 border-b border-(--filete) py-4">
+                  <dt class="rotulo pt-1 text-pizarra">{nombre}</dt>
+                  <dd class="titular text-2xl">{valor}</dd>
+                </div>
+              ),
+          )
+        }
+        {
+          servicio && (
+            <div class="grid grid-cols-[7rem_1fr] gap-2 border-b border-(--filete) py-4">
+              <dt class="rotulo pt-1 text-pizarra">Servicio</dt>
+              <dd>
+                <a href={`/servicios/${servicio.slug}`} class="enlace">
+                  {servicio.nombre}
+                </a>
+              </dd>
+            </div>
+          )
+        }
+        <div class="grid grid-cols-[7rem_1fr] gap-2 border-b border-(--filete) py-4">
+          <dt class="rotulo pt-1 text-pizarra">Fotos</dt>
+          <dd class="tabular-nums">{obra.fotos.length}</dd>
+        </div>
+      </dl>
+
+      <div>
+        {parrafos.map((p) => <p class="max-w-[62ch] text-xl leading-relaxed">{p}</p>)}
+        {
+          pasos.length > 0 && (
+            <>
+              <h2 class="titular mt-12 text-[clamp(1.9rem,3.6vw,3.25rem)]">Trabajos realizados</h2>
+              {/* El número de cada paso se enciende al pasar por el centro de la pantalla */}
+              <ol class="mt-6 border-t border-tinta">
+                {pasos.map((paso, n) => (
+                  <li class="grid grid-cols-[3.5rem_1fr] items-baseline gap-4 border-b border-(--filete) py-5 lg:grid-cols-[5rem_1fr] lg:py-6">
+                    <span class="titular paso text-4xl text-pizarra/45 lg:text-5xl" aria-hidden="true">
+                      {dos(n + 1)}
+                    </span>
+                    <span class="max-w-[58ch] text-lg">{paso}</span>
+                  </li>
+                ))}
+              </ol>
+            </>
+          )
+        }
+      </div>
+    </div>
+
+    {
+      resto.length > 0 && (
+        <section class="sobre-noche bg-noche py-12 text-claro lg:py-20" aria-label="Fotos de la obra">
+          <div class="contenedor">
+            <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">La obra en fotos</h2>
+            <ul class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:gap-4">
+              {obra.fotos.map((f, n) => (
+                <li>
+                  <button type="button" data-foto={n} class="registro group block w-full overflow-hidden bg-gris" aria-label={`Ampliar la foto ${n + 1} de ${obra.fotos.length}`}>
+                    <img
+                      src={urlMiniatura(f.storage_path)}
+                      alt={f.alt || obra.titulo}
+                      width={f.ancho}
+                      height={f.alto}
+                      loading="lazy"
+                      decoding="async"
+                      class="aspect-[5/3] w-full object-cover transition-transform duration-700 ease-(--ease-encaje) group-hover:scale-[1.05]"
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )
+    }
+  </article>
+
+  {/* Visor de fotos: un diálogo nativo. Flechas del teclado para pasar y Esc para cerrar. */}
+  <dialog data-visor class="m-auto max-h-none max-w-none bg-transparent p-0 backdrop:bg-negro/92" aria-label="Fotos de la obra">
+    <div class="grid h-dvh w-dvw grid-rows-[auto_1fr] text-claro">
+      <div class="flex items-center justify-between px-4 py-2">
+        <p class="rotulo" data-cuenta aria-live="polite"></p>
+        <button type="button" data-cerrar class="flex size-11 items-center justify-center" aria-label="Cerrar">
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current stroke-2"><path d="M5 5l14 14M19 5 5 19"></path></svg>
+        </button>
+      </div>
+      <div class="relative min-h-0">
+        {/* Arranca con la portada (no se descarga hasta abrir el visor); el script pone la foto elegida */}
+        <img
+          data-grande
+          src={urlFoto(portada.storage_path)}
+          alt={portada.alt || obra.titulo}
+          loading="lazy"
+          class="absolute inset-0 size-full object-contain p-2 sm:p-6"
+        />
+        <button type="button" data-paso="-1" class="absolute top-1/2 left-2 flex size-12 -translate-y-1/2 items-center justify-center bg-negro/60" aria-label="Foto anterior">
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current stroke-2"><path d="M15 5l-7 7 7 7"></path></svg>
+        </button>
+        <button type="button" data-paso="1" class="absolute top-1/2 right-2 flex size-12 -translate-y-1/2 items-center justify-center bg-negro/60" aria-label="Foto siguiente">
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current stroke-2"><path d="M9 5l7 7-7 7"></path></svg>
+        </button>
+      </div>
+    </div>
+  </dialog>
+  <script type="application/json" data-fotos-obra set:html={JSON.stringify(obra.fotos.map((f) => ({ url: urlFoto(f.storage_path), alt: f.alt || obra.titulo }))).replace(/</g, '\\u003c')} />
+
+  {/* De una obra a la siguiente */}
+  <nav aria-label="Otras obras" class="contenedor grid gap-px border-t border-(--filete) sm:grid-cols-2">
+    {
+      anterior ? (
+        <a href={`/obras/${anterior.slug}`} class="group py-8 no-underline sm:pr-8">
+          <span class="rotulo text-pizarra">Obra anterior</span>
+          <span class="titular mt-2 block text-3xl transition-colors duration-300 group-hover:text-rojo-tinta">{anterior.titulo}</span>
+        </a>
+      ) : (
+        <span />
+      )
+    }
+    {
+      siguiente && (
+        <a href={`/obras/${siguiente.slug}`} class="group py-8 no-underline sm:border-l sm:border-(--filete) sm:pl-8 sm:text-right">
+          <span class="rotulo text-pizarra">Obra siguiente</span>
+          <span class="titular mt-2 block text-3xl transition-colors duration-300 group-hover:text-rojo-tinta">{siguiente.titulo}</span>
+        </a>
+      )
+    }
+  </nav>
+
+  <Cierre titulo="¿Una obra parecida?" />
+</Base>
+
+<script>
+  const visor = document.querySelector<HTMLDialogElement>('[data-visor]')
+  const lista = document.querySelector('[data-fotos-obra]')
+  if (visor && lista) {
+    const fotos: { url: string; alt: string }[] = JSON.parse(lista.textContent ?? '[]')
+    const grande = visor.querySelector<HTMLImageElement>('[data-grande]')!
+    const cuenta = visor.querySelector<HTMLElement>('[data-cuenta]')!
+    let actual = 0
+    const mostrar = (n: number) => {
+      actual = (n + fotos.length) % fotos.length
+      grande.src = fotos[actual].url
+      grande.alt = fotos[actual].alt
+      cuenta.textContent = `Foto ${actual + 1} de ${fotos.length}`
+    }
+    document.querySelectorAll<HTMLButtonElement>('[data-foto]').forEach((b) =>
+      b.addEventListener('click', () => {
+        mostrar(Number(b.dataset.foto))
+        visor.showModal()
+      }),
+    )
+    visor.querySelectorAll<HTMLButtonElement>('[data-paso]').forEach((b) => b.addEventListener('click', () => mostrar(actual + Number(b.dataset.paso))))
+    visor.querySelector('[data-cerrar]')!.addEventListener('click', () => visor.close())
+    // Cerrar al tocar fuera de la foto
+    visor.addEventListener('click', (ev) => {
+      if (ev.target === grande.parentElement || ev.target === visor) visor.close()
+    })
+    visor.addEventListener('keydown', (ev) => {
+      if (ev.key === 'ArrowRight') mostrar(actual + 1)
+      if (ev.key === 'ArrowLeft') mostrar(actual - 1)
+    })
+  }
+</script>

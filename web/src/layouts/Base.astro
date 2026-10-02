@@ -8,11 +8,15 @@ import '../styles/global.css'
 interface Props {
   titulo: string
   descripcion: string
-  /** Imagen para compartir (URL absoluta). Por defecto, el logo. */
+  /** Imagen para compartir (URL absoluta) */
   imagen?: string
+  /** Datos estructurados (schema.org) propios de la página */
+  datos?: object[]
+  /** Páginas que no deben salir en buscadores (el 404) */
+  sinIndexar?: boolean
 }
 
-const { titulo, descripcion, imagen } = Astro.props
+const { titulo, descripcion, imagen, datos = [], sinIndexar = false } = Astro.props
 // Un solo dominio: la canónica siempre apunta a www.imtexsl.com
 const canonica = new URL(Astro.url.pathname, EMPRESA.dominio).href
 const tituloCompleto = titulo.includes('IMTEX') ? titulo : `${titulo} · IMTEX`
@@ -23,9 +27,15 @@ const tituloCompleto = titulo.includes('IMTEX') ? titulo : `${titulo} · IMTEX`
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* Tema: oscuro por defecto. Si el visitante eligió el claro, se pone antes de pintar nada. */}
+    <script is:inline>
+      try {
+        if (localStorage.getItem('tema') === 'claro') document.documentElement.dataset.tema = 'claro'
+      } catch {}
+    </script>
     <title>{tituloCompleto}</title>
     <meta name="description" content={descripcion} />
-    <link rel="canonical" href={canonica} />
+    {sinIndexar ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonica} />}
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="preload" href={fuente} as="font" type="font/woff2" crossorigin />
     <meta name="theme-color" content="#131116" />
@@ -36,12 +46,12 @@ const tituloCompleto = titulo.includes('IMTEX') ? titulo : `${titulo} · IMTEX`
     <meta property="og:description" content={descripcion} />
     <meta property="og:url" content={canonica} />
     {imagen && <meta property="og:image" content={imagen} />}
-    <slot name="head" />
+    {datos.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d).replace(/</g, '\\u003c')} />)}
   </head>
   <body>
     <a
       href="#contenido"
-      class="rotulo sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-tinta focus:px-4 focus:py-3 focus:text-papel"
+      class="rotulo sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-rojo focus:px-4 focus:py-3 focus:text-negro"
     >
       Saltar al contenido
     </a>
