@@ -8,7 +8,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 | Qué | Dónde |
 |---|---|
 | Código | GitHub, `ContactoExtreweb/Imtex` (privado) |
-| Rama con todo el trabajo | **`feat/cierre-meses`**. Incluye las anteriores: `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
+| Rama con todo el trabajo | **`feat/bajas`**. Incluye las anteriores: `feat/cierre-meses`, `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
 | `main` | Llega hasta Presupuestos. Lo demás se fusiona cuando Saúl lo pruebe |
 | Base de datos de desarrollo | Supabase, proyecto `imtex-dev`, ref `vrhpxwnzthenjxubagys` (Fráncfort). Tiene aplicadas todas las migraciones del repo |
 | Base de datos de producción | Sin crear todavía |
@@ -23,7 +23,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 **2. Base de datos: núcleo** (prompt 2)
 - Roles, matriz de permisos, perfiles, clientes, obras, trabajadores, categorías y tarifas de combustible.
 - RLS en todas las tablas con `private.tiene_permiso(modulo, accion)`.
-- Prueba de permisos por rol: `supabase/pruebas/permisos.sql`. Ahora hace 763 comprobaciones y da 0 fallos.
+- Prueba de permisos por rol: `supabase/pruebas/permisos.sql`. Ahora hace 847 comprobaciones y da 0 fallos.
 
 **3. Acceso al CRM** (prompt 3)
 - Entrar, recuperar contraseña y elegir contraseña desde un enlace de invitación.
@@ -72,13 +72,23 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - La pestaña activa se desliza hasta quedar a la vista. Las dos hojas de impresión se leen también en el móvil.
 - No se pudo revisar la ficha de la galería: en dev no hay ninguna obra publicada en la web.
 
+**11. Bajas: papeles de baja de los trabajadores** (02/10/2026). Ampliación. **Pendiente de que Saúl la pruebe: Claude no ha podido ver la pantalla con sesión iniciada.**
+- Apartado «Bajas» en el menú, para todos los usuarios. Cada trabajador sube sus papeles (tipo de parte, comentario y archivo) y ve su historial con la fecha y la hora de subida.
+- Gerencia y administración (módulo `bajas`) ven el historial de todos, con filtros por trabajador y tipo, y pueden subir un papel en nombre de un trabajador. Queda escrito quién lo subió.
+- La fecha y el autor los pone la base de datos. Un papel no se edita: se borra y se sube otro. El trabajador borra solo lo que subió él.
+- Formatos: fotos (pasan a JPEG), PDF, Word, OpenDocument y texto. 10 MB por archivo.
+- Bucket `bajas` privado: los archivos se abren con un enlace firmado que caduca a la hora.
+- Para que un trabajador pueda subir los suyos necesita usuario y que su ficha de Ajustes → Trabajadores esté enlazada a ese usuario.
+- No incluye: avisar a administración cuando se sube un papel, agrupar por proceso de baja ni borrado automático.
+
 ## Pendiente
 
 **De Saúl, ahora: probar lo que no ha visto con la sesión iniciada.** Claude no puede entrar con los usuarios, así que las pantallas de los puntos 5 a 8 solo están comprobadas con tests y con los datos de dev. Los pasos están en «Qué probar».
 
 **Decisiones que faltan**
 - Cuándo se borra la obra de ejemplo `EJEMPLO-OB-2026-01` de dev. Es ficticia e infla las cifras de la portada.
-- Si las ampliaciones (avisos, cierre de meses y exportación) se le facturan a IMTEX.
+- Si las ampliaciones (avisos, cierre de meses, exportación y bajas) se le facturan a IMTEX.
+- Qué otros cargos, además de gerencia y administración, ven las bajas de todos. Es una fila en `permisos_rol`, con migración.
 
 **Del CRM, para ponerlo en producción** (PLAN.md, parte C y hitos H4 y H5)
 - Netlify: crear el sitio `imtex-crm` con base `crm/` y sus variables de entorno.
@@ -89,7 +99,8 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - App instalable (PWA): manifest e iconos.
 - Copias de seguridad externas semanales.
 - Carga de datos reales: categorías, tarifas, obras en curso y usuarios. Formación y guía rápida por perfil.
-- Contrato de encargado del tratamiento (RGPD) firmado antes de cargar datos personales.
+- Contrato de encargado del tratamiento (RGPD) firmado antes de cargar datos personales. Con las bajas, el programa guarda **datos de salud** (categoría especial): el contrato tiene que decirlo.
+- Avisar a IMTEX: desde abril de 2023 el servicio de salud comunica los partes a la empresa por vía telemática y el trabajador ya no está obligado a entregar el papel. El apartado de bajas sirve como archivo interno.
 
 **Ampliación aprobada que espera**
 - Seguimiento comercial de presupuestos (envío por correo, recordatorios y versiones): se hace cuando esté Resend.
@@ -192,12 +203,21 @@ Vite enseña la dirección de red (por ejemplo, `http://192.168.1.143:5173`): á
 5. Pulsa **Imprimir** y guarda como PDF: debe salir apaisado, con la cabecera de IMTEX.
 6. Como encargado: ve los candados, pero no tiene los botones de cerrar y reabrir.
 
+**Bajas**
+1. Ajustes → Trabajadores: abre (o crea) tu ficha y en «Usuario del programa» elige tu usuario. Haz lo mismo con una ficha para `encargado@prueba.es`.
+2. Como gerencia, entra en **Bajas**. Debe haber dos pestañas: «Mis papeles» y «De todos los trabajadores».
+3. En «Mis papeles», elige «Parte de baja» y sube una foto desde el móvil, un PDF y un Word. Cada uno debe aparecer arriba con la fecha y la hora. Tócalos: la foto y el PDF se abren, el Word se descarga con su nombre.
+4. Prueba un archivo no admitido (un Excel) y uno de más de 10 MB: debe decir por qué no lo sube.
+5. En «De todos los trabajadores», pulsa **Subir papel**, elige un trabajador sin usuario y sube algo. Debe salir «Subido … por» con tu nombre.
+6. Entra como `encargado@prueba.es`: solo ve sus papeles, puede subir y borrar los suyos, y no ve la pestaña de todos. Si gerencia le subió uno en su nombre, lo ve pero no tiene papelera.
+7. Como gerencia, borra un papel. Intenta borrar en Ajustes una ficha de trabajador con papeles: no debe dejar.
+
 ## Cómo seguir con Claude
 
 Abre Claude Code en la carpeta del repo y dile qué quieres. Ejemplos:
 - «Lee `docs/ESTADO.md` y dime por dónde vamos.»
 - «He probado control de obra y falla esto: …»
-- «Fusiona `feat/cierre-meses` en `main`.» Esa rama lo incluye todo.
+- «Fusiona `feat/bajas` en `main`.» Esa rama lo incluye todo.
 - «Empezamos con la web: prompt 4 de `docs/PLAN.md`.»
 
 Cómo se ha trabajado hasta ahora, por si Claude no lo recuerda en ese ordenador:
