@@ -1,0 +1,52 @@
+# Redirecciones de la web antigua (Joomla) a la nueva. docs/PLAN.md B6.
+# Netlify aplica la primera regla que coincide: las generales van al final.
+
+# Las 22 obras de referencia
+/index.php/obras/inyeccion                        /obras/inyeccion-sifones-orellana         301
+/index.php/obras/balsapead                        /obras/balsa-pead-badajoz                 301
+/index.php/obras/torrelaguna                      /obras/etap-torrelaguna                   301
+/index.php/obras/carnaxide                        /obras/obramat-carnaxide-lisboa           301
+/index.php/obras/williamshumbert                  /obras/bodegas-williams-humbert           301
+/index.php/obras/aves                             /obras/canal-de-las-aves                  301
+/index.php/obras/donbenito                        /obras/estructuras-don-benito-medellin    301
+/index.php/obras/canalesyacequiaspead             /obras/canales-acequias-pead              301
+/index.php/obras/cetarsa                          /obras/cetarsa-caceres                    301
+/index.php/obras/salamanca                        /obras/parking-salamanca                  301
+/index.php/obras/coria                            /obras/deposito-plasencia                 301
+/index.php/obras/malaga                           /obras/cc-plaza-mayor-malaga              301
+/index.php/obras/linares                          /obras/universidad-linares                301
+/index.php/obras/tajosegura                       /obras/transvase-tajo-segura              301
+/index.php/obras/horcajo                          /obras/presa-horcajo                      301
+/index.php/obras/lapalma                          /obras/balsa-la-caldereta-la-palma        301
+/index.php/obras/asura                            /obras/mercadona-asura                    301
+/index.php/obras/casatejada                       /obras/viaducto-casatejada                301
+/index.php/obras/rcordoba                         /obras/jardines-de-la-sierra-cordoba      301
+/index.php/obras/almaraz                          /obras/central-nuclear-almaraz            301
+/index.php/obras/aenasevilla                      /obras/aeropuerto-sevilla                 301
+/index.php/obras/aenabilbao                       /obras/aeropuerto-bilbao                  301
+
+# Páginas
+/index.php/sobre-nosotros                         /empresa                                  301
+/index.php/servicios                              /servicios                                301
+/index.php/servicios/impermeabilizacion           /servicios/impermeabilizacion             301
+/index.php/servicios/reparaciones                 /servicios/reparacion-y-refuerzo          301
+/index.php/servicios/resinas-epoxi-y-poliuretano  /servicios/resinas-epoxi-y-poliuretano    301
+/index.php/servicios/otros-trabajos               /servicios/otros-trabajos                 301
+/index.php/obras                                  /obras                                    301
+
+# Enlaces del pie heredados de la plantilla Joomla
+/index.php/about-growth                           /empresa                                  301
+/index.php/footer-services                        /servicios                                301
+/index.php/gallery-footer                         /obras                                    301
+/index.php/footer-news                            /contacto                                 301
+/index.php/support-forum                          /aviso-legal                              301
+/index.php/video-tutorials                        /privacidad                               301
+/index.php/documentation                          /cookies                                  301
+/index.php/download-growth                        /                                         301
+
+# Idiomas (no incluidos) y cualquier otra URL antigua
+/index.php/en/*                                   /                                         301
+/index.php/fr/*                                   /                                         301
+/index.php/ar/*                                   /                                         301
+/index.php/*                                      /                                         301
+/index.php                                        /                                         301
