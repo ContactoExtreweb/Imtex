@@ -160,11 +160,8 @@ export function Inicio() {
 
         {r?.origen && <Avisos avisos={r.origen.avisos} conPresupuestos={ve.presupuestos} />}
 
-        {cifras.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Todavía no hay apartados disponibles para tu perfil.</p>
-        ) : (
-          <Cifras cifras={cifras} />
-        )}
+        {/* Sin cifras (un operario): la portada son los accesos de abajo */}
+        {cifras.length > 0 && <Cifras cifras={cifras} />}
 
         {/* Dos columnas solo si caben de verdad: con el menú abierto (tablet) el hueco es estrecho */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(17rem,100%),1fr))] gap-8">

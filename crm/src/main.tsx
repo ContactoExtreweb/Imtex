@@ -7,6 +7,7 @@ import { ConPermiso, Layout, Protegido } from '@/components/layout'
 import { Toaster } from '@/components/ui/sonner'
 import { ProveedorSesion } from '@/components/proveedor-sesion'
 import { Login, NuevaContrasena, Recuperar } from '@/paginas/acceso'
+import { Bajas } from '@/paginas/bajas'
 import { Categorias } from '@/paginas/categorias'
 import { Clientes } from '@/paginas/clientes'
 import { Combustible } from '@/paginas/combustible'
@@ -52,6 +53,7 @@ const router = createBrowserRouter([
           { path: 'precios', element: <ConPermiso modulo="base_precios"><Precios /></ConPermiso> },
           { path: 'galeria', element: <ConPermiso modulo="galeria"><Galeria /></ConPermiso> },
           { path: 'galeria/:id', element: <ConPermiso modulo="galeria"><GaleriaFicha /></ConPermiso> },
+          { path: 'bajas', element: <Bajas /> },
           { path: 'ajustes/categorias', element: <ConPermiso modulo="ajustes"><Categorias /></ConPermiso> },
           { path: 'ajustes/combustible', element: <ConPermiso modulo="ajustes"><Combustible /></ConPermiso> },
           { path: 'ajustes/trabajadores', element: <ConPermiso modulo="ajustes"><Trabajadores /></ConPermiso> },

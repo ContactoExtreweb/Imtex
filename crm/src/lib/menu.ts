@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  BriefcaseMedical,
   FileText,
   Fuel,
   HardHat,
@@ -20,7 +21,8 @@ interface Enlace {
   a: string
   texto: string
   icono: LucideIcon
-  modulo: Modulo
+  /** Sin módulo, el apartado es de todos: cada uno ve en él solo lo suyo */
+  modulo?: Modulo
 }
 
 const SECCIONES: { titulo?: string; enlaces: Enlace[] }[] = [
@@ -44,6 +46,10 @@ const SECCIONES: { titulo?: string; enlaces: Enlace[] }[] = [
     enlaces: [{ a: '/galeria', texto: 'Galería web', icono: Images, modulo: 'galeria' }],
   },
   {
+    titulo: 'Personal',
+    enlaces: [{ a: '/bajas', texto: 'Bajas', icono: BriefcaseMedical }],
+  },
+  {
     titulo: 'Ajustes',
     enlaces: [
       { a: '/ajustes/categorias', texto: 'Categorías', icono: Tags, modulo: 'ajustes' },
@@ -57,7 +63,7 @@ const SECCIONES: { titulo?: string; enlaces: Enlace[] }[] = [
 /** Secciones del menú con solo los enlaces que el usuario puede ver. */
 export function useSecciones() {
   const { puede } = useSesion()
-  return SECCIONES.map((s) => ({ ...s, enlaces: s.enlaces.filter((e) => puede(e.modulo, 'ver')) })).filter(
+  return SECCIONES.map((s) => ({ ...s, enlaces: s.enlaces.filter((e) => !e.modulo || puede(e.modulo, 'ver')) })).filter(
     (s) => s.enlaces.length > 0,
   )
 }
