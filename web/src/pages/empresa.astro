@@ -25,7 +25,7 @@ import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO } from '../lib/empresa'
     <div class="registro aspect-[4/3] overflow-hidden bg-gris">
       <Image src={nosotros} alt="Trabajos de IMTEX en obra" widths={[480, 900]} sizes="(min-width: 64rem) 40rem, 92vw" loading="eager" class="paralaje size-full scale-[1.16] object-cover" />
     </div>
-    <div class="prosa text-lg">
+    <div data-aparece class="prosa text-lg">
       <p>Llevamos más de 25 años haciendo tres cosas:</p>
       <ul>
         <li>Impermeabilizar, con todo tipo de sistemas.</li>
@@ -60,9 +60,9 @@ import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO } from '../lib/empresa'
   </section>
 
   <section class="contenedor grid gap-x-16 gap-y-10 py-14 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:py-24">
-    <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">Certificaciones y clasificación</h2>
+    <h2 data-aparece class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">Certificaciones y clasificación</h2>
     <dl class="border-t border-tinta">
-      <div class="grid gap-4 border-b border-(--filete) py-6 sm:grid-cols-[12rem_1fr]">
+      <div data-aparece style="--i: 0" class="grid gap-4 border-b border-(--filete) py-6 sm:grid-cols-[12rem_1fr]">
         <dt class="rotulo pt-1 text-pizarra">Calidad y medio ambiente</dt>
         <dd class="grid gap-5">
           <p>ISO 9001 de gestión de la calidad e ISO 14001 de gestión ambiental, certificadas por OCA Global.</p>
@@ -73,7 +73,7 @@ import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO } from '../lib/empresa'
           </div>
         </dd>
       </div>
-      <div class="grid gap-4 border-b border-(--filete) py-6 sm:grid-cols-[12rem_1fr]">
+      <div data-aparece style="--i: 1" class="grid gap-4 border-b border-(--filete) py-6 sm:grid-cols-[12rem_1fr]">
         <dt class="rotulo pt-1 text-pizarra">Clasificación de empresa</dt>
         <dd class="grid gap-5">
           <p class="titular text-[clamp(1.75rem,3.2vw,2.9rem)] tabular-nums">{CLASIFICACION.join(' · ')}</p>
@@ -81,11 +81,11 @@ import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO } from '../lib/empresa'
           <Image src={clasificada} alt="Sello de empresa clasificada" width={314} class="h-auto w-36 bg-white p-2" />
         </dd>
       </div>
-      <div class="grid gap-4 border-b border-(--filete) py-6 sm:grid-cols-[12rem_1fr]">
+      <div data-aparece style="--i: 2" class="grid gap-4 border-b border-(--filete) py-6 sm:grid-cols-[12rem_1fr]">
         <dt class="rotulo pt-1 text-pizarra">Asociación</dt>
         <dd>Club DIR, asociación de empresas aplicadoras de productos químicos para la construcción.</dd>
       </div>
-      <div class="grid gap-4 border-b border-(--filete) py-6 sm:grid-cols-[12rem_1fr]">
+      <div data-aparece style="--i: 3" class="grid gap-4 border-b border-(--filete) py-6 sm:grid-cols-[12rem_1fr]">
         <dt class="rotulo pt-1 text-pizarra">Sede</dt>
         <dd>
           {EMPRESA.direccion}, {EMPRESA.cp}

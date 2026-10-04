@@ -6,8 +6,10 @@ import { urlFoto, urlMiniatura, type Obra } from '../lib/galeria'
 interface Props {
   obra: Obra
   sizes?: string
+  /** Posición en el listado: escalona la entrada de las láminas de una misma fila */
+  orden?: number
 }
-const { obra: o, sizes = '(min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw' } = Astro.props
+const { obra: o, sizes = '(min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw', orden = 0 } = Astro.props
 const f = o.fotos[0]
 ---
 
@@ -30,10 +32,12 @@ const f = o.fotos[0]
       )
     }
   </div>
-  <p class="rotulo mt-4 flex justify-between gap-4 border-t border-current/25 pt-3">
-    <span class="opacity-70">{o.ubicacion}</span>
-    <span class="opacity-70">{o.anio}</span>
-  </p>
-  <h3 class="titular mt-2 text-3xl transition-colors duration-300 group-hover:text-rojo">{o.titulo}</h3>
-  <p class="mt-2 opacity-75">{o.resumen}</p>
+  <div data-aparece style={`--i: ${orden % 3}`}>
+    <p class="rotulo mt-4 flex justify-between gap-4 border-t border-current/25 pt-3">
+      <span class="opacity-70">{o.ubicacion}</span>
+      <span class="opacity-70">{o.anio}</span>
+    </p>
+    <h3 class="titular mt-2 text-3xl transition-colors duration-300 group-hover:text-rojo">{o.titulo}</h3>
+    <p class="mt-2 opacity-75">{o.resumen}</p>
+  </div>
 </a>

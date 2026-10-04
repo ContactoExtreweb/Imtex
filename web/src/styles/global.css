@@ -264,6 +264,21 @@
     animation-timing-function: var(--ease-encaje);
   }
 
+  /* Bloques que entran solos, a su ritmo, la primera vez que se ven: no van atados al scroll.
+     Base.astro pone .anima y marca data-visto; --i escalona los de un mismo grupo.
+     Va en envoltorios, no en elementos con su propia transición (cambiaría la del hover)
+     ni en los que llevan view-transition-name (la foto que viaja llegaría invisible). */
+  .anima [data-aparece] {
+    transition:
+      opacity 0.8s var(--ease-encaje),
+      translate 0.8s var(--ease-encaje);
+    transition-delay: calc(var(--i, 0) * 90ms);
+  }
+  .anima [data-aparece]:not([data-visto]) {
+    opacity: 0;
+    translate: 0 1.75rem;
+  }
+
   @supports (animation-timeline: view()) {
     /* Una foto que se destapa de izquierda a derecha al entrar en pantalla */
     .registro {

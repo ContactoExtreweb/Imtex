@@ -30,7 +30,7 @@ const caja = [UBICACION.lon - 0.012, UBICACION.lat - 0.007, UBICACION.lon + 0.01
   </Portadilla>
 
   <div class="contenedor grid gap-x-16 gap-y-14 pb-16 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:pb-28">
-    <form id="formulario" action="/api/contacto" method="post" class="grid content-start gap-5" data-formulario>
+    <form id="formulario" action="/api/contacto" method="post" class="grid content-start gap-5" data-formulario data-aparece>
       <p data-estado role={estado?.malo ? 'alert' : 'status'} class:list={['px-4 py-3 text-lg font-semibold', estado ? (estado.malo ? 'bg-rojo text-negro' : 'bg-tinta text-papel') : 'hidden']}>
         {estado?.texto}
       </p>
@@ -86,7 +86,7 @@ const caja = [UBICACION.lon - 0.012, UBICACION.lat - 0.007, UBICACION.lon + 0.01
       </div>
     </form>
 
-    <aside class="grid content-start gap-8">
+    <aside data-aparece style="--i: 1" class="grid content-start gap-8">
       <dl class="border-t border-tinta">
         <div class="border-b border-(--filete) py-5">
           <dt class="rotulo text-pizarra">Teléfono</dt>

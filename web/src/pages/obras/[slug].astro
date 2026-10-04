@@ -54,7 +54,7 @@ const dos = (n: number) => String(n).padStart(2, '0')
 
     <div class="contenedor grid gap-x-16 gap-y-10 py-12 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:py-20">
       {/* Ficha de datos: la misma etiqueta en todas las obras */}
-      <dl class="self-start border-t border-tinta lg:sticky lg:top-[calc(var(--alto-cabecera)+2rem)]">
+      <dl data-aparece class="self-start border-t border-tinta lg:sticky lg:top-[calc(var(--alto-cabecera)+2rem)]">
         {
           [
             ['Lugar', obra.ubicacion],
@@ -88,15 +88,15 @@ const dos = (n: number) => String(n).padStart(2, '0')
       </dl>
 
       <div>
-        {parrafos.map((p) => <p class="max-w-[62ch] text-xl leading-relaxed">{p}</p>)}
+        {parrafos.map((p, i) => <p data-aparece style={`--i: ${Math.min(i, 3)}`} class="max-w-[62ch] text-xl leading-relaxed">{p}</p>)}
         {
           pasos.length > 0 && (
             <>
-              <h2 class="titular mt-12 text-[clamp(1.9rem,3.6vw,3.25rem)]">Trabajos realizados</h2>
+              <h2 data-aparece class="titular mt-12 text-[clamp(1.9rem,3.6vw,3.25rem)]">Trabajos realizados</h2>
               {/* El número de cada paso se enciende al pasar por el centro de la pantalla */}
               <ol class="mt-6 border-t border-tinta">
                 {pasos.map((paso, n) => (
-                  <li class="grid grid-cols-[3.5rem_1fr] items-baseline gap-4 border-b border-(--filete) py-5 lg:grid-cols-[5rem_1fr] lg:py-6">
+                  <li data-aparece style={`--i: ${Math.min(n, 5)}`} class="grid grid-cols-[3.5rem_1fr] items-baseline gap-4 border-b border-(--filete) py-5 lg:grid-cols-[5rem_1fr] lg:py-6">
                     <span class="titular paso text-4xl text-pizarra/45 lg:text-5xl" aria-hidden="true">
                       {dos(n + 1)}
                     </span>
@@ -114,10 +114,10 @@ const dos = (n: number) => String(n).padStart(2, '0')
       resto.length > 0 && (
         <section class="sobre-noche bg-noche py-12 text-claro lg:py-20" aria-label="Fotos de la obra">
           <div class="contenedor">
-            <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">La obra en fotos</h2>
+            <h2 data-aparece class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">La obra en fotos</h2>
             <ul class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:gap-4">
               {obra.fotos.map((f, n) => (
-                <li>
+                <li data-aparece style={`--i: ${n % 3}`}>
                   <button type="button" data-foto={n} class="registro group block w-full overflow-hidden bg-gris" aria-label={`Ampliar la foto ${n + 1} de ${obra.fotos.length}`}>
                     <img
                       src={urlMiniatura(f.storage_path)}
@@ -171,7 +171,7 @@ const dos = (n: number) => String(n).padStart(2, '0')
   <nav aria-label="Otras obras" class="contenedor grid gap-px border-t border-(--filete) sm:grid-cols-2">
     {
       anterior ? (
-        <a href={`/obras/${anterior.slug}`} class="group py-8 no-underline sm:pr-8">
+        <a href={`/obras/${anterior.slug}`} data-aparece class="group py-8 no-underline sm:pr-8">
           <span class="rotulo text-pizarra">Obra anterior</span>
           <span class="titular mt-2 block text-3xl transition-colors duration-300 group-hover:text-rojo-tinta">{anterior.titulo}</span>
         </a>
@@ -181,7 +181,7 @@ const dos = (n: number) => String(n).padStart(2, '0')
     }
     {
       siguiente && (
-        <a href={`/obras/${siguiente.slug}`} class="group py-8 no-underline sm:border-l sm:border-(--filete) sm:pl-8 sm:text-right">
+        <a href={`/obras/${siguiente.slug}`} data-aparece style="--i: 1" class="group py-8 no-underline sm:border-l sm:border-(--filete) sm:pl-8 sm:text-right">
           <span class="rotulo text-pizarra">Obra siguiente</span>
           <span class="titular mt-2 block text-3xl transition-colors duration-300 group-hover:text-rojo-tinta">{siguiente.titulo}</span>
         </a>

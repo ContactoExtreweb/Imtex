@@ -36,11 +36,11 @@ const PASOS = [
       <Image src={caratulaServicio('impermeabilizacion')} alt="Impermeabilización de una cubierta" widths={[480, 900]} sizes="(min-width: 64rem) 34rem, 92vw" loading="eager" class="size-full object-cover" />
     </div>
     <div>
-      <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">Qué solemos hacer</h2>
+      <h2 data-aparece class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">Qué solemos hacer</h2>
       <dl class="mt-6 border-t border-tinta">
         {
-          TRABAJOS.map((t) => (
-            <div class="grid gap-x-8 gap-y-1 border-b border-(--filete) py-5 sm:grid-cols-[13rem_1fr]">
+          TRABAJOS.map((t, i) => (
+            <div data-aparece style={`--i: ${i}`} class="grid gap-x-8 gap-y-1 border-b border-(--filete) py-5 sm:grid-cols-[13rem_1fr]">
               <dt class="titular text-2xl">{t.que}</dt>
               <dd class="text-pizarra">{t.como}</dd>
             </div>
@@ -52,12 +52,12 @@ const PASOS = [
 
   <section class="border-t border-(--filete) bg-papel-2">
     <div class="contenedor grid gap-x-16 gap-y-8 py-14 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:py-20">
-      <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">Cómo pedirlo</h2>
+      <h2 data-aparece class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">Cómo pedirlo</h2>
       <div>
         <ol class="border-t border-tinta">
           {
             PASOS.map((p, n) => (
-              <li class="grid grid-cols-[3.5rem_1fr] items-baseline gap-4 border-b border-(--filete) py-5">
+              <li data-aparece style={`--i: ${n}`} class="grid grid-cols-[3.5rem_1fr] items-baseline gap-4 border-b border-(--filete) py-5">
                 <span class="titular paso text-4xl text-pizarra/45" aria-hidden="true">
                   {`0${n + 1}`}
                 </span>
@@ -66,7 +66,7 @@ const PASOS = [
             ))
           }
         </ol>
-        <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+        <div data-aparece style="--i: 3" class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
           <a href="/contacto" class="boton">Pedir presupuesto</a>
           <a href={EMPRESA.telefonoEnlace} class="titular py-2 text-3xl no-underline hover:text-rojo-tinta">{EMPRESA.telefono}</a>
         </div>

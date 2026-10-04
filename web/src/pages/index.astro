@@ -38,11 +38,11 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
 
   {/* Servicios: un índice, no cuatro tarjetas */}
   <section class="contenedor py-14 lg:py-24">
-    <h2 class="titular text-[clamp(2.2rem,5vw,4.5rem)]">Qué hacemos</h2>
+    <h2 data-aparece class="titular text-[clamp(2.2rem,5vw,4.5rem)]">Qué hacemos</h2>
     <ul class="mt-10 border-t border-tinta">
       {
-        SERVICIOS.map((s) => (
-          <li class="border-b border-(--filete)">
+        SERVICIOS.map((s, i) => (
+          <li data-aparece style={`--i: ${i}`} class="border-b border-(--filete)">
             <a href={`/servicios/${s.slug}`} class="group grid gap-x-10 gap-y-3 py-7 no-underline lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)_auto] lg:items-baseline lg:py-9">
               <h3 class="titular text-[clamp(1.75rem,3.2vw,2.9rem)] transition-colors duration-300 group-hover:text-rojo-tinta">{s.nombre}</h3>
               <p class="max-w-[58ch] text-pizarra">{s.resumen}</p>
@@ -64,16 +64,16 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
     destacadas.length > 0 && (
       <section class="sobre-noche bg-noche py-14 text-claro lg:py-24">
         <div class="contenedor">
-          <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+          <div data-aparece class="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
             <h2 class="titular max-w-[14ch] text-[clamp(2.2rem,5vw,4.5rem)]">Obras de referencia</h2>
             <p class="max-w-[44ch] text-claro/75">
               {obras.length} obras documentadas, de 2010 a hoy: centrales, aeropuertos, presas, depósitos y edificios en España y Portugal.
             </p>
           </div>
           <ul class="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {destacadas.map((o) => (
+            {destacadas.map((o, i) => (
               <li>
-                <TarjetaObra obra={o} />
+                <TarjetaObra obra={o} orden={i} />
               </li>
             ))}
           </ul>
@@ -85,7 +85,7 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
 
   {/* Quién homologa y certifica: una ficha de datos */}
   <section class="contenedor grid gap-x-16 gap-y-10 py-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:py-24">
-    <div>
+    <div data-aparece>
       <h2 class="titular text-[clamp(2.2rem,5vw,4.5rem)]">Quién nos homologa y certifica</h2>
       <p class="mt-6 max-w-[48ch] text-lg text-pizarra">
         Los fabricantes nos homologan como aplicadores de sus sistemas. La calidad y la gestión ambiental las audita OCA Global.
@@ -93,15 +93,15 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
       <a href="/empresa" class="enlace mt-6 inline-block py-2">Conocer la empresa</a>
     </div>
     <dl class="border-t border-tinta">
-      <div class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
+      <div data-aparece style="--i: 1" class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
         <dt class="rotulo pt-1 text-pizarra">Aplicador homologado</dt>
         <dd class="titular text-[clamp(1.5rem,2.6vw,2.25rem)] leading-tight">{FABRICANTES.join(' · ')}</dd>
       </div>
-      <div class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
+      <div data-aparece style="--i: 2" class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
         <dt class="rotulo pt-1 text-pizarra">Asociación</dt>
         <dd>Club DIR, asociación de empresas aplicadoras de productos químicos para la construcción.</dd>
       </div>
-      <div class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
+      <div data-aparece style="--i: 3" class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
         <dt class="rotulo pt-1 text-pizarra">Certificaciones</dt>
         <dd class="grid gap-4">
           <p>ISO 9001 de calidad e ISO 14001 de gestión ambiental, certificadas por OCA Global.</p>
@@ -111,11 +111,11 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
           </div>
         </dd>
       </div>
-      <div class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
+      <div data-aparece style="--i: 4" class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
         <dt class="rotulo pt-1 text-pizarra">Clasificación de empresa</dt>
         <dd class="titular text-[clamp(1.5rem,2.6vw,2.25rem)] leading-tight tabular-nums">{CLASIFICACION.join(' · ')}</dd>
       </div>
-      <div class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
+      <div data-aparece style="--i: 5" class="grid gap-2 border-b border-(--filete) py-5 sm:grid-cols-[11rem_1fr]">
         <dt class="rotulo pt-1 text-pizarra">Experiencia</dt>
         <dd>Más de 25 años, con sede en {EMPRESA.localidad} ({EMPRESA.provincia}).</dd>
       </div>
@@ -125,8 +125,8 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
   {/* Particulares: un apartado sencillo */}
   <section class="border-t border-(--filete) bg-papel-2">
     <div class="contenedor grid gap-x-16 gap-y-6 py-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center lg:py-16">
-      <h2 class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">¿Una vivienda o una comunidad de vecinos?</h2>
-      <div>
+      <h2 data-aparece class="titular text-[clamp(1.9rem,3.6vw,3.25rem)]">¿Una vivienda o una comunidad de vecinos?</h2>
+      <div data-aparece style="--i: 1">
         <p class="max-w-[60ch] text-lg text-pizarra">
           Terrazas, cubiertas, garajes, piscinas y humedades: aplicamos los mismos sistemas que en una obra industrial, a la escala de tu casa.
         </p>

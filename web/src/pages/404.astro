@@ -11,12 +11,12 @@ const enlaces = [
 
 <Base titulo="Página no encontrada" descripcion="Esta página no existe o ha cambiado de dirección." sinIndexar>
   <section class="contenedor grid min-h-[70svh] content-center gap-x-16 gap-y-10 py-16 lg:grid-cols-2">
-    <div>
+    <div data-aparece>
       <h1 class="titular text-[clamp(2.6rem,7vw,6rem)]">Aquí no hay nada que impermeabilizar</h1>
       <p class="mt-6 max-w-[48ch] text-lg text-pizarra">La página que buscas no existe o ha cambiado de dirección. Prueba con una de estas.</p>
       <a href="/" class="boton mt-8">Ir al inicio</a>
     </div>
-    <ul class="self-center border-t border-tinta">
+    <ul data-aparece style="--i: 2" class="self-center border-t border-tinta">
       {
         enlaces.map((e) => (
           <li class="border-b border-(--filete)">

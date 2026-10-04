@@ -42,7 +42,7 @@ const filtros = [
   </Portadilla>
 
   <section class="contenedor pb-16 lg:pb-28">
-    <nav aria-label="Filtrar por servicio">
+    <nav aria-label="Filtrar por servicio" data-aparece>
       <ul class="flex flex-wrap gap-2">
         {
           filtros.map((f) => (
@@ -71,9 +71,9 @@ const filtros = [
     }
     <ul class="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
       {
-        visibles.map((o) => (
+        visibles.map((o, i) => (
           <li>
-            <TarjetaObra obra={o} />
+            <TarjetaObra obra={o} orden={i} />
           </li>
         ))
       }

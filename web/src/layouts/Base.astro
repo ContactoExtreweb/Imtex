@@ -33,6 +33,26 @@ const tituloCompleto = titulo.includes('IMTEX') ? titulo : `${titulo} · IMTEX`
         if (localStorage.getItem('tema') === 'claro') document.documentElement.dataset.tema = 'claro'
       } catch {}
     </script>
+    {/* Movimiento: los bloques con data-aparece entran solos la primera vez que se ven (global.css).
+        Sin JavaScript o con las animaciones reducidas se ven sin más. */}
+    <script is:inline>
+      if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('anima')
+        addEventListener('DOMContentLoaded', () => {
+          const vista = new IntersectionObserver(
+            (entradas) => {
+              for (const e of entradas) {
+                if (!e.isIntersecting) continue
+                e.target.setAttribute('data-visto', '')
+                vista.unobserve(e.target)
+              }
+            },
+            { rootMargin: '0px 0px -8% 0px' },
+          )
+          document.querySelectorAll('[data-aparece]').forEach((el) => vista.observe(el))
+        })
+      }
+    </script>
     <title>{tituloCompleto}</title>
     <meta name="description" content={descripcion} />
     {sinIndexar ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonica} />}
