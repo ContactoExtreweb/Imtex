@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets'
 import Cierre from '../../components/Cierre.astro'
+import Objeto3D from '../../components/Objeto3D.astro'
 import Portadilla from '../../components/Portadilla.astro'
 import Base from '../../layouts/Base.astro'
 import { SERVICIOS } from '../../lib/empresa'
@@ -13,6 +14,31 @@ import { caratulaServicio } from '../../lib/fotos-servicios'
 >
   <Portadilla titulo="Servicios">
     Cuatro especialidades y un mismo oficio: preparar bien el soporte y aplicar el sistema que le corresponde, homologados por quien lo fabrica.
+    <Objeto3D
+      slot="objeto"
+      escena="servicios"
+      etiqueta="Maqueta de un tablero de hormigón sobre una viga en la que se ven, uno tras otro, los cuatro servicios: se coloca una lámina, se repara y refuerza la viga, se extiende una resina y se sella la junta."
+      foto={caratulaServicio('impermeabilizacion')}
+      alt="Impermeabilización de una cubierta"
+    >
+      {/* Regla de servicios: el de cada momento, en rojo. Al señalar uno, la maqueta va a él. */}
+      <ol class="grid grid-cols-2 border-t border-(--filete)" aria-label="Servicios">
+        {
+          SERVICIOS.map((s, i) => (
+            <li class="border-b border-l border-(--filete)">
+              <a
+                href={`/servicios/${s.slug}`}
+                data-paso={i}
+                class="rotulo relative block py-3 pl-2 text-pizarra/80 no-underline transition-colors duration-500 ease-(--ease-encaje) before:absolute before:-top-px before:left-0 before:h-0.5 before:w-full before:origin-left before:scale-x-0 before:bg-rojo before:transition-transform before:duration-500 before:ease-(--ease-encaje) hover:text-tinta aria-[current]:text-tinta aria-[current]:before:scale-x-100"
+              >
+                <span class="block tabular-nums">{`0${i + 1}`}</span>
+                {s.nombre}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </Objeto3D>
   </Portadilla>
 
   <ul class="contenedor pb-16 lg:pb-28">

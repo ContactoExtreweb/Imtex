@@ -65,6 +65,7 @@ const conSustituto = Astro.slots.has('sustituto')
   type Montar = (lienzo: HTMLCanvasElement, opciones: { raiz: HTMLElement; datos: unknown; modo: string }) => Pick<Escena, 'fijar'>
   // Una entrada por escena: Vite separa cada una en su fichero y la página solo descarga la suya
   const CARGAR: Record<string, () => Promise<{ montar: Montar }>> = {
+    servicios: () => import('../scripts/escena3d/servicios'),
     obras: () => import('../scripts/escena3d/mapa'),
     contacto: () => import('../scripts/escena3d/mapa'),
   }
