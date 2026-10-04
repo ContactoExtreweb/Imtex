@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets'
 import Cierre from '../components/Cierre.astro'
+import Objeto3D from '../components/Objeto3D.astro'
 import Portadilla from '../components/Portadilla.astro'
 import Base from '../layouts/Base.astro'
 import { EMPRESA } from '../lib/empresa'
@@ -29,6 +30,27 @@ const PASOS = [
 >
   <Portadilla titulo="Particulares y comunidades">
     Una terraza que filtra, un garaje con humedades o una piscina que pierde agua se resuelven con los mismos sistemas que una obra industrial, a otra escala.
+    <Objeto3D
+      slot="objeto"
+      escena="particulares"
+      etiqueta="Maqueta de una vivienda en corte: llueve y la terraza filtra al salón hasta que se impermeabiliza; luego se forra y se llena la piscina y se pinta con resina el suelo del garaje."
+      foto={caratulaServicio('impermeabilizacion')}
+      alt="Impermeabilización de una cubierta"
+    >
+      <ol class="grid grid-cols-3 border-t border-(--filete)" aria-label="Partes de la casa">
+        {
+          ['Terraza', 'Piscina', 'Garaje'].map((m, i) => (
+            <li
+              data-paso={i}
+              class="rotulo relative border-b border-l border-(--filete) py-3 pl-2 text-pizarra/80 transition-colors duration-500 ease-(--ease-encaje) before:absolute before:-top-px before:left-0 before:h-0.5 before:w-full before:origin-left before:scale-x-0 before:bg-rojo before:transition-transform before:duration-500 before:ease-(--ease-encaje) aria-[current]:text-tinta aria-[current]:before:scale-x-100"
+            >
+              <span class="block tabular-nums">{`0${i + 1}`}</span>
+              {m}
+            </li>
+          ))
+        }
+      </ol>
+    </Objeto3D>
   </Portadilla>
 
   <section class="contenedor grid gap-x-16 gap-y-10 pb-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:pb-24">
