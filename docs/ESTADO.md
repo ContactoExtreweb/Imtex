@@ -21,7 +21,7 @@ Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/
 | Qué | Dónde |
 |---|---|
 | Código | GitHub, `ContactoExtreweb/Imtex` (privado) |
-| Rama con todo el trabajo | **`feat/web-animaciones`** (menú del móvil y animaciones de entrada de la web). Incluye `feat/web`, `feat/bajas` y las anteriores: `feat/cierre-meses`, `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
+| Rama con todo el trabajo | **`feat/web-animaciones`** (menú del móvil, animaciones de entrada y objetos 3D de las páginas interiores). Incluye `feat/web`, `feat/bajas` y las anteriores: `feat/cierre-meses`, `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
 | `main` | Llega hasta Presupuestos. Lo demás se fusiona cuando Saúl lo pruebe |
 | Base de datos de desarrollo | Supabase, proyecto `imtex-dev`, ref `vrhpxwnzthenjxubagys` (Fráncfort). Tiene aplicadas todas las migraciones del repo |
 | Base de datos de producción | Sin crear todavía |
@@ -100,6 +100,16 @@ Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/
 - **Páginas**: `/servicios` y sus cuatro fichas, `/obras` (con filtro por servicio) y la ficha de cada obra (datos, trabajos paso a paso y visor de fotos), `/empresa`, `/particulares`, `/contacto`, los tres legales y el 404.
 - **Menú del móvil** (04/10, estándar de extreweb): a pantalla completa, con el logo arriba que se destapa tras una barra roja, los enlaces en el centro entrando en cascada y presupuesto, teléfono y email abajo. Es un popover nativo; la cabecera no cambia.
 - **Animaciones de entrada** (04/10): en las páginas interiores y en las secciones de la portada bajo la maqueta, los bloques marcados con `data-aparece` entran solos (fundido y subida, escalonados con `--i`) la primera vez que se ven, sin ir atados al scroll. El mecanismo está en `web/src/layouts/Base.astro` y `global.css`. No se ponen en elementos con su propia transición ni en la foto que viaja a la ficha de la obra.
+- **Objetos 3D de las páginas interiores** (04/10): en la entrada de cada página, un objeto que trabaja solo, en bucle, sin depender del scroll, con una leyenda en HTML que marca lo que pasa en cada momento:
+  - **Servicios:** un tablero sobre una viga que pasa por los cuatro servicios. Al señalar uno en la leyenda, salta a él y espera.
+  - **Obras:** el mapa de España y Portugal en relieve; las obras publicadas se encienden una a una, con enlace a su ficha.
+  - **Empresa:** un palé en el que se apilan los materiales.
+  - **Particulares:** una casa en corte que deja de filtrar, con la piscina y el garaje.
+  - **Contacto:** el mismo mapa, con arcos desde la sede.
+  
+  Código en `web/src/scripts/escena3d/` (base común, una escena por fichero) y `web/src/components/Objeto3D.astro`. Mismas condiciones que la portada: sin WebGL, con animaciones reducidas, con ahorro de datos o con poca memoria sale una foto o el mapa en SVG.
+  - **Sobre el mapa:** cada obra se sitúa por su texto de «lugar» con la tabla de `web/src/lib/lugares.ts`; una obra en un sitio que no esté en la tabla no sale en el mapa y el servidor lo avisa en la consola. El contorno sale de Natural Earth y se regenera con `cd web && node scripts/generar-mapa.mjs`.
+  - **En desarrollo:** `__escena.fijar(7.5)` en la consola congela la escena en ese segundo; `__escena.fijar(null)` la suelta.
 - **Animaciones atadas al scroll** (se mantienen): paso de una página a otra con barrido, y la foto de una obra viaja del listado a su ficha (transiciones de vista nativas del navegador, sin JavaScript); fotos que se destapan y se mueven algo más despacio que la página; números de paso que se encienden al pasar. Todo se apaga si el visitante tiene las animaciones desactivadas, y en navegadores sin soporte simplemente no se anima.
 - **Galería**: las 22 obras de la web antigua están en dev (205 fotos con miniatura, fichas publicadas, seis destacadas). Se repite con `web/scripts/importar-obras.mjs` (leer → fotos → sql) y `supabase/seed_web_obras.sql`; las instrucciones para subir las fotos están en la cabecera del script. La web lee la galería con `fetch` (`web/src/lib/galeria.ts`): lo que se publica en el CRM sale sin volver a desplegar (caché de 5 minutos).
 - **Formulario de contacto** (`web/src/pages/api/contacto.ts`): valida, tiene campo trampa y tiempo mínimo contra robots, y envía con Resend. **Sin `RESEND_API_KEY` no envía**: avisa y enseña teléfono y email. Funciona también sin JavaScript.
@@ -259,6 +269,7 @@ Vite enseña la dirección de red (por ejemplo, `http://192.168.1.143:5173`): á
 6. Pruébalo todo en el móvil (`npm run dev -- --host` y la dirección de red).
 7. Escribe una dirección que no exista (`/obras/no-existe`): debe salir la página 404 de la web.
 8. En el móvil, abre el menú: el logo se destapa y los enlaces entran en cascada; la página de detrás no se mueve. Baja por empresa, obras o particulares: cada bloque entra una sola vez.
+9. Mira el objeto 3D de la entrada de Servicios, Obras, Empresa, Particulares y Contacto durante una vuelta entera, en el ordenador y en el móvil. En Servicios, pasa el ratón por la leyenda. En Obras, pulsa el nombre de la obra encendida.
 
 ## Cómo seguir con Claude
 
