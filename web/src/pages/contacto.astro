@@ -1,7 +1,11 @@
 ---
+import MapaObras from '../components/MapaObras.astro'
+import Objeto3D from '../components/Objeto3D.astro'
 import Portadilla from '../components/Portadilla.astro'
 import Base from '../layouts/Base.astro'
 import { EMPRESA, NEGOCIO, SERVICIOS, UBICACION } from '../lib/empresa'
+import { obrasPublicadas } from '../lib/galeria'
+import { SEDE, situar } from '../lib/lugares'
 
 // Bajo demanda: el formulario lleva la hora de carga, y sin JavaScript el resultado llega en ?estado=
 export const prerender = false
@@ -18,6 +22,18 @@ const MENSAJES: Record<string, { texto: string; malo?: boolean }> = {
 const estado = MENSAJES[Astro.url.searchParams.get('estado') ?? '']
 // Encuadre del mapa: unos 600 m alrededor del polígono
 const caja = [UBICACION.lon - 0.012, UBICACION.lat - 0.007, UBICACION.lon + 0.012, UBICACION.lat + 0.007].join(',')
+
+// El mapa de la entrada: un arco desde la sede a cada sitio con obras publicadas (sin repetir sitio)
+const destinos = new Map<string, { nombre: string; x: number; y: number }>()
+try {
+  for (const o of await obrasPublicadas()) {
+    const p = situar(o.ubicacion)
+    if (p && !destinos.has(String(p))) destinos.set(String(p), { nombre: (o.ubicacion ?? '').split('(')[0].trim(), x: p[0], y: p[1] })
+  }
+} catch (error) {
+  // Sin galería, la página se queda sin el mapa
+  console.error(error)
+}
 ---
 
 <Base
@@ -27,6 +43,24 @@ const caja = [UBICACION.lon - 0.012, UBICACION.lat - 0.007, UBICACION.lon + 0.01
 >
   <Portadilla titulo="Cuéntanos tu obra">
     Dinos qué hay que impermeabilizar, reparar o reforzar. Estudiamos el soporte y te pasamos un presupuesto sin compromiso.
+    {
+      destinos.size > 0 && (
+        <Objeto3D
+          slot="objeto"
+          escena="contacto"
+          etiqueta={`Mapa de España y Portugal en relieve: desde la sede de IMTEX en Villanueva de la Serena salen arcos hacia los ${destinos.size} sitios donde ha trabajado.`}
+          datos={{ sede: SEDE, destinos: [...destinos.values()] }}
+        >
+          <MapaObras slot="sustituto" puntos={[...destinos.values()].map((d) => [d.x, d.y])} sede={SEDE} />
+          <p class="grid grid-cols-[auto_1fr] items-baseline gap-x-4 border-t border-(--filete) pt-3">
+            <span class="rotulo text-pizarra">Desde {EMPRESA.localidad}</span>
+            <span class="titular text-2xl">
+              <span class="text-rojo-tinta" aria-hidden="true">→</span> <span data-destino>toda la península</span>
+            </span>
+          </p>
+        </Objeto3D>
+      )
+    }
   </Portadilla>
 
   <div class="contenedor grid gap-x-16 gap-y-14 pb-16 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:pb-28">
