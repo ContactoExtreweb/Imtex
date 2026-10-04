@@ -66,22 +66,34 @@ const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
   </div>
 </header>
 
-<div id="menu-movil" popover class="sobre-noche fixed inset-0 m-0 size-full max-h-none max-w-none bg-noche p-0 text-claro backdrop:bg-noche lg:hidden">
-  <div class="contenedor flex h-full flex-col pb-8">
-    <div class="flex h-(--alto-cabecera) items-center justify-between">
-      <span class="rotulo">Menú</span>
+{/* Menú del móvil a pantalla completa: el logo arriba, los enlaces en el centro y el contacto abajo.
+    El fondo deja ver la página desenfocada; al abrir, el logo se destapa y los enlaces entran en cascada. */}
+<div
+  id="menu-movil"
+  popover
+  class="sobre-noche fixed inset-0 m-0 size-full max-h-none max-w-none overflow-y-auto bg-noche/95 p-0 text-claro backdrop-blur-md lg:hidden"
+>
+  <div class="contenedor flex min-h-full flex-col items-center pb-8 text-center">
+    <div class="flex h-(--alto-cabecera) w-full shrink-0 items-center justify-end">
       <button type="button" popovertarget="menu-movil" popovertargetaction="hide" class="-mr-2 flex size-11 items-center justify-center" aria-label="Cerrar el menú">
-        <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current stroke-2">
+        <svg aria-hidden="true" viewBox="0 0 24 24" class="menu-cerrar size-7 fill-none stroke-current stroke-2">
           <path d="M5 5l14 14M19 5 5 19"></path>
         </svg>
       </button>
     </div>
-    <nav aria-label="Principal, móvil" class="mt-4">
-      <ul class="border-t border-claro/20">
+    <a href="/" class="menu-logo relative shrink-0" aria-label="IMTEX, inicio">
+      <Logo ancho={520} fijo class="h-auto w-[min(62vw,16rem)]" />
+    </a>
+    <nav aria-label="Principal, móvil" class="my-auto py-10">
+      <ul class="grid gap-[clamp(0.5rem,2.4svh,1.5rem)]">
         {
-          NAVEGACION.map((n) => (
-            <li class="border-b border-claro/20">
-              <a href={n.a} class="titular block py-4 text-4xl no-underline aria-[current=page]:text-rojo" aria-current={activa(n.a) ? 'page' : undefined}>
+          NAVEGACION.map((n, i) => (
+            <li class="menu-enlace" style={`--i: ${i}`}>
+              <a
+                href={n.a}
+                class="titular inline-block py-1 text-[clamp(2.4rem,11vw,3.5rem)] no-underline transition-colors duration-200 hover:text-rojo aria-[current=page]:text-rojo"
+                aria-current={activa(n.a) ? 'page' : undefined}
+              >
                 {n.texto}
               </a>
             </li>
@@ -89,12 +101,99 @@ const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
         }
       </ul>
     </nav>
-    <div class="mt-auto grid gap-3">
-      <a href="/contacto" class="boton">Pedir presupuesto</a>
-      <a href={EMPRESA.telefonoEnlace} class="rotulo py-3 text-center text-base no-underline">{EMPRESA.telefono}</a>
+    <div class="menu-pie grid w-full max-w-xs shrink-0 gap-1">
+      <a href="/contacto" class="boton mb-2">Pedir presupuesto</a>
+      <a href={EMPRESA.telefonoEnlace} class="rotulo py-2.5 text-base no-underline">{EMPRESA.telefono}</a>
+      <a href={`mailto:${EMPRESA.email}`} class="py-2.5 text-claro/75 no-underline hover:text-claro">{EMPRESA.email}</a>
     </div>
   </div>
 </div>
+
+<style>
+  /* Con el menú abierto, la página de detrás no se mueve */
+  :global(html:has(#menu-movil:popover-open)) {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Entra y sale con un fundido. Al cerrar, display y overlay esperan a que termine. */
+    #menu-movil {
+      opacity: 0;
+      transition:
+        opacity 0.3s var(--ease-encaje),
+        display 0.3s allow-discrete,
+        overlay 0.3s allow-discrete;
+    }
+    #menu-movil:popover-open {
+      opacity: 1;
+    }
+    @starting-style {
+      #menu-movil:popover-open {
+        opacity: 0;
+      }
+    }
+
+    /* Las animaciones vuelven a empezar cada vez que se abre: cerrado, el menú no se pinta */
+    .menu-cerrar {
+      animation: menu-gira 0.5s var(--ease-encaje) both;
+    }
+
+    /* El logo se destapa de izquierda a derecha tras una barra roja, como el de la maqueta 3D de la portada */
+    .menu-logo :global(img) {
+      animation: menu-destapa 0.9s var(--ease-encaje) 0.1s both;
+    }
+    .menu-logo::after {
+      content: '';
+      position: absolute;
+      inset-block: -8%;
+      width: 0.3rem;
+      background: var(--color-rojo);
+      translate: -50% 0;
+      animation: menu-barra 0.9s var(--ease-encaje) 0.1s both;
+    }
+
+    .menu-enlace {
+      animation: menu-sube 0.6s var(--ease-encaje) both;
+      animation-delay: calc(0.25s + var(--i) * 0.06s);
+    }
+    .menu-pie {
+      animation: menu-sube 0.6s var(--ease-encaje) 0.55s both;
+    }
+  }
+
+  @keyframes menu-gira {
+    from {
+      opacity: 0;
+      rotate: -90deg;
+    }
+  }
+  @keyframes menu-destapa {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  @keyframes menu-barra {
+    from {
+      left: 0;
+    }
+    80% {
+      opacity: 1;
+    }
+    to {
+      left: 100%;
+      opacity: 0;
+    }
+  }
+  @keyframes menu-sube {
+    from {
+      opacity: 0;
+      translate: 0 1.5rem;
+    }
+  }
+</style>
 
 <script>
   const raiz = document.documentElement
@@ -116,4 +215,7 @@ const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
     pintar()
   })
   pintar()
+
+  // Al volver atrás, la página que guarda el navegador no debe traer el menú abierto
+  addEventListener('pagehide', () => document.getElementById('menu-movil')?.hidePopover())
 </script>
