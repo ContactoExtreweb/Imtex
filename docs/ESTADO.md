@@ -1,11 +1,11 @@
 # Estado del proyecto IMTEX
 
-Actualizado el viernes 02/10/2026 a última hora, desde el PC de la oficina. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
+Actualizado el domingo 04/10/2026. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
 El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [decisiones.md](decisiones.md).
 
 ## Para el fin de semana (por dónde empezar en casa)
 
-Todo está subido a GitHub en la rama **`feat/web`**. No hay nada a medias.
+Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/web`). No hay nada a medias.
 
 1. Trae la rama e instala lo nuevo (los comandos están en «Cómo arrancar en otro ordenador»). **En casa falta `web/.env`**: no está en git.
 2. Arranca la web (`cd web && npm run dev`) y mírala en http://localhost:4321. Los pasos están en «Qué probar → Web pública».
@@ -21,7 +21,7 @@ Todo está subido a GitHub en la rama **`feat/web`**. No hay nada a medias.
 | Qué | Dónde |
 |---|---|
 | Código | GitHub, `ContactoExtreweb/Imtex` (privado) |
-| Rama con todo el trabajo | **`feat/web`** (la web pública, en marcha). Incluye `feat/bajas` y las anteriores: `feat/cierre-meses`, `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
+| Rama con todo el trabajo | **`feat/web-animaciones`** (menú del móvil y animaciones de entrada de la web). Incluye `feat/web`, `feat/bajas` y las anteriores: `feat/cierre-meses`, `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
 | `main` | Llega hasta Presupuestos. Lo demás se fusiona cuando Saúl lo pruebe |
 | Base de datos de desarrollo | Supabase, proyecto `imtex-dev`, ref `vrhpxwnzthenjxubagys` (Fráncfort). Tiene aplicadas todas las migraciones del repo |
 | Base de datos de producción | Sin crear todavía |
@@ -98,7 +98,9 @@ Todo está subido a GitHub en la rama **`feat/web`**. No hay nada a medias.
 - **Diseño**: dirección «La obra por fases», elegida por Saúl con la skill impeccable (contrato en `web/.impeccable/surfaces/`, producto en `web/PRODUCT.md`). Tipografía Archivo variable autoalojada. **Tema oscuro por defecto**, con botón en la cabecera para pasar al claro (se recuerda en el navegador).
 - **Portada**: maqueta 3D de una esquina de cubierta (three.js, hecha con código en `web/src/scripts/pieza.ts`) que al bajar pasa por seis fases reales de obra, con las herramientas trabajando, un encuadre de cámara por fase y el logo de IMTEX pintado al final. Saúl la dio por buena. Sin WebGL, con animaciones reducidas o poca memoria, salen las fotos reales de cada fase. En desarrollo, `__pieza.saltar(3.6)` en la consola lleva a una fase concreta.
 - **Páginas**: `/servicios` y sus cuatro fichas, `/obras` (con filtro por servicio) y la ficha de cada obra (datos, trabajos paso a paso y visor de fotos), `/empresa`, `/particulares`, `/contacto`, los tres legales y el 404.
-- **Animaciones**: paso de una página a otra con barrido, y la foto de una obra viaja del listado a su ficha (transiciones de vista nativas del navegador, sin JavaScript); fotos que se destapan y se mueven algo más despacio que la página; números de paso que se encienden al pasar. Todo se apaga si el visitante tiene las animaciones desactivadas, y en navegadores sin soporte simplemente no se anima.
+- **Menú del móvil** (04/10, estándar de extreweb): a pantalla completa, con el logo arriba que se destapa tras una barra roja, los enlaces en el centro entrando en cascada y presupuesto, teléfono y email abajo. Es un popover nativo; la cabecera no cambia.
+- **Animaciones de entrada** (04/10): en las páginas interiores y en las secciones de la portada bajo la maqueta, los bloques marcados con `data-aparece` entran solos (fundido y subida, escalonados con `--i`) la primera vez que se ven, sin ir atados al scroll. El mecanismo está en `web/src/layouts/Base.astro` y `global.css`. No se ponen en elementos con su propia transición ni en la foto que viaja a la ficha de la obra.
+- **Animaciones atadas al scroll** (se mantienen): paso de una página a otra con barrido, y la foto de una obra viaja del listado a su ficha (transiciones de vista nativas del navegador, sin JavaScript); fotos que se destapan y se mueven algo más despacio que la página; números de paso que se encienden al pasar. Todo se apaga si el visitante tiene las animaciones desactivadas, y en navegadores sin soporte simplemente no se anima.
 - **Galería**: las 22 obras de la web antigua están en dev (205 fotos con miniatura, fichas publicadas, seis destacadas). Se repite con `web/scripts/importar-obras.mjs` (leer → fotos → sql) y `supabase/seed_web_obras.sql`; las instrucciones para subir las fotos están en la cabecera del script. La web lee la galería con `fetch` (`web/src/lib/galeria.ts`): lo que se publica en el CRM sale sin volver a desplegar (caché de 5 minutos).
 - **Formulario de contacto** (`web/src/pages/api/contacto.ts`): valida, tiene campo trampa y tiempo mínimo contra robots, y envía con Resend. **Sin `RESEND_API_KEY` no envía**: avisa y enseña teléfono y email. Funciona también sin JavaScript.
 - **SEO**: título, descripción y canónica (`www.imtexsl.com`) por página, Open Graph, datos estructurados (empresa, servicios y migas), `/sitemap.xml` con las obras publicadas, `robots.txt` y las redirecciones 301 de la web antigua (`web/public/_redirects`).
@@ -160,7 +162,7 @@ Hace falta Git, Node 22 o superior y Claude Code.
 
 **Si el repo ya está en ese ordenador**, basta con traer la rama e instalar lo nuevo:
 ```bash
-git fetch && git checkout feat/web && git pull
+git fetch && git checkout feat/web-animaciones && git pull
 ```
 ```bash
 cd crm && npm install
@@ -176,7 +178,7 @@ Si en ese ordenador no existe `web/.env`, créalo copiando `web/.env.example` y 
    git clone https://github.com/ContactoExtreweb/Imtex.git
    ```
    ```bash
-   cd Imtex && git checkout feat/web
+   cd Imtex && git checkout feat/web-animaciones
    ```
 2. Instalar dependencias:
    ```bash
@@ -256,6 +258,7 @@ Vite enseña la dirección de red (por ejemplo, `http://192.168.1.143:5173`): á
 5. Contacto: envía el formulario vacío, con un email mal escrito y bien relleno. Sin clave de Resend debe decir que aún no está conectado.
 6. Pruébalo todo en el móvil (`npm run dev -- --host` y la dirección de red).
 7. Escribe una dirección que no exista (`/obras/no-existe`): debe salir la página 404 de la web.
+8. En el móvil, abre el menú: el logo se destapa y los enlaces entran en cascada; la página de detrás no se mueve. Baja por empresa, obras o particulares: cada bloque entra una sola vez.
 
 ## Cómo seguir con Claude
 
