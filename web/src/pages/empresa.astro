@@ -6,6 +6,7 @@ import calidad from '../assets/empresa/calidad.png'
 import clasificada from '../assets/empresa/empresa_clasificada.png'
 import nosotros from '../assets/empresa/sobrenosotrosw.jpg'
 import Cierre from '../components/Cierre.astro'
+import Objeto3D from '../components/Objeto3D.astro'
 import Portadilla from '../components/Portadilla.astro'
 import Base from '../layouts/Base.astro'
 import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO } from '../lib/empresa'
@@ -19,6 +20,27 @@ import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO } from '../lib/empresa'
   <Portadilla titulo="Más de 25 años aplicando">
     {EMPRESA.nombreLargo}, S.L. es una empresa extremeña, con sede en {EMPRESA.localidad} ({EMPRESA.provincia}), dedicada a la impermeabilización y a la
     aplicación de productos químicos para la industria y la construcción.
+    <Objeto3D
+      slot="objeto"
+      escena="empresa"
+      etiqueta="Un palé en el que se van apilando sacos de mortero, rollos de lámina, cubos de resina y una bobina de fibra de carbono."
+      foto={nosotros}
+      alt="Trabajos de IMTEX en obra"
+    >
+      <ol class="grid grid-cols-2 border-t border-(--filete) sm:grid-cols-4" aria-label="Lo que aplicamos">
+        {
+          ['Morteros', 'Láminas', 'Resinas', 'Fibra de carbono'].map((m, i) => (
+            <li
+              data-paso={i}
+              class="rotulo relative border-b border-l border-(--filete) py-3 pl-2 text-pizarra/80 transition-colors duration-500 ease-(--ease-encaje) before:absolute before:-top-px before:left-0 before:h-0.5 before:w-full before:origin-left before:scale-x-0 before:bg-rojo before:transition-transform before:duration-500 before:ease-(--ease-encaje) aria-[current]:text-tinta aria-[current]:before:scale-x-100"
+            >
+              <span class="block tabular-nums">{`0${i + 1}`}</span>
+              {m}
+            </li>
+          ))
+        }
+      </ol>
+    </Objeto3D>
   </Portadilla>
 
   <section class="contenedor grid gap-x-16 gap-y-10 pb-14 lg:grid-cols-2 lg:pb-24">

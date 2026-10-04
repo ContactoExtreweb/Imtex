@@ -68,6 +68,7 @@ const conSustituto = Astro.slots.has('sustituto')
     servicios: () => import('../scripts/escena3d/servicios'),
     obras: () => import('../scripts/escena3d/mapa'),
     contacto: () => import('../scripts/escena3d/mapa'),
+    empresa: () => import('../scripts/escena3d/pale'),
   }
 
   for (const raiz of document.querySelectorAll<HTMLElement>('[data-objeto][data-espera-3d]')) {
