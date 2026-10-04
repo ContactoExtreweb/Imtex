@@ -1,20 +1,27 @@
 # Estado del proyecto IMTEX
 
-Actualizado el domingo 04/10/2026. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
+Actualizado el domingo 04/10/2026 por la noche. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
 El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [decisiones.md](decisiones.md).
 
-## Para el fin de semana (por dónde empezar en casa)
+## Para el lunes 05/10 en la oficina (por dónde empezar)
 
-Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/web`). No hay nada a medias.
+Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/web` e incluye todo lo anterior). No hay nada a medias.
 
-1. Trae la rama e instala lo nuevo (los comandos están en «Cómo arrancar en otro ordenador»). **En casa falta `web/.env`**: no está en git.
-2. Arranca la web (`cd web && npm run dev`) y mírala en http://localhost:4321. Los pasos están en «Qué probar → Web pública».
+**Qué se hizo el domingo 04/10** (detalle en el punto 12 de «Hecho» y en `decisiones.md`):
+- **Menú del móvil** a pantalla completa, con el estándar de extreweb: logo arriba que se destapa tras una barra roja, enlaces centrados en cascada y contacto abajo.
+- **Animaciones de entrada** en las páginas interiores: cada bloque entra solo la primera vez que se ve.
+- **Objetos 3D en bucle** en la entrada de Servicios (la pieza de los cuatro oficios), Obras (mapa de obras), Empresa (palé de materiales), Particulares (casa que deja de filtrar) y Contacto (mapa con arcos desde la sede).
+
+**Por dónde empezar:**
+1. Trae la rama e instala lo nuevo. Los comandos están en «Cómo arrancar en otro ordenador». **Hay que hacer `npm install` en `web/`**, porque se añadieron dos dependencias de desarrollo para el mapa.
+2. Arranca la web (`cd web && npm run dev`) y mírala en http://localhost:4321. La primera vez tarda unos 35 s; si sale en negro, espera y recarga. Los pasos están en «Qué probar → Web pública»; lo nuevo, en los puntos 8 y 9.
 3. Lo que Claude necesita de ti para seguir:
-   - Qué cambiarías de la web (portada, páginas, textos, animaciones).
-   - Si el acabado de la maqueta 3D se queda en gris pizarra o lo prefieres rojo.
+   - Qué te parecen los objetos 3D: si se entiende lo que pasa, si el ritmo va bien (cada vuelta dura de 13 a 24 s) y cómo se ven en el móvil.
+   - Qué cambiarías del resto de la web (portada, páginas, textos).
+   - Si el acabado de la maqueta 3D de la portada se queda en gris pizarra o lo prefieres rojo.
    - Probar las bajas en el CRM con archivos de verdad («Qué probar → Bajas»).
 4. Lo que hay que pedir o confirmar con IMTEX está al final del punto 12 de «Hecho».
-5. Para seguir con Claude en casa: abre Claude Code en la carpeta del repo y dile «Lee `docs/ESTADO.md` y seguimos con la web».
+5. Para seguir con Claude: abre Claude Code en la carpeta del repo y dile «Lee `docs/ESTADO.md` y seguimos con la web».
 
 ## Dónde está cada cosa
 
