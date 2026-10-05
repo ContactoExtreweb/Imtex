@@ -15,6 +15,9 @@
   --color-rojo: #ff311e;
   /* Rojo para texto pequeño y enlaces: el de marca no llega a 4,5:1 sobre claro, y sobre oscuro va algo aclarado */
   --color-rojo-tinta: #ff6452;
+  /* Lo que espera su turno (fases y pasos que aún no tocan): apagado, pero legible como texto grande (3:1 sobre
+     papel y papel-2). En el tema claro hace falta más pizarra para llegar. */
+  --color-apagado: color-mix(in oklab, var(--color-pizarra) 55%, transparent);
 
   /* Los que no cambian con el tema: bloques invertidos (obras, pie), y el negro del texto sobre rojo */
   --color-noche: #1d1b22;
@@ -43,6 +46,7 @@
     --color-tinta: #131116;
     --color-pizarra: #444556;
     --color-rojo-tinta: #c0200f;
+    --color-apagado: color-mix(in oklab, var(--color-pizarra) 65%, transparent);
     --color-noche: #131116;
     color-scheme: light;
   }
@@ -335,7 +339,7 @@
     @keyframes paso {
       0%,
       100% {
-        color: color-mix(in oklab, var(--color-pizarra) 45%, transparent);
+        color: var(--color-apagado);
       }
       35%,
       65% {

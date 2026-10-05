@@ -97,7 +97,7 @@ const dos = (n: number) => String(n).padStart(2, '0')
               <ol class="mt-6 border-t border-tinta">
                 {pasos.map((paso, n) => (
                   <li data-aparece style={`--i: ${Math.min(n, 5)}`} class="grid grid-cols-[3.5rem_1fr] items-baseline gap-4 border-b border-(--filete) py-5 lg:grid-cols-[5rem_1fr] lg:py-6">
-                    <span class="titular paso text-4xl text-pizarra/45 lg:text-5xl" aria-hidden="true">
+                    <span class="titular paso text-4xl text-apagado lg:text-5xl" aria-hidden="true">
                       {dos(n + 1)}
                     </span>
                     <span class="max-w-[58ch] text-lg">{paso}</span>

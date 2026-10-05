@@ -94,12 +94,12 @@ const dos = (n: number) => String(n).padStart(2, '0')
           <li data-fase class="group flex min-h-[62svh] flex-col justify-center border-t border-(--filete) py-10 lg:min-h-[78svh]">
             {/* El número es parte del título: el orden de las fases es información */}
             <h3 class="titular flex items-baseline gap-[0.35em] text-[clamp(2.2rem,4.6vw,4rem)]">
-              <span class="text-pizarra/45 transition-colors duration-500 ease-(--ease-encaje) group-data-activa:text-rojo-tinta">{dos(i + 1)}</span>
+              <span class="text-apagado transition-colors duration-500 ease-(--ease-encaje) group-data-activa:text-rojo-tinta">{dos(i + 1)}</span>
               {f.nombre}
             </h3>
             <p class="mt-4 max-w-[46ch] text-lg text-pizarra">{f.texto}</p>
             {/* El dato de la fase espera en gris y se enciende al llegar */}
-            <p class="titular mt-8 text-[clamp(1.6rem,3vw,2.6rem)] text-pizarra/30 transition-colors duration-500 ease-(--ease-encaje) group-data-activa:text-rojo-tinta">
+            <p class="titular mt-8 text-[clamp(1.6rem,3vw,2.6rem)] text-apagado transition-colors duration-500 ease-(--ease-encaje) group-data-activa:text-rojo-tinta">
               {f.dato}
             </p>
           </li>
@@ -148,7 +148,7 @@ const dos = (n: number) => String(n).padStart(2, '0')
             <li
               data-marca
               aria-current={i === 0 ? 'step' : undefined}
-              class="rotulo relative border-l border-(--filete) py-2.5 pl-2 text-[0.6875rem] text-pizarra/70 transition-colors duration-500 ease-(--ease-encaje) before:absolute before:-top-px before:left-0 before:h-0.5 before:w-full before:origin-left before:scale-x-0 before:bg-rojo before:transition-transform before:duration-500 before:ease-(--ease-encaje) [&[aria-current]]:text-tinta [&[aria-current]]:before:scale-x-100 lg:py-4 lg:text-xs"
+              class="rotulo relative border-l border-(--filete) py-2.5 pl-2 text-[0.6875rem] text-pizarra/80 transition-colors duration-500 ease-(--ease-encaje) before:absolute before:-top-px before:left-0 before:h-0.5 before:w-full before:origin-left before:scale-x-0 before:bg-rojo before:transition-transform before:duration-500 before:ease-(--ease-encaje) [&[aria-current]]:text-tinta [&[aria-current]]:before:scale-x-100 lg:py-4 lg:text-xs"
             >
               <span class="block tabular-nums">{dos(i + 1)}</span>
               <span class="hidden sm:block">{f.dato}</span>
