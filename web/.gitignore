@@ -36,3 +36,5 @@ pnpm-debug.log*
 .netlify
 # originales de Poly Haven para las escenas 3D (scripts/preparar-3d.mjs)
 .polyhaven/
+# fotogramas de los vídeos renderizados con Blender (render/*.py)
+.render/
