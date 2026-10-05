@@ -7,7 +7,7 @@ import type { ImageMetadata } from 'astro'
 import { Image } from 'astro:assets'
 
 interface Props {
-  escena: 'servicios' | 'obras' | 'empresa' | 'contacto'
+  escena: 'servicios' | 'obras' | 'contacto'
   /** Qué se ve, para quien no lo ve */
   etiqueta: string
   foto?: ImageMetadata
@@ -64,7 +64,6 @@ const conSustituto = Astro.slots.has('sustituto')
     servicios: () => import('../scripts/escena3d/servicios'),
     obras: () => import('../scripts/escena3d/mapa'),
     contacto: () => import('../scripts/escena3d/mapa'),
-    empresa: () => import('../scripts/escena3d/pale'),
   }
 
   for (const raiz of document.querySelectorAll<HTMLElement>('[data-objeto][data-espera-3d]')) {

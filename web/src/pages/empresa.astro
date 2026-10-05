@@ -5,11 +5,21 @@ import iso9001 from '../assets/empresa/9001.jpg'
 import calidad from '../assets/empresa/calidad.png'
 import clasificada from '../assets/empresa/empresa_clasificada.png'
 import nosotros from '../assets/empresa/sobrenosotrosw.jpg'
+import cartel from '../assets/video/empresa.jpg'
 import Cierre from '../components/Cierre.astro'
-import Objeto3D from '../components/Objeto3D.astro'
 import Portadilla from '../components/Portadilla.astro'
+import VideoBucle from '../components/VideoBucle.astro'
 import Base from '../layouts/Base.astro'
 import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO } from '../lib/empresa'
+
+// La animación de la entrada es un vídeo renderizado con Blender (render/empresa.py y render/codificar.py).
+// La leyenda se enciende en cada parada de la cámara, en segundos: los mismos que PARADAS en render/empresa.py.
+const TRAMOS: [number, number][] = [
+  [6.2, 7.8],
+  [7.8, 9.4],
+  [9.4, 11.0],
+  [11.0, 12.6],
+]
 ---
 
 <Base
@@ -20,12 +30,12 @@ import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO } from '../lib/empresa'
   <Portadilla titulo="Más de 25 años aplicando">
     {EMPRESA.nombreLargo}, S.L. es una empresa extremeña, con sede en {EMPRESA.localidad} ({EMPRESA.provincia}), dedicada a la impermeabilización y a la
     aplicación de productos químicos para la industria y la construcción.
-    <Objeto3D
+    <VideoBucle
       slot="objeto"
-      escena="empresa"
-      etiqueta="Un palé en el que se van apilando sacos de mortero, rollos de lámina, cubos de resina y una bobina de fibra de carbono."
-      foto={nosotros}
-      alt="Trabajos de IMTEX en obra"
+      nombre="empresa"
+      cartel={cartel}
+      tramos={TRAMOS}
+      etiqueta="La furgoneta de IMTEX, en la nave, baja con su plataforma elevadora un palé con sacos de mortero, rollos de lámina, cubos de resina y una bobina de fibra de carbono, todo con el logo de IMTEX."
     >
       <ol class="grid grid-cols-2 border-t border-(--filete) sm:grid-cols-4" aria-label="Lo que aplicamos">
         {
@@ -40,7 +50,7 @@ import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO } from '../lib/empresa'
           ))
         }
       </ol>
-    </Objeto3D>
+    </VideoBucle>
   </Portadilla>
 
   <section class="contenedor grid gap-x-16 gap-y-10 pb-14 lg:grid-cols-2 lg:pb-24">
