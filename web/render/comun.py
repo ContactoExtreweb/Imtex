@@ -477,7 +477,8 @@ def calcomania(nombre, ruta, ancho, posicion, giro=(0.0, 0.0, 0.0), objetivo=Non
     malla_c = bpy.data.meshes.new(nombre)
     bm = bmesh.new()
     bm.loops.layers.uv.new()  # sin esta capa, create_grid no pone coordenadas de textura y la imagen no se ve
-    bmesh.ops.create_grid(bm, x_segments=48, y_segments=max(2, round(48 * alto / ancho)), size=0.5, calc_uvs=True)
+    # Un vértice por centímetro (hasta 300 por lado): así sigue las nervaduras de la chapa sin que asomen por delante
+    bmesh.ops.create_grid(bm, x_segments=min(300, max(8, round(ancho / 0.01))), y_segments=min(300, max(8, round(alto / 0.01))), size=0.5, calc_uvs=True)
     for v in bm.verts:
         v.co = (v.co.x * ancho, 0.0, v.co.y * alto)
     bm.to_mesh(malla_c)

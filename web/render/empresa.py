@@ -567,9 +567,9 @@ if furgo:
     bpy.context.view_layer.update()
     chapa = una_sola_malla("Chapa para los vinilos", [o for o in furgo[1] if o.type == "MESH" and "carpaint" in o.name])
     costado_y = -COSTADO_X * PULGADA - 0.03
-    calcomania("Furgoneta logo", os.path.join(ASSETS, "logo-imtex.png"), 2.05, (-2.42, costado_y, 1.82), objetivo=chapa)
-    calcomania("Furgoneta lema", os.path.join(ASSETS, "lema-imtex.png"), 2.75, (-2.34, costado_y, 1.28), objetivo=chapa)
-    texto("Furgoneta contacto", "924 84 12 46   ·   www.imtexsl.com", 0.13, (-2.34, costado_y, 1.0), objetivo=chapa)
+    calcomania("Furgoneta logo", os.path.join(ASSETS, "logo-imtex.png"), 2.05, (-2.42, costado_y, 1.82), objetivo=chapa, rugosidad=0.7)
+    calcomania("Furgoneta lema", os.path.join(ASSETS, "lema-imtex.png"), 2.75, (-2.34, costado_y, 1.1), objetivo=chapa, rugosidad=0.7)  # por debajo de la nervadura de la chapa (a 1,22 m)
+    texto("Furgoneta contacto", "924 84 12 46   ·   www.imtexsl.com", 0.13, (-2.34, costado_y, 0.88), objetivo=chapa)
 
 
 # ------------------------------------------------------------------------------------------------
