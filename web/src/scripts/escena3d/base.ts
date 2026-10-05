@@ -6,6 +6,7 @@
 import {
   ACESFilmicToneMapping,
   DirectionalLight,
+  HalfFloatType,
   HemisphereLight,
   Mesh,
   PCFShadowMap,
@@ -17,8 +18,13 @@ import {
   SRGBColorSpace,
   Vector3,
   WebGLRenderer,
+  WebGLRenderTarget,
 } from 'three'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js'
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 
 export interface OpcionesEscena {
   /** Altura del suelo que recibe la sombra */
@@ -31,6 +37,8 @@ export interface OpcionesEscena {
   anchoMinimo?: number
   /** Cuánto se deja girar arrastrando, en radianes a cada lado */
   giroMaximo?: number
+  /** Oclusión ambiental: oscurece rincones y encuentros, como pasa con la luz de verdad. Es el radio, en unidades de la escena. */
+  oclusion?: number
 }
 
 export interface Escena {
@@ -50,7 +58,7 @@ export interface Escena {
 }
 
 export function crearEscena(lienzo: HTMLCanvasElement, opciones: OpcionesEscena = {}): Escena {
-  const { suelo = 0, alcanceSombra = 5, apertura = 32, anchoMinimo = 1.18, giroMaximo = 0.9 } = opciones
+  const { suelo = 0, alcanceSombra = 5, apertura = 32, anchoMinimo = 1.18, giroMaximo = 0.9, oclusion = 0 } = opciones
   const movil = matchMedia('(max-width: 63.99rem)').matches
 
   const renderizador = new WebGLRenderer({ canvas: lienzo, antialias: true, alpha: true, powerPreference: 'high-performance' })
@@ -134,11 +142,24 @@ export function crearEscena(lienzo: HTMLCanvasElement, opciones: OpcionesEscena 
     camara.lookAt(mira)
   }
 
+  // Con oclusión, la imagen pasa por una cadena: escena, oclusión y salida (tono y color). El fondo sigue transparente.
+  let cadena: EffectComposer | null = null
+  if (oclusion) {
+    cadena = new EffectComposer(renderizador, new WebGLRenderTarget(1, 1, { type: HalfFloatType, samples: 4 }))
+    cadena.addPass(new RenderPass(escena, camara))
+    const ao = new GTAOPass(escena, camara)
+    ao.updateGtaoMaterial({ radius: oclusion, distanceExponent: 1.5, thickness: 1, scale: 1, samples: movil ? 8 : 16 })
+    cadena.addPass(ao)
+    cadena.addPass(new OutputPass())
+  }
+
   function ajustar() {
     const ancho = lienzo.clientWidth
     const alto = lienzo.clientHeight
     if (!ancho || !alto) return
     renderizador.setSize(ancho, alto, false)
+    cadena?.setPixelRatio(renderizador.getPixelRatio())
+    cadena?.setSize(ancho, alto)
     camara.aspect = ancho / alto
     camara.updateProjectionMatrix()
   }
@@ -167,7 +188,8 @@ export function crearEscena(lienzo: HTMLCanvasElement, opciones: OpcionesEscena 
     arrastre = Math.max(-giroMaximo, Math.min(giroMaximo, arrastre))
     for (const f of tareas) f(t, fijo === null ? dt : 0)
     encuadrar(t)
-    renderizador.render(escena, camara)
+    if (cadena) cadena.render(dt)
+    else renderizador.render(escena, camara)
   }
   const observadorVista = new IntersectionObserver(([entrada]) => {
     visible = entrada.isIntersecting
@@ -192,6 +214,7 @@ export function crearEscena(lienzo: HTMLCanvasElement, opciones: OpcionesEscena 
       cancelAnimationFrame(cuadro)
       observadorTamano.disconnect()
       observadorVista.disconnect()
+      cadena?.dispose()
       renderizador.dispose()
     },
   }

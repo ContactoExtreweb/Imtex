@@ -34,3 +34,5 @@ pnpm-debug.log*
 
 # Local Netlify folder
 .netlify
+# originales de Poly Haven para las escenas 3D (scripts/preparar-3d.mjs)
+.polyhaven/
