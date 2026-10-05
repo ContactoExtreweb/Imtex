@@ -105,14 +105,17 @@ export function montar(lienzo: HTMLCanvasElement, { raiz }: { raiz: HTMLElement 
 
   // --- Casa en corte: muros de fondo y laterales, dos forjados y la terraza con su peto ---
   const { x0, x1, z0, z1 } = CASA
-  caja(x0, x1, 0, FORJADO * 0.6, z0, z1, matHormigon) // suelo del garaje
   caja(x0, x0 + MURO, 0, TECHO, z0, z1, matEnlucido)
   caja(x1 - MURO, x1, 0, TECHO, z0, z1, matEnlucido)
-  caja(x0, x1, 0, TECHO, z0, z0 + MURO, matEnlucido)
+  caja(x0 + MURO, x1 - MURO, 0, TECHO, z0, z0 + MURO, matEnlucido)
+  // Suelos y forjados entre los muros, sin llegar a la fachada: si sus caras coinciden con las del muro,
+  // la tarjeta gráfica pinta a ratos una y a ratos otra y parece que el suelo atraviesa la pared
+  const [i0, i1, f0] = [x0 + MURO, x1 - MURO, z0 + MURO]
+  caja(i0, i1, 0, FORJADO * 0.6, f0, z1, matHormigon) // suelo del garaje
   // Forjados: hormigón en el corte, barro cocido encima (el suelo del salón y el de la terraza)
   const forjado = [matHormigon, matHormigon, matBarro, matHormigon, matHormigon, matHormigon]
-  caja(x0, x1, PLANTA - FORJADO, PLANTA, z0, z1, forjado)
-  caja(x0, x1, TECHO - FORJADO, TECHO, z0, z1, forjado)
+  caja(i0, i1, PLANTA - FORJADO, PLANTA, f0, z1, forjado)
+  caja(i0, i1, TECHO - FORJADO, TECHO, f0, z1, forjado)
   // Peto de la terraza, con su albardilla de piedra que vuela un poco a cada lado
   const peto = (a0: number, a1: number, b0: number, b1: number, alto: number) => {
     caja(a0, a1, TECHO, TECHO + alto, b0, b1, matEnlucido)
