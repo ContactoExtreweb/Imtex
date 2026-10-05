@@ -11,7 +11,8 @@
 # una caja en su sitio para probar el resto.
 #   blender -b --factory-startup --python render/empresa.py -- --fotogramas 0,90,170,250,330
 #   blender -b --factory-startup --python render/empresa.py -- --video
-# Opciones comunes en render/comun.py. Además: --giro-cielo N (grados) para girar la luz de la nave.
+# Opciones comunes en render/comun.py. Además: --giro-cielo N (grados) para girar la luz de la nave, y
+# --camara x,y,z,mx,my,mz para revisar la escena desde un punto fijo (posición y punto al que mira).
 
 import glob
 import math
@@ -31,8 +32,8 @@ FOTOGRAMAS = round(VUELTA * FPS)
 # --- Medidas, en metros. X a la derecha, Y hacia el fondo, Z arriba. ---
 # La furgoneta, a lo largo de X con la trasera en x = 0; el palé, sobre la plataforma, detrás de ella.
 PALE = dict(largo=1.2, fondo=0.8, alto=0.144)
-FURGO = dict(largo=5.93, ancho=2.02, alto=2.6, suelo=0.66)  # Sprinter L2H2; `suelo`: el de la zona de carga
-PLATAFORMA = dict(fondo=1.5, ancho=1.7, grueso=0.06, pivote=(-0.35, 0.38))
+FURGO = dict(largo=6.28, ancho=2.12, alto=2.73, suelo=0.775)  # la Sprinter del modelo; `suelo`: el de la zona de carga
+PLATAFORMA = dict(fondo=1.5, ancho=1.7, grueso=0.06, pivote=(-0.3, 0.35))
 PARED_Y = 4.4  # la pared del fondo de la nave, con el cartel
 # La historia, en segundos
 BAJA = (1.4, 5.6)  # la plataforma baja
@@ -450,28 +451,125 @@ modelo("hand_truck", (3.0, PARED_Y - 0.6, 0), giro=-0.4)
 
 
 # ------------------------------------------------------------------------------------------------
-# La furgoneta (Sprinter de Sketchfab en .modelos/sprinter/) o, si no está, una caja en su sitio
+# La furgoneta: «Mercedes-Benz Sprinter», de Savelliy 07 (Sketchfab, CC BY 4.0), en .modelos/sprinter/source/.
+# El modelo viene en pulgadas, con el morro hacia -Y y la trasera hacia +Y. Se pinta de blanco, se le quitan las
+# estrellas de Mercedes, se le abre el hueco de las puertas traseras (en el modelo forman parte de la carrocería),
+# se forra la zona de carga y se le ponen dos puertas propias abiertas contra los costados, como se abren las de una
+# Sprinter (270°). Sin el modelo, una caja en su sitio para probar el resto.
 # ------------------------------------------------------------------------------------------------
+PULGADA = 0.0254
+TRASERA_Y = 120.74  # la trasera del parachoques, en pulgadas: queda en x = 0
+COSTADO_X = 39.6  # la chapa del costado en la zona de carga
+SUELO_Z = 30.5  # el suelo de carga
+HUECO = dict(x=31.0, z0=30.0, z1=100.0, y=111.0)  # el hueco de las puertas traseras
+ESTRELLAS = ("Mesh319", "Mesh320")  # las de la calandra y la puerta trasera (cromadas)
+
+
+def modelo_a_mundo(x, y, z):
+    """De pulgadas del modelo a metros de la escena (morro hacia -X, trasera en x = 0, el costado izquierdo hacia -Y)"""
+    return Vector(((y - TRASERA_Y) * PULGADA, -x * PULGADA, z * PULGADA))
+
+
 def furgoneta():
-    ficheros = sorted(glob.glob(os.path.join(WEB, ".modelos", "sprinter", "**", "*.gl*"), recursive=True))
-    if not ficheros:
+    ruta = next(iter(sorted(glob.glob(os.path.join(WEB, ".modelos", "sprinter", "**", "*.blend"), recursive=True))), None)
+    if not ruta:
         print("FURGONETA: no está en .modelos/sprinter/; se pone una caja en su sitio")
         mat_chapa = material("Chapa blanca", (0.85, 0.86, 0.87), 0.25, **{"Coat Weight": 1.0, "Coat Roughness": 0.05})
         caja("Furgoneta (provisional)", -FURGO["largo"], 0.0, -FURGO["ancho"] / 2, FURGO["ancho"] / 2, 0.35, FURGO["alto"], mat_chapa, bisel=0.05)
-        neumatico = material("Neumático", (0.02, 0.02, 0.02), 0.8)
-        for x in (-4.6, -0.95):
-            for y in (-0.9, 0.9):
-                r = cilindro(f"Rueda {x} {y}", 0.35, 0.35, 0.22, neumatico)
-                r.rotation_euler.x = math.pi / 2
-                r.location = (x, y + 0.11, 0.35)
         return None
-    print("FURGONETA:", ficheros[0])
-    antes = set(bpy.data.objects)
-    bpy.ops.import_scene.gltf(filepath=ficheros[0])
-    return [o for o in bpy.data.objects if o not in antes]
+    print("FURGONETA:", ruta)
+    with bpy.data.libraries.load(ruta, link=False) as (desde, hacia):
+        hacia.objects = desde.objects
+    piezas = [o for o in hacia.objects if o is not None]
+    for o in piezas:
+        coleccion.objects.link(o)
+    # Sin esto, matrix_world de lo recién traído aún no tiene el giro de cada pieza y el recorte no acierta
+    bpy.context.view_layer.update()
+
+    # --- Materiales: chapa blanca con barniz, vidrio de verdad, llantas plateadas ---
+    pintura = material("Pintura blanca", (0.82, 0.83, 0.84), 0.28, **{"Coat Weight": 1.0, "Coat Roughness": 0.04})
+    llanta = material("Llanta", (0.62, 0.63, 0.65), 0.28, Metallic=1.0)
+    freno = material("Disco de freno", (0.32, 0.32, 0.33), 0.4, Metallic=1.0)
+    vidrio = material("Vidrio de la furgoneta", (0.05, 0.055, 0.06), 0.0)
+    vidrio_fino(vidrio)
+    cambio = {"_Color_A01_1": pintura, "Color_B01": pintura, "Color_A25": llanta, "FrontColor": freno}
+    for o in piezas:
+        for s in o.material_slots:
+            nombre = s.material.name if s.material else ""
+            if nombre in cambio:
+                s.material = cambio[nombre]
+            elif "Glass" in nombre or nombre.startswith("Material") or "window" in o.name or "windshield" in o.name:
+                s.material = vidrio
+
+    # --- Fuera las estrellas de Mercedes ---
+    for o in [o for o in piezas if o.name.split(" ")[0] in ESTRELLAS]:
+        piezas.remove(o)
+        bpy.data.objects.remove(o)
+
+    # --- El hueco de las puertas traseras: fuera lo que hay dentro de esa caja (en pulgadas del modelo) ---
+    for o in piezas:
+        if o.type != "MESH":
+            continue
+        mw = o.matrix_world
+        bm = bmesh.new()
+        bm.from_mesh(o.data)
+        fuera = [v for v in bm.verts if (lambda w: abs(w.x) < HUECO["x"] and w.y > HUECO["y"] and HUECO["z0"] < w.z < HUECO["z1"])(mw @ v.co)]
+        if fuera:
+            bmesh.ops.delete(bm, geom=fuera, context="VERTS")
+            bm.to_mesh(o.data)
+        bm.free()
+
+    # --- Todo cuelga de un vacío que lo pasa a metros y lo coloca ---
+    raiz = bpy.data.objects.new("Furgoneta", None)
+    coleccion.objects.link(raiz)
+    raiz.scale = (PULGADA,) * 3
+    raiz.rotation_euler.z = -math.pi / 2
+    raiz.location.x = -TRASERA_Y * PULGADA
+    for o in piezas:
+        if o.parent is None:
+            o.parent = raiz
+
+    # --- Zona de carga forrada: suelo de contrachapado, laterales y techo claros (se ve por el hueco) ---
+    mat_contrachapado = material_escaneado("Suelo de carga", "raw_plank_wall", 3.0, brillo=0.95, relieve=0.4)
+    mat_forro = material("Forro de la zona de carga", (0.7, 0.7, 0.68), 0.6)
+    forro = [
+        caja("Suelo de carga", -36.0, 36.0, -40.0, 119.6, SUELO_Z - 1.0, SUELO_Z, mat_contrachapado, bisel=0),
+        caja("Forro izquierdo", 35.0, 36.0, -40.0, 118.0, SUELO_Z, 101.0, mat_forro, bisel=0),
+        caja("Forro derecho", -36.0, -35.0, -40.0, 118.0, SUELO_Z, 101.0, mat_forro, bisel=0),
+        caja("Techo de carga", -36.0, 36.0, -40.0, 118.0, 101.0, 102.0, mat_forro, bisel=0),
+        caja("Mampara", -36.0, 36.0, -41.0, -40.0, SUELO_Z, 101.0, mat_forro, bisel=0),
+    ]
+    for o in forro:
+        o.parent = raiz
+
+    # --- Puertas traseras propias, abiertas 270° contra los costados (bisagras en las esquinas) ---
+    for lado in (1.0, -1.0):
+        puerta = caja(f"Puerta trasera {lado:+.0f}", 0.0, 39.5, -1.0, 1.0, HUECO["z0"], HUECO["z1"] + 3.0, pintura, bisel=0.4)
+        cristal = caja(f"Cristal puerta {lado:+.0f}", 4.0, 35.0, -1.15, 1.15, 63.0, 92.0, vidrio, bisel=0)
+        bisagra = bpy.data.objects.new(f"Bisagra {lado:+.0f}", None)
+        coleccion.objects.link(bisagra)
+        for o in (puerta, cristal):
+            o.parent = bisagra
+        bisagra.parent = raiz
+        # Cerrada iría del borde (x = ±40,8) hacia el centro; abierta, plegada hacia delante pegada al costado
+        bisagra.location = (41.9 * lado, 120.2, 0.0)
+        bisagra.rotation_euler.z = math.pi if lado > 0 else 0.0
+        bisagra.rotation_euler.z += math.radians(-268.0 if lado > 0 else 268.0)
+    return raiz, piezas
 
 
 furgo = furgoneta()
+
+
+# --- Vinilos del costado izquierdo (el que ve la cámara): logo, banda del lema, teléfono y web ---
+# Se pegan a una copia invisible de toda la chapa (la carrocería viene en muchas piezas), proyectándolos en horizontal.
+if furgo:
+    bpy.context.view_layer.update()
+    chapa = una_sola_malla("Chapa para los vinilos", [o for o in furgo[1] if o.type == "MESH" and "carpaint" in o.name])
+    costado_y = -COSTADO_X * PULGADA - 0.03
+    calcomania("Furgoneta logo", os.path.join(ASSETS, "logo-imtex.png"), 2.05, (-2.42, costado_y, 1.82), objetivo=chapa)
+    calcomania("Furgoneta lema", os.path.join(ASSETS, "lema-imtex.png"), 2.75, (-2.34, costado_y, 1.28), objetivo=chapa)
+    texto("Furgoneta contacto", "924 84 12 46   ·   www.imtexsl.com", 0.13, (-2.34, costado_y, 1.0), objetivo=chapa)
 
 
 # ------------------------------------------------------------------------------------------------
@@ -583,10 +681,11 @@ def encuadre(t, centro_carga):
 # ------------------------------------------------------------------------------------------------
 # Animación: un fotograma clave por fotograma
 # ------------------------------------------------------------------------------------------------
+FIJA = [float(x) for x in opcion("--camara").split(",")] if opcion("--camara") else None
 for f in range(FOTOGRAMAS):
     t = f / FPS
     centro = poner_plataforma(suave(tramo(t, *BAJA)), f)
-    pos_c, mira_c = encuadre(t, centro)
+    pos_c, mira_c = (Vector(FIJA[:3]), Vector(FIJA[3:])) if FIJA else encuadre(t, centro)
     clave(camara, "location", pos_c, f)
     clave(mira, "location", mira_c, f)
 

@@ -434,6 +434,40 @@ def clave(objeto, ruta, valor, f, indice=-1):
 # ------------------------------------------------------------------------------------------------
 # Rotulación: calcomanías (una imagen con transparencia) y textos, para logos, vinilos y carteles
 # ------------------------------------------------------------------------------------------------
+def ajustar(o, objetivo, separa, eje="Y"):
+    """Pega `o` (un vinilo plano que mira hacia -Y) a la superficie de `objetivo`, proyectándolo en horizontal:
+    así no salta a otras caras, como pasa al buscar el punto más cercano en una carrocería de varias piezas.
+    `eje` es el eje propio del objeto que apunta a la superficie (Y en las calcomanías; Z en los textos, que van girados)."""
+    ajuste = o.modifiers.new("Ajuste", "SHRINKWRAP")
+    ajuste.target = objetivo
+    ajuste.wrap_method = "PROJECT"
+    ajuste.use_project_y = eje == "Y"
+    ajuste.use_project_z = eje == "Z"
+    ajuste.use_negative_direction = True
+    ajuste.use_positive_direction = True
+    ajuste.wrap_mode = "OUTSIDE_SURFACE"
+    ajuste.offset = separa
+
+
+def una_sola_malla(nombre, piezas):
+    """Junta en una malla nueva e invisible la geometría de `piezas` tal como está en la escena: sirve de superficie a la
+    que pegar vinilos cuando la carrocería viene en muchas piezas"""
+    bpy.context.view_layer.update()
+    bm = bmesh.new()
+    for o in piezas:
+        antes = len(bm.verts)
+        bm.from_mesh(o.data)
+        bm.verts.ensure_lookup_table()
+        bmesh.ops.transform(bm, matrix=o.matrix_world, verts=bm.verts[antes:])
+    malla_u = bpy.data.meshes.new(nombre)
+    bm.to_mesh(malla_u)
+    bm.free()
+    o = bpy.data.objects.new(nombre, malla_u)
+    coleccion.objects.link(o)
+    o.hide_render = True
+    return o
+
+
 def calcomania(nombre, ruta, ancho, posicion, giro=(0.0, 0.0, 0.0), objetivo=None, separa=0.002, rugosidad=0.35):
     """Un plano con la imagen de `ruta` (PNG con transparencia), de `ancho` metros y el alto que pida la imagen.
     De frente mira hacia -Y (como un cartel visto desde delante); `giro` lo orienta. Con `objetivo`, se ajusta a su
@@ -465,17 +499,14 @@ def calcomania(nombre, ruta, ancho, posicion, giro=(0.0, 0.0, 0.0), objetivo=Non
     o.location = posicion
     o.rotation_euler = giro
     if objetivo is not None:
-        ajuste = o.modifiers.new("Ajuste", "SHRINKWRAP")
-        ajuste.target = objetivo
-        ajuste.wrap_method = "NEAREST_SURFACEPOINT"
-        ajuste.wrap_mode = "OUTSIDE_SURFACE"
-        ajuste.offset = separa
+        ajustar(o, objetivo, separa)
     return o
 
 
-def texto(nombre, contenido, alto, posicion, giro=(math.pi / 2, 0.0, 0.0), color=(0.02, 0.02, 0.025), fuente="bahnschrift.ttf", alinear="CENTER"):
+def texto(nombre, contenido, alto, posicion, giro=(math.pi / 2, 0.0, 0.0), color=(0.02, 0.02, 0.025), fuente="bahnschrift.ttf", alinear="CENTER", objetivo=None, separa=0.002):
     """Texto plano (un vinilo de letras), de `alto` metros de cuerpo. De frente mira hacia -Y.
-    La fuente se busca en las de Windows y, si no está, se usa la de Blender."""
+    La fuente se busca en las de Windows y, si no está, se usa la de Blender. Con `objetivo`, se convierte en malla
+    y se ajusta a su superficie, como las calcomanías."""
     curva = bpy.data.curves.new(nombre, "FONT")
     curva.body = contenido
     curva.size = alto
@@ -488,4 +519,17 @@ def texto(nombre, contenido, alto, posicion, giro=(math.pi / 2, 0.0, 0.0), color
     curva.materials.append(material(f"Letras {nombre}", color, 0.4))
     o.location = posicion
     o.rotation_euler = giro
+    if objetivo is not None:
+        bpy.context.view_layer.update()
+        malla_t = bpy.data.meshes.new_from_object(o.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+        plano = bpy.data.objects.new(nombre, malla_t)
+        coleccion.objects.link(plano)
+        plano.matrix_world = o.matrix_world.copy()
+        bpy.data.objects.remove(o)
+        # Más vértices para que siga la curva de la chapa
+        sub = plano.modifiers.new("Subdividir", "SUBSURF")
+        sub.subdivision_type = "SIMPLE"
+        sub.levels = sub.render_levels = 2
+        ajustar(plano, objetivo, separa, eje="Z")
+        return plano
     return o
