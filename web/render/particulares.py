@@ -9,7 +9,10 @@
 #   blender -b --factory-startup --python render/particulares.py -- --fotogramas 130,276,350
 #   blender -b --factory-startup --python render/particulares.py -- --video
 # Opciones: --muestras N, --ancho N (el alto sale a 4:3), --guardar (deja también el .blend).
-# Los fotogramas van a .render/particulares/ (fuera de git).
+# Con --video, además: --desde N y --hasta N para un tramo. Los fotogramas ya hechos se saltan, así que si se corta,
+# se vuelve a lanzar lo mismo y sigue donde iba.
+# Usa la tarjeta gráfica con OptiX si la hay y si no, el procesador.
+# Los fotogramas van a .render/particulares/ (fuera de git); los del vídeo, a .render/particulares/video-<ancho>/.
 
 import math
 import os
@@ -74,16 +77,19 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.context.preferences.edit.keyframe_new_interpolation_type = "LINEAR"
 escena = bpy.context.scene
 escena.render.engine = "CYCLES"
+# La tarjeta gráfica con OptiX si la hay (el PC con la RTX 4060); si no, el procesador (la sesión de Claude en la nube)
 prefs = bpy.context.preferences.addons["cycles"].preferences
 prefs.compute_device_type = "OPTIX"
 prefs.get_devices()
+CON_TARJETA = any(d.type == "OPTIX" for d in prefs.devices)
 for d in prefs.devices:
     d.use = d.type == "OPTIX"
-escena.cycles.device = "GPU"
+escena.cycles.device = "GPU" if CON_TARJETA else "CPU"
+print("RENDER CON", "tarjeta gráfica (OptiX)" if CON_TARJETA else "procesador")
 escena.cycles.samples = int(opcion("--muestras", 96))
 escena.cycles.adaptive_threshold = 0.02
 escena.cycles.use_denoising = True
-escena.cycles.denoiser = "OPTIX"
+escena.cycles.denoiser = "OPTIX" if CON_TARJETA else "OPENIMAGEDENOISE"
 escena.cycles.max_bounces = 8
 escena.cycles.diffuse_bounces = 3
 escena.cycles.glossy_bounces = 3
@@ -861,7 +867,12 @@ os.makedirs(SALIDA, exist_ok=True)
 if "--guardar" in args:
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(SALIDA, "particulares.blend"))
 if "--video" in args:
-    escena.render.filepath = os.path.join(SALIDA, "f_")
+    # Cada ancho en su carpeta; lo ya hecho no se repite (y otro proceso puede ir con otro tramo a la vez)
+    escena.frame_start = int(opcion("--desde", 0))
+    escena.frame_end = int(opcion("--hasta", FOTOGRAMAS - 1))
+    escena.render.use_overwrite = False
+    escena.render.use_placeholder = True
+    escena.render.filepath = os.path.join(SALIDA, f"video-{ancho}", "f_")
     bpy.ops.render.render(animation=True)
 else:
     for f in [int(x) for x in opcion("--fotogramas", "130").split(",")]:
