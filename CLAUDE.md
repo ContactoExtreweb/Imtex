@@ -1,4 +1,4 @@
-# IMTEX · web corporativa + programa de gestión
+# IMTEX · web corporativa + programa de gestión.
 
 Cliente: IMTEX S.L. (impermeabilizaciones, Villanueva de la Serena).
 Proveedor: FG Digital (marca extreweb). Plan, alcance y especificación: `docs/PLAN.md`.
