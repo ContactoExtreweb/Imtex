@@ -51,8 +51,8 @@ const VUELTA = 18.6
 
 const ENCUADRES = [
   [new Vector3(1.7, 3.2, 5.7), new Vector3(-0.3, 1.45, 0)], // terraza y salón
-  [new Vector3(3.9, 3.1, 4.4), new Vector3(2.0, 0.0, 0)], // piscina
-  [new Vector3(0.9, 1.7, 4.9), new Vector3(-0.35, 0.45, 0.1)], // garaje
+  [new Vector3(3.4, 4.95, 6.2), new Vector3(0.75, 0.6, 0)], // piscina, con la casa entera al lado
+  [new Vector3(0.95, 2.0, 6.1), new Vector3(-0.3, 0.7, 0.1)], // garaje, sin cortar la planta de arriba
   [new Vector3(3.1, 3.7, 6.3), new Vector3(0.55, 0.9, 0)], // la casa entera
 ] as const
 

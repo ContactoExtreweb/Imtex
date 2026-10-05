@@ -111,7 +111,7 @@ Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/
   - **Servicios:** un tablero sobre una viga que pasa por los cuatro servicios. Al señalar uno en la leyenda, salta a él y espera.
   - **Obras:** el mapa de España y Portugal en relieve; las obras publicadas se encienden una a una, con enlace a su ficha.
   - **Empresa:** un palé en el que se apilan los materiales.
-  - **Particulares:** una casa en corte que deja de filtrar, con la piscina y el garaje.
+  - **Particulares:** una casa en corte que deja de filtrar, con la piscina y el garaje. Las tomas de la piscina y del garaje se abrieron el 05/10: antes cortaban la casa por el borde.
   - **Contacto:** el mismo mapa, con arcos desde la sede.
   
   Código en `web/src/scripts/escena3d/` (base común, una escena por fichero) y `web/src/components/Objeto3D.astro`. Mismas condiciones que la portada: sin WebGL, con animaciones reducidas, con ahorro de datos o con poca memoria sale una foto o el mapa en SVG.
