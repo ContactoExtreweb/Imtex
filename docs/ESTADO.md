@@ -15,11 +15,12 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
   - Canónicas sin barra final.
   - Imagen para compartir la web en redes y WhatsApp.
   - Resultado: de 36–42 a 94–99 en las páginas con 3D. Detalle en «Rendimiento y accesibilidad», también en el punto 12.
+- **Render de Particulares, también en la nube** (Blender instalado allí, con el procesador). Mancha y charco con forma, agua que deja ver la lámina, cuadro bien colgado, y césped, setos, cipreses, encinas y casas vecinas. La web ya tiene el reproductor del vídeo con la leyenda sincronizada: `/particulares` lo usará en cuanto esté el vídeo definitivo.
 
 **Lo que Claude necesita de ti:**
 - Mirar la imagen para compartir (`web/public/compartir.jpg`): marca, titular de la portada y la foto de Almaraz.
 - Comprobar en tu PC que la portada y las páginas interiores siguen enseñando el 3D. Con tarjeta gráfica debe salir igual que antes.
-- Lo pendiente del vídeo de Particulares (punto 12 de «Hecho»).
+- Dar el visto bueno (o cambios) a los fotogramas de Particulares que se enviaron por el chat. Con el visto bueno, renderizar el vídeo definitivo en el PC de la RTX 4060: son dos comandos, en «Cómo sacar el vídeo definitivo», en el punto 12.
 
 **Para seguir con Claude:** abre Claude Code en la carpeta del repo y dile «Lee `docs/ESTADO.md` y seguimos con la web».
 
@@ -121,7 +122,21 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
   - Recursos de Poly Haven (CC0) en `web/public/3d` (unos 900 KB), preparados con `cd web && node scripts/preparar-3d.mjs`; los originales se bajan a `web/.polyhaven/` (fuera de git). El código común está en `web/src/scripts/escena3d/real.ts` y la oclusión es la opción `oclusion` de `crearEscena`.
   - Si gusta, se hace lo mismo en Empresa, Servicios, Obras y Contacto (cada escena con su lista de descargas, que Saúl aprueba) y luego se decide la portada.
   - **05/10: Saúl lo vio poco real. Se cambia de camino: vídeo renderizado con Blender (Cycles) en vez de escena en tiempo real.** Blender 5.2.2 instalado con winget (RTX 4060 con OptiX: unos 3 s por fotograma a 960 px). Recursos del render en `web/.polyhaven/render/` (81 MB, fuera de git), bajados con `cd web && node render/recursos.mjs`. La escena es `web/render/particulares.py` (misma historia y tiempos que `casa.ts`, a escala real, en su parcela). Fotogramas de prueba: `blender -b --factory-startup --python render/particulares.py -- --fotogramas 140,276,350 --muestras 64 --ancho 960`; salen en `web/.render/particulares/`.
-  - **Por dónde seguir con el vídeo:** mancha de humedad con forma (hoy es un rectángulo), charco redondo, césped hecho de briznas (nodos de geometría), setos y cipreses en las tapias, unas casas vecinas al fondo, y comprobar que el cuadro del salón ya no sale negro (se le dio la vuelta). Después: fotogramas para Saúl, vídeo entero (`-- --video`, unos 45 min), MP4 y WebM, y cambiar en `/particulares` el objeto 3D por el vídeo en bucle, con la leyenda sincronizada. El coche, cuando Saúl lo compre.
+  - **05/10, en la sesión de Claude en la nube** (Blender 5.2.2 sin tarjeta gráfica: el script usa el procesador si no hay OptiX):
+    - La mancha de humedad y el charco van ahora en los materiales de la pared y del suelo del salón. La mancha baja desde el techo con borde irregular y cerco; el charco es redondo e irregular, con película de agua. Los dos se secan al final.
+    - El fondo de la piscina salía negro: el agua tocaba la lámina en el mismo plano y, sin cáusticas, no dejaba pasar la luz. Ya se ve la lámina azul a través del agua.
+    - El cuadro estaba de espaldas (se veía el cartón) y su lámina era una muestra del fabricante con texto («Ray Homes»). Ahora mira a la sala, con una pintura abstracta en tonos tierra. Los cristales de los modelos son vidrio fino.
+    - Entorno: césped de briznas, setos en las tapias y cipreses (nodos de geometría), cuatro encinas, cuatro casas vecinas con tejado de teja, y bruma que funde el campo lejano con el horizonte.
+    - La membrana roja salía rosada con sol (AgX aclara los rojos saturados): ahora es más oscura.
+    - Fotogramas de revisión y una hoja con un fotograma por segundo, enviados por el chat el 05/10. Se repiten con `-- --fotogramas 0,100,165,270,350 --muestras 64 --ancho 960`.
+  - **Vídeo en la web, ya preparado:** `src/components/VideoBucle.astro` reproduce el vídeo en bucle, sin sonido y solo mientras se ve, con la leyenda sincronizada. Con animaciones reducidas o ahorro de datos se queda el cartel (el primer fotograma) y no se descarga. `/particulares` usa el vídeo en cuanto existe `src/assets/video/particulares.jpg`; mientras, sigue la escena 3D en tiempo real. Probado con un vídeo de prueba: reproduce, se pausa fuera de la vista y la leyenda sigue al vídeo.
+  - **Cómo sacar el vídeo definitivo** (en el PC con la RTX 4060, cuando Saúl dé el visto bueno a los fotogramas). Desde `web/`:
+    1. `blender -b --factory-startup --python render/particulares.py -- --video --muestras 64 --ancho 960`. Tarda unos 25–45 min. Los fotogramas van a `.render/particulares/video-960/`; si se corta, se vuelve a lanzar y sigue.
+    2. `blender -b --factory-startup --python render/codificar.py -- --nombre particulares --ancho 960`. Deja `public/video/particulares.webm` y `.mp4` y el cartel `src/assets/video/particulares.jpg`.
+    3. Mirar el peso de los vídeos (lo ideal, por debajo de 3–4 MB cada uno; si pasan, `--calidad 34`), probar la página y subir los tres ficheros.
+    4. Después, quitar lo que deja de usarse: `src/scripts/escena3d/casa.ts`, `real.ts` y `public/3d`.
+    - En la nube, sin tarjeta, un fotograma a 960 px tarda unos 50 s: el vídeo entero serían unas 6 horas. Una vista previa a 480 px tarda unos 95 min.
+  - El coche, cuando Saúl lo compre.
 - **Animaciones atadas al scroll** (se mantienen): paso de una página a otra con barrido, y la foto de una obra viaja del listado a su ficha (transiciones de vista nativas del navegador, sin JavaScript); fotos que se destapan y se mueven algo más despacio que la página; números de paso que se encienden al pasar. Todo se apaga si el visitante tiene las animaciones desactivadas, y en navegadores sin soporte simplemente no se anima.
 - **Galería**: las 22 obras de la web antigua están en dev (205 fotos con miniatura, fichas publicadas, seis destacadas). Se repite con `web/scripts/importar-obras.mjs` (leer → fotos → sql) y `supabase/seed_web_obras.sql`; las instrucciones para subir las fotos están en la cabecera del script. La web lee la galería con `fetch` (`web/src/lib/galeria.ts`): lo que se publica en el CRM sale sin volver a desplegar (caché de 5 minutos).
 - **Formulario de contacto** (`web/src/pages/api/contacto.ts`): valida, tiene campo trampa y tiempo mínimo contra robots, y envía con Resend. **Sin `RESEND_API_KEY` no envía**: avisa y enseña teléfono y email. Funciona también sin JavaScript.
@@ -312,6 +327,7 @@ Cómo se ha trabajado hasta ahora, por si Claude no lo recuerda en ese ordenador
 - **Si la web se ve sin estilos en alguna página nueva, o la maqueta 3D no carga** (en la consola sale «504 Outdated Optimize Dep»), para el servidor, borra `web/node_modules/.vite` y vuelve a arrancar. Pasa al añadir páginas o dependencias con el servidor en marcha.
 - **No arranques dos servidores de la web a la vez** en la misma carpeta: se pisan y se quedan colgados.
 - **En local, una dirección con barra final da 404** (`/empresa/`). Es lo esperado: las direcciones van sin barra (`trailingSlash: 'never'`).
+- **Blender en la sesión de Claude en la nube** no viene instalado: se baja de `download.blender.org` (`Blender5.2/blender-5.2.2-linux-x64.tar.xz`) a `/opt/blender` y se enlaza en `/usr/local/bin/blender`. Los recursos del render se bajan con `cd web && node render/recursos.mjs`. Allí renderiza con el procesador.
 - **En un equipo sin tarjeta gráfica no sale el 3D**, sino la foto. Para verlo igualmente: `localStorage.setItem('forzar-3d', 'si')` en la consola, y `localStorage.removeItem('forzar-3d')` para volver.
 
 - **La API de Supabase da como mucho 1.000 filas por petición** y corta el resto sin avisar. Para listados que pueden crecer, usa `todasLasFilas` (`crm/src/lib/todas-las-filas.ts`); para sumas, una vista SQL.
