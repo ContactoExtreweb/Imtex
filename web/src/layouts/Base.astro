@@ -53,6 +53,39 @@ const tituloCompleto = titulo.includes('IMTEX') ? titulo : `${titulo} · IMTEX`
         })
       }
     </script>
+    {/* ¿Merece la pena el 3D en este equipo? Lo preguntan la portada (Fases) y los objetos de las páginas interiores
+        antes de pintar: así la foto no se esconde mientras se intenta un 3D que no va a ir.
+        No, con las animaciones reducidas, con ahorro de datos, con poca memoria, sin WebGL 2 (lo pide three.js)
+        o con WebGL pintado por software: sin tarjeta gráfica cada fotograma bloquea la página (escritorios remotos,
+        equipos sin aceleración y medidores como Lighthouse). Para verlo igualmente: localStorage.setItem('forzar-3d', 'si') */}
+    <script is:inline>
+      {
+        const probar = () => {
+          try {
+            if (localStorage.getItem('forzar-3d') === 'si') return true
+          } catch {}
+          const n = navigator
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches || (n.connection && n.connection.saveData) || (n.deviceMemory || 8) < 4) return false
+          try {
+            const gl = document.createElement('canvas').getContext('webgl2')
+            if (!gl) return false
+            // Chrome y Safari dan un nombre genérico; el de la tarjeta va en la extensión
+            let tarjeta = String(gl.getParameter(gl.RENDERER))
+            if (/^webkit webgl$/i.test(tarjeta)) {
+              const info = gl.getExtension('WEBGL_debug_renderer_info')
+              if (info) tarjeta = String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL))
+            }
+            const soltar = gl.getExtension('WEBGL_lose_context')
+            if (soltar) soltar.loseContext()
+            return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(tarjeta)
+          } catch {
+            return false
+          }
+        }
+        let respuesta
+        window.puede3d = () => (respuesta ??= probar())
+      }
+    </script>
     <title>{tituloCompleto}</title>
     <meta name="description" content={descripcion} />
     {sinIndexar ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonica} />}

@@ -1,7 +1,7 @@
 ---
 // Portada: el logo y el titular y, a su lado, la pieza en 3D (una esquina de cubierta) que recorre las fases de una obra.
 // La columna de texto baja con normalidad; la pieza se queda fija y avanza de fase con el scroll.
-// Sin WebGL, con las animaciones reducidas o en un equipo flojo, el mismo panel enseña la foto real de cada fase.
+// Sin WebGL o sin tarjeta gráfica, con las animaciones reducidas o en un equipo flojo, el mismo panel enseña la foto real de cada fase.
 import { Image } from 'astro:assets'
 import f1 from '../assets/fases/1-soporte.jpg'
 import f2 from '../assets/fases/2-saneado.jpg'
@@ -66,13 +66,9 @@ const dos = (n: number) => String(n).padStart(2, '0')
   data-fases
   class="grid w-full px-(--margen) [--margen:clamp(1.25rem,4vw,3rem)] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-x-8 lg:pr-0 lg:pl-[max(var(--margen),calc(50vw-42rem+var(--margen)))]"
 >
-  {/* Antes de pintar: si el equipo puede con el 3D, la foto de la fase no llena el panel mientras carga */}
+  {/* Antes de pintar: si el equipo puede con el 3D (puede3d, en Base.astro), la foto de la fase no llena el panel mientras carga */}
   <script is:inline>
-    {
-      const n = navigator
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !(n.connection && n.connection.saveData) && (n.deviceMemory || 8) >= 4)
-        document.currentScript.parentElement.setAttribute('data-espera-pieza', '')
-    }
+    if (window.puede3d()) document.currentScript.parentElement.setAttribute('data-espera-pieza', '')
   </script>
   <div class="@container lg:pb-24">
     {/* Primer pantallazo */}
@@ -216,8 +212,8 @@ const dos = (n: number) => String(n).padStart(2, '0')
   addEventListener('resize', actualizar)
   actualizar()
 
-  // El 3D solo donde merece la pena: con animaciones permitidas, sin ahorro de datos y con memoria suficiente.
-  // Lo decide el script en línea de arriba, antes de pintar.
+  // El 3D solo donde merece la pena: con animaciones permitidas, sin ahorro de datos, con memoria y con tarjeta gráfica.
+  // Lo decide el script en línea de arriba (puede3d, en Base.astro), antes de pintar.
   if (raiz.hasAttribute('data-espera-pieza')) {
     const cargar = async () => {
       try {
