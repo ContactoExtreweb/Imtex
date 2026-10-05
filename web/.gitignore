@@ -40,3 +40,5 @@ pnpm-debug.log*
 .render/
 # caché de Python que deja Blender al importar render/comun.py
 __pycache__/
+# modelos 3D de fuera de Poly Haven para los vídeos (p. ej. la furgoneta de Sketchfab): sus licencias, en docs/decisiones.md
+.modelos/
