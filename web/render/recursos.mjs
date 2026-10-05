@@ -1,23 +1,40 @@
 // Recursos de Poly Haven (CC0) para los vídeos que se renderizan con Blender. No van a la web: solo los usa Blender.
-// Se ejecuta desde web/:  node render/recursos.mjs
+// Se ejecuta desde web/:  node render/recursos.mjs [escena…]
 // Los deja en .polyhaven/render/ (fuera de git) y solo baja lo que falte.
 import { access, mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-const CIELOS = ['citrus_orchard_puresky'] // a 4k: se ve de fondo
-const TEXTURAS = ['terracotta_floor_tiles', 'concrete_floor_02', 'gravel_ground_01', 'patterned_concrete_pavers', 'painted_plaster_wall'] // a 2k
-const MODELOS = [
-  'sofa_03',
-  'modern_coffee_table_01',
-  'throw_pillows_01',
-  'potted_plant_02',
-  'potted_plant_04',
-  'planter_box_01',
-  'hanging_picture_frame_01',
-  'outdoor_table_chair_set_01',
-  'rollershutter_window_01',
-  'rollershutter_door',
-] // glTF a 1k
+// Lo que usa cada escena. Cielos a 4k (se ven de fondo), texturas a 2k y modelos en glTF a 1k.
+const ESCENAS = {
+  particulares: {
+    cielos: ['citrus_orchard_puresky'],
+    texturas: ['terracotta_floor_tiles', 'concrete_floor_02', 'gravel_ground_01', 'patterned_concrete_pavers', 'painted_plaster_wall'],
+    modelos: [
+      'sofa_03',
+      'modern_coffee_table_01',
+      'throw_pillows_01',
+      'potted_plant_02',
+      'potted_plant_04',
+      'planter_box_01',
+      'hanging_picture_frame_01',
+      'outdoor_table_chair_set_01',
+      'rollershutter_window_01',
+      'rollershutter_door',
+    ],
+  },
+  empresa: {
+    cielos: ['small_hangar_01'],
+    texturas: ['concrete_floor_02', 'raw_plank_wall'],
+    modelos: ['cement_bag', 'steel_frame_shelves_01', 'hand_truck'],
+  },
+}
+// node render/recursos.mjs empresa: solo los de esa escena; sin nada, los de todas
+const elegidas = process.argv.slice(2)
+for (const e of elegidas) if (!ESCENAS[e]) throw new Error(`No hay escena «${e}». Hay: ${Object.keys(ESCENAS).join(', ')}`)
+const lista = (clave) => [...new Set((elegidas.length ? elegidas : Object.keys(ESCENAS)).flatMap((e) => ESCENAS[e][clave]))]
+const CIELOS = lista('cielos')
+const TEXTURAS = lista('texturas')
+const MODELOS = lista('modelos')
 
 const DESTINO = '.polyhaven/render'
 const existe = (ruta) => access(ruta).then(() => true, () => false)
