@@ -12,7 +12,8 @@
 # Con --video, además: --desde N y --hasta N para un tramo. Los fotogramas ya hechos se saltan, así que si se corta,
 # se vuelve a lanzar lo mismo y sigue donde iba.
 # Densidades (menos = más rápido): --cesped 1800 briznas/m², --follaje 1800 hojas/m².
-# Usa la tarjeta gráfica con OptiX si la hay y si no, el procesador.
+# Usa la tarjeta gráfica si la hay (OptiX en NVIDIA, HIP en AMD) y si no, el procesador. En AMD, sin el trazado por hardware
+# (HIP RT): con la RX 6650 XT y Blender 5.2.2 sale mal (paredes verdes, sofá como de cristal). --con-hiprt lo prueba.
 # Los fotogramas van a .render/particulares/ (fuera de git); los del vídeo, a .render/particulares/video-<ancho>/.
 
 import math
@@ -78,19 +79,34 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.context.preferences.edit.keyframe_new_interpolation_type = "LINEAR"
 escena = bpy.context.scene
 escena.render.engine = "CYCLES"
-# La tarjeta gráfica con OptiX si la hay (el PC con la RTX 4060); si no, el procesador (la sesión de Claude en la nube)
+# La tarjeta gráfica si la hay: OptiX en NVIDIA (el PC de la oficina, RTX 4060), HIP en AMD (el de casa, RX 6650 XT),
+# oneAPI en Intel. Si no, el procesador (la sesión de Claude en la nube). get_devices() lista todos los dispositivos,
+# de cualquier tipo: hay que mirar que alguno sea del tipo que se pide.
 prefs = bpy.context.preferences.addons["cycles"].preferences
-prefs.compute_device_type = "OPTIX"
-prefs.get_devices()
-CON_TARJETA = any(d.type == "OPTIX" for d in prefs.devices)
+TARJETA = None
+for tipo in ("OPTIX", "HIP", "ONEAPI", "CUDA"):
+    try:
+        prefs.compute_device_type = tipo
+    except TypeError:
+        continue
+    prefs.get_devices()
+    if any(d.type == tipo for d in prefs.devices):
+        TARJETA = tipo
+        break
 for d in prefs.devices:
-    d.use = d.type == "OPTIX"
+    d.use = d.type == TARJETA
+if TARJETA == "HIP" and hasattr(prefs, "use_hiprt"):
+    # El trazado por hardware de AMD sale mal con la RX 6650 XT (Blender 5.2.2): apagado salvo que se pida
+    prefs.use_hiprt = "--con-hiprt" in args
+CON_TARJETA = TARJETA is not None
 escena.cycles.device = "GPU" if CON_TARJETA else "CPU"
-print("RENDER CON", "tarjeta gráfica (OptiX)" if CON_TARJETA else "procesador")
+print("RENDER CON", f"tarjeta gráfica ({TARJETA})" if CON_TARJETA else "procesador")
 escena.cycles.samples = int(opcion("--muestras", 96))
 escena.cycles.adaptive_threshold = 0.02
 escena.cycles.use_denoising = True
-escena.cycles.denoiser = "OPTIX" if CON_TARJETA else "OPENIMAGEDENOISE"
+# OptiX solo en NVIDIA. OpenImageDenoise va en la tarjeta si puede; en AMD RDNA2 (RX 6000) Blender 5.2 lo pasa al procesador
+escena.cycles.denoiser = "OPTIX" if TARJETA == "OPTIX" else "OPENIMAGEDENOISE"
+escena.cycles.denoising_use_gpu = True
 escena.cycles.max_bounces = 8
 escena.cycles.diffuse_bounces = 3
 escena.cycles.glossy_bounces = 3

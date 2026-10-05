@@ -24,7 +24,7 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
 - Decidir si se hace lo mismo (vídeo con Blender) en Empresa, Servicios, Obras y Contacto, y después en la portada.
 - El coche del garaje, si lo compras (enlaces en el chat del 05/10; el recomendado es el «Generic Hatchback Car With Interior» de Superhive, 20 $).
 
-**Para seguir en casa:** `git pull` en la rama `feat/web-realista` y, en `web/`, `npm install` (no hay dependencias nuevas, pero no cuesta nada) y `npm run dev`. Para ver la web no hace falta Blender. **Solo si hay que volver a renderizar:** instalar Blender 5.2 (`winget install --id BlenderFoundation.Blender -e --source winget`), bajar los recursos con `cd web && node render/recursos.mjs` (81 MB, no están en git) y seguir «Cómo sacar el vídeo definitivo», en el punto 12. Sin tarjeta NVIDIA, Blender usa el procesador y un fotograma tarda unos 50 s (el vídeo entero, unas 6 h).
+**Para seguir en casa:** `git pull` en la rama `feat/web-realista` y, en `web/`, `npm install` (no hay dependencias nuevas, pero no cuesta nada) y `npm run dev`. Para ver la web no hace falta Blender. **Solo si hay que volver a renderizar:** instalar Blender 5.2 (`winget install --id BlenderFoundation.Blender -e --source winget`), bajar los recursos con `cd web && node render/recursos.mjs` (81 MB, no están en git) y seguir «Cómo sacar el vídeo definitivo», en el punto 12. **En el PC de casa ya está todo** (05/10 por la noche): Blender 5.2.2 y los recursos. Renderiza con la AMD RX 6650 XT (HIP) a unos 20 s por fotograma a 960 px, así que el vídeo entero tarda unas 2,5 h. Sin tarjeta gráfica, con el procesador, un fotograma tarda unos 50 s (el vídeo, unas 6 h).
 
 **Para seguir con Claude:** abre Claude Code en la carpeta del repo y dile «Lee `docs/ESTADO.md` y seguimos con la web».
 
@@ -139,7 +139,11 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
     2. `blender -b --factory-startup --python render/codificar.py -- --nombre particulares --ancho 960`. Deja `public/video/particulares.webm` y `.mp4` y el cartel `src/assets/video/particulares.jpg`. Tarda unos 5 min.
     3. Mirar el peso de los vídeos (lo ideal, por debajo de 3–4 MB cada uno; si pasan, `--calidad 34`), probar la página y subir los tres ficheros.
     - Fotogramas sueltos para revisar antes: `-- --fotogramas 0,100,165,270,350 --muestras 64 --ancho 960` (menos de 1 min con la RTX 4060). Salen en `.render/particulares/prueba_NNN.png`.
-    - En un equipo sin tarjeta NVIDIA, un fotograma a 960 px tarda unos 50 s: el vídeo entero serían unas 6 horas. Una vista previa a 480 px tarda unos 95 min.
+    - **Por equipo**, a 960 px y 64 muestras:
+      - RTX 4060 de la oficina (OptiX): unos 9 s por fotograma.
+      - RX 6650 XT de casa (HIP): unos 20 s por fotograma, unas 2,5 h el vídeo.
+      - Sin tarjeta gráfica: unos 50 s por fotograma, unas 6 h el vídeo. Una vista previa a 480 px tarda unos 95 min.
+    - **En AMD, sin el trazado por hardware (HIP RT):** con la RX 6650 XT sale mal (paredes verdes, sofá como de cristal), así que el script lo deja apagado. `--con-hiprt` lo prueba, por si un controlador o un Blender nuevo lo arreglan.
   - El coche, cuando Saúl lo compre.
 - **Animaciones atadas al scroll** (se mantienen): paso de una página a otra con barrido, y la foto de una obra viaja del listado a su ficha (transiciones de vista nativas del navegador, sin JavaScript); fotos que se destapan y se mueven algo más despacio que la página; números de paso que se encienden al pasar. Todo se apaga si el visitante tiene las animaciones desactivadas, y en navegadores sin soporte simplemente no se anima.
 - **Galería**: las 22 obras de la web antigua están en dev (205 fotos con miniatura, fichas publicadas, seis destacadas). Se repite con `web/scripts/importar-obras.mjs` (leer → fotos → sql) y `supabase/seed_web_obras.sql`; las instrucciones para subir las fotos están en la cabecera del script. La web lee la galería con `fetch` (`web/src/lib/galeria.ts`): lo que se publica en el CRM sale sin volver a desplegar (caché de 5 minutos).
