@@ -1,0 +1,72 @@
+---
+// Un vídeo en bucle en la entrada de una página interior (va en el slot `objeto` de la Portadilla), en lugar de un objeto 3D.
+// Se renderiza con Blender (render/<nombre>.py) y se une con render/codificar.py, que deja public/video/<nombre>.webm y .mp4
+// y el cartel (el primer fotograma) en src/assets/video/<nombre>.jpg.
+// Sin sonido, se reproduce solo y únicamente mientras se ve. La leyenda (slot por defecto) marca con aria-current la parte
+// de cada momento, como en los objetos 3D. Con las animaciones reducidas o con ahorro de datos no se descarga: queda el cartel.
+import type { ImageMetadata } from 'astro'
+import { getImage } from 'astro:assets'
+
+interface Props {
+  /** public/video/<nombre>.webm y .mp4 */
+  nombre: string
+  /** El primer fotograma: se ve mientras carga y cuando no hay movimiento */
+  cartel: ImageMetadata
+  /** Qué se ve, para quien no lo ve */
+  etiqueta: string
+  /** Segundos del vídeo en los que está activa cada parte de la leyenda: [desde, hasta] */
+  tramos: [number, number][]
+}
+const { nombre, cartel, etiqueta, tramos } = Astro.props
+const imagen = await getImage({ src: cartel, width: 960, format: 'webp' })
+---
+
+<div data-video class="grid gap-4">
+  <div class="relative aspect-[4/3] overflow-hidden bg-papel-2">
+    <video
+      data-reproductor
+      data-tramos={JSON.stringify(tramos)}
+      poster={imagen.src}
+      muted
+      loop
+      playsinline
+      preload="none"
+      disablepictureinpicture
+      aria-label={etiqueta}
+      class="absolute inset-0 size-full object-cover"
+    >
+      <source src={`/video/${nombre}.webm`} type="video/webm" />
+      <source src={`/video/${nombre}.mp4`} type="video/mp4" />
+    </video>
+  </div>
+  <slot />
+</div>
+
+<script>
+  const n = navigator as Navigator & { connection?: { saveData?: boolean } }
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches || n.connection?.saveData
+
+  for (const raiz of quieto ? [] : document.querySelectorAll<HTMLElement>('[data-video]')) {
+    const video = raiz.querySelector<HTMLVideoElement>('[data-reproductor]')!
+    const tramos: [number, number][] = JSON.parse(video.dataset.tramos ?? '[]')
+    const pasos = [...raiz.querySelectorAll<HTMLElement>('[data-paso]')]
+    let marcado = -2
+    const marcar = () => {
+      const t = video.currentTime
+      const activo = tramos.findIndex(([a, b]) => t >= a && t < b)
+      if (activo === marcado) return
+      marcado = activo
+      pasos.forEach((p, i) => (i === activo ? p.setAttribute('aria-current', 'step') : p.removeAttribute('aria-current')))
+    }
+    // La leyenda va con el aviso de tiempo del vídeo (unas cuatro veces por segundo; de sobra para tres partes)
+    video.addEventListener('timeupdate', marcar)
+    video.addEventListener('seeked', marcar)
+    // Solo se descarga y se mueve mientras se ve. Si el navegador no deja reproducirlo (ahorro de batería), queda el cartel.
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        video.preload = 'auto'
+        video.play().catch(() => {})
+      } else video.pause()
+    }).observe(video)
+  }
+</script>

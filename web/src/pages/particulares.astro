@@ -1,8 +1,10 @@
 ---
+import type { ImageMetadata } from 'astro'
 import { Image } from 'astro:assets'
 import Cierre from '../components/Cierre.astro'
 import Objeto3D from '../components/Objeto3D.astro'
 import Portadilla from '../components/Portadilla.astro'
+import VideoBucle from '../components/VideoBucle.astro'
 import Base from '../layouts/Base.astro'
 import { EMPRESA } from '../lib/empresa'
 import { caratulaServicio } from '../lib/fotos-servicios'
@@ -17,6 +19,14 @@ const TRABAJOS = [
   { que: 'Estructuras de hormigón', como: 'Reparación de forjados, pilares y voladizos con armaduras a la vista, y refuerzo con fibra de carbono si hace falta.' },
   { que: 'Suelos de garaje y trastero', como: 'Pavimentos continuos de resina epoxi o poliuretano.' },
 ]
+// La animación de la entrada: el vídeo renderizado con Blender en cuanto está hecho (render/codificar.py deja el cartel
+// en src/assets/video y los vídeos en public/video); mientras tanto, la escena 3D en tiempo real (scripts/escena3d/casa.ts).
+const cartel = Object.values(import.meta.glob<{ default: ImageMetadata }>('../assets/video/particulares.jpg', { eager: true }))[0]?.default
+const Animacion = cartel ? VideoBucle : Objeto3D
+const animacion = cartel
+  ? // Los tramos de la historia, en segundos: los mismos que en render/particulares.py y en casa.ts
+    { nombre: 'particulares', cartel, tramos: [[0, 8.6], [8.6, 12.2], [12.2, 15.4]] }
+  : { escena: 'particulares', foto: caratulaServicio('impermeabilizacion'), alt: 'Impermeabilización de una cubierta' }
 const PASOS = [
   'Nos cuentas qué pasa: dónde entra el agua, desde cuándo y qué se ha hecho antes. Unas fotos ayudan.',
   'Vamos a verlo y estudiamos el soporte.',
@@ -30,12 +40,10 @@ const PASOS = [
 >
   <Portadilla titulo="Particulares y comunidades">
     Una terraza que filtra, un garaje con humedades o una piscina que pierde agua se resuelven con los mismos sistemas que una obra industrial, a otra escala.
-    <Objeto3D
+    <Animacion
       slot="objeto"
-      escena="particulares"
-      etiqueta="Maqueta de una vivienda en corte: llueve y la terraza filtra al salón hasta que se impermeabiliza; luego se forra y se llena la piscina y se pinta con resina el suelo del garaje."
-      foto={caratulaServicio('impermeabilizacion')}
-      alt="Impermeabilización de una cubierta"
+      etiqueta="Una vivienda en corte: llueve y la terraza filtra al salón hasta que se impermeabiliza; luego se forra y se llena la piscina y se pinta con resina el suelo del garaje."
+      {...animacion}
     >
       <ol class="grid grid-cols-3 border-t border-(--filete)" aria-label="Partes de la casa">
         {
@@ -50,7 +58,7 @@ const PASOS = [
           ))
         }
       </ol>
-    </Objeto3D>
+    </Animacion>
   </Portadilla>
 
   <section class="contenedor grid gap-x-16 gap-y-10 pb-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:pb-24">
