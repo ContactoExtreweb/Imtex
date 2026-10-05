@@ -34,7 +34,7 @@ pnpm-debug.log*
 
 # Local Netlify folder
 .netlify
-# originales de Poly Haven para las escenas 3D (scripts/preparar-3d.mjs)
+# recursos de Poly Haven para los vídeos de Blender (render/recursos.mjs)
 .polyhaven/
-# fotogramas de los v�deos renderizados con Blender (render/*.py)
+# fotogramas de los vídeos renderizados con Blender (render/*.py)
 .render/
