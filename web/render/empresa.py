@@ -138,6 +138,97 @@ def material_fibra():
 mat_tapas_rollo = material_tapas_rollo()
 mat_fibra = material_fibra()
 
+
+# --- El logo de IMTEX impreso en los envases: se pinta dentro del material, proyectado, para que siga la curva ---
+LOGO = bpy.data.images.load(os.path.join(WEB, "src", "assets", "logo-imtex.png"), check_existing=True)
+LOGO_PROPORCION = 1200 / 514  # ancho / alto del PNG
+
+
+def pegar_logo(m, u, v, mascara=None):
+    """Pone el logo sobre el color base del material. (u, v) van de 0 a 1 dentro del recuadro del logo; fuera, nada."""
+    n = m.node_tree.nodes
+    l = m.node_tree.links
+    p = next(x for x in n if x.type == "BSDF_PRINCIPLED")
+    debajo = p.inputs["Base Color"].links[0].from_socket if p.inputs["Base Color"].links else None
+    uv = n.new("ShaderNodeCombineXYZ")
+    l.new(u, uv.inputs["X"])
+    l.new(v, uv.inputs["Y"])
+    t = n.new("ShaderNodeTexImage")
+    t.image = LOGO
+    t.extension = "CLIP"
+    t.interpolation = "Cubic"
+    l.new(uv.outputs["Vector"], t.inputs["Vector"])
+    alfa = t.outputs["Alpha"] if mascara is None else mates(m.node_tree, "MULTIPLY", t.outputs["Alpha"], mascara)
+    encima = n.new("ShaderNodeMix")
+    encima.data_type = "RGBA"
+    l.new(alfa, ent(encima, "Factor"))
+    if debajo:
+        l.new(debajo, ent(encima, "A"))
+    else:
+        ent(encima, "A").default_value = p.inputs["Base Color"].default_value
+    l.new(t.outputs["Color"], ent(encima, "B"))
+    l.new(sal(encima, "Result"), p.inputs["Base Color"])
+
+
+def coordenadas(m):
+    xyz = m.node_tree.nodes.new("ShaderNodeSeparateXYZ")
+    m.node_tree.links.new(m.node_tree.nodes.new("ShaderNodeTexCoord").outputs["Object"], xyz.inputs[0])
+    return xyz.outputs["X"], xyz.outputs["Y"], xyz.outputs["Z"]
+
+
+def etiqueta_con_logo(nombre, radio, centro, repeticiones, ocupa=0.75, color=(0.86, 0.86, 0.85), filetes=()):
+    """Material de una etiqueta que rodea un cilindro vertical (eje Z del objeto): blanca, con el logo `repeticiones`
+    veces alrededor, centrado a la altura `centro`. `filetes`: tramos de altura (z0, z1) pintados de rojo."""
+    m = material(nombre, color, 0.45)
+    arbol = m.node_tree
+    x, y, z = coordenadas(m)
+    if filetes:
+        rojo = None
+        for z0, z1 in filetes:
+            tira = mates(arbol, "MULTIPLY", mates(arbol, "GREATER_THAN", z, z0), mates(arbol, "LESS_THAN", z, z1))
+            rojo = tira if rojo is None else mates(arbol, "MAXIMUM", rojo, tira)
+        pinta = arbol.nodes.new("ShaderNodeMix")
+        pinta.data_type = "RGBA"
+        arbol.links.new(rojo, ent(pinta, "Factor"))
+        ent(pinta, "A").default_value = (*color, 1)
+        ent(pinta, "B").default_value = (0.32, 0.02, 0.008, 1)
+        arbol.links.new(sal(pinta, "Result"), arbol.nodes["Principled BSDF"].inputs["Base Color"])
+    # Ángulo alrededor del eje → u de cada hueco; el logo ocupa `ocupa` del hueco y su alto sale de su proporción
+    vuelta = mates(arbol, "ADD", mates(arbol, "DIVIDE", mates(arbol, "ARCTAN2", y, x), 2 * math.pi), 0.5)
+    hueco = mates(arbol, "FRACT", mates(arbol, "MULTIPLY", vuelta, repeticiones))
+    u = mates(arbol, "DIVIDE", mates(arbol, "SUBTRACT", hueco, (1 - ocupa) / 2), ocupa)
+    alto = 2 * math.pi * radio / repeticiones * ocupa / LOGO_PROPORCION
+    v = mates(arbol, "DIVIDE", mates(arbol, "SUBTRACT", z, centro - alto / 2), alto)
+    pegar_logo(m, u, v)
+    return m
+
+
+# Cubo: etiqueta blanca con el logo tres veces y un filete rojo abajo. Rollo: faja blanca con filetes rojos.
+# Bobina: una banda de papel con el logo. Los tamaños son los de las piezas de abajo.
+mat_etiqueta_cubo = etiqueta_con_logo("Etiqueta del cubo", 0.1445, 0.085, 3, filetes=((0.0, 0.025),))
+mat_faja_rollo = etiqueta_con_logo("Faja del rollo", 0.1115, 0.08, 2, filetes=((0.0, 0.012), (0.148, 0.2)))
+
+
+def banda_a_lo_largo(nombre, radio, largo):
+    """Banda de papel en un cilindro tumbado: el logo corre a lo largo del eje (Z del objeto), tres veces alrededor
+    (así siempre hay uno de cara a la cámara)"""
+    m = material(nombre, (0.86, 0.86, 0.85), 0.45)
+    arbol = m.node_tree
+    x, y, z = coordenadas(m)
+    ancho = largo * 0.85
+    alto = ancho / LOGO_PROPORCION
+    u = mates(arbol, "DIVIDE", mates(arbol, "SUBTRACT", z, (largo - ancho) / 2), ancho)
+    # Posición alrededor, en tercios: v es la distancia sobre la superficie desde el centro de cada tercio
+    tercio = mates(arbol, "FRACT", mates(arbol, "MULTIPLY", mates(arbol, "DIVIDE", mates(arbol, "ARCTAN2", y, x), 2 * math.pi), 3.0))
+    hueco = 2 * math.pi * radio / 3
+    v = mates(arbol, "DIVIDE", mates(arbol, "ADD", mates(arbol, "MULTIPLY", mates(arbol, "SUBTRACT", tercio, 0.5), hueco), alto / 2), alto)
+    # Volteado en vertical: tal y como queda tumbada en el palé, si no, se lee cabeza abajo
+    pegar_logo(m, u, mates(arbol, "SUBTRACT", 1.0, v))
+    return m
+
+
+mat_banda_bobina = banda_a_lo_largo("Banda de la bobina", 0.0866, 0.3)
+
 # ------------------------------------------------------------------------------------------------
 # Geometría
 # ------------------------------------------------------------------------------------------------
@@ -222,6 +313,19 @@ def material_saco(original):
     l.new(sal(kraft, "Result"), ent(rojo, "A"))
     ent(rojo, "B").default_value = (0.32, 0.02, 0.008, 1)
     l.new(sal(rojo, "Result"), p.inputs["Base Color"])
+    # El logo, en las dos caras cortas (normal hacia ±Y): son las que se ven de frente con los sacos apilados.
+    # Visto desde fuera, la derecha es +X en la cara -Y y -X en la +Y: así no sale en espejo.
+    arbol = m.node_tree
+    x, y, z = coordenadas(m)
+    normal = n.new("ShaderNodeSeparateXYZ")
+    l.new(n.new("ShaderNodeTexCoord").outputs["Normal"], normal.inputs[0])
+    largo = 0.3
+    alto = largo / LOGO_PROPORCION
+    v = mates(arbol, "DIVIDE", mates(arbol, "SUBTRACT", z, 0.09 - alto / 2), alto)
+    for signo in (-1.0, 1.0):
+        cara = mates(arbol, "GREATER_THAN", mates(arbol, "MULTIPLY", normal.outputs["Y"], signo), 0.5)
+        u = mates(arbol, "DIVIDE", mates(arbol, "ADD", mates(arbol, "MULTIPLY", x, -signo), largo / 2), largo)
+        pegar_logo(m, u, v, cara)
     return m
 
 
@@ -238,7 +342,7 @@ for i in range(3):
 # --- Rollos de lámina, de pie: antracita, con la faja de papel roja ---
 def rollo(nombre):
     cuerpo = cilindro(nombre, 0.11, 0.11, 1.0, mat_lamina, mat_tapas_rollo)
-    faja = cilindro(f"{nombre} faja", 0.1115, 0.1115, 0.16, mat_rojo, bisel=0)
+    faja = cilindro(f"{nombre} faja", 0.1115, 0.1115, 0.16, mat_faja_rollo, bisel=0)
     faja.location.z = 0.42
     return pieza(nombre, cuerpo, faja)
 
@@ -246,7 +350,7 @@ def rollo(nombre):
 # --- Cubo de resina de 20 L: plástico blanco, tapa oscura con su aro, etiqueta roja y asa de alambre ---
 def cubo(nombre):
     cuerpo = cilindro(nombre, 0.135, 0.15, 0.36, mat_plastico)
-    etiqueta = cilindro(f"{nombre} etiqueta", 0.1415, 0.1475, 0.15, mat_rojo, bisel=0)
+    etiqueta = cilindro(f"{nombre} etiqueta", 0.1415, 0.1475, 0.15, mat_etiqueta_cubo, bisel=0)
     etiqueta.location.z = 0.12
     tapa = cilindro(f"{nombre} tapa", 0.157, 0.157, 0.035, mat_tapa)
     tapa.location.z = 0.36
@@ -271,11 +375,12 @@ def cubo(nombre):
 def bobina(nombre):
     tela = cilindro(nombre, 0.085, 0.085, 0.5, mat_fibra, mat_tapas_rollo)
     tubo = cilindro(f"{nombre} tubo", 0.04, 0.04, 0.52, mat_carton, bisel=0.002)
-    # Tumbadas a lo largo de Y y centradas; el tubo asoma 1 cm por cada lado
-    for o, mitad in ((tela, 0.25), (tubo, 0.26)):
+    banda = cilindro(f"{nombre} banda", 0.0866, 0.0866, 0.3, mat_banda_bobina, bisel=0)
+    # Tumbadas a lo largo de Y y centradas; el tubo asoma 1 cm por cada lado y la banda va en medio
+    for o, mitad in ((tela, 0.25), (tubo, 0.26), (banda, 0.15)):
         o.rotation_euler.x = math.pi / 2
         o.location = (0, mitad, 0.085)
-    return pieza(nombre, tela, tubo)
+    return pieza(nombre, tela, tubo, banda)
 
 
 # Dónde acaba cada cosa y cuándo llega. `grupo` es el material de la leyenda (Morteros, Láminas, Resinas, Fibra).
