@@ -32,7 +32,7 @@ const dos = (n: number) => String(n).padStart(2, '0')
 <Base
   titulo={`${obra.titulo}${obra.ubicacion ? `, ${obra.ubicacion}` : ''}`}
   descripcion={obra.resumen ?? parrafos[0] ?? `Obra de IMTEX: ${obra.titulo}.`}
-  imagen={urlFoto(portada.storage_path)}
+  imagen={{ url: urlFoto(portada.storage_path), ancho: portada.ancho, alto: portada.alto, alt: portada.alt || obra.titulo }}
 >
   <Portadilla titulo={obra.titulo} migas={[{ texto: 'Obras', a: '/obras' }]}>
     {obra.resumen}

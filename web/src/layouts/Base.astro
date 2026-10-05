@@ -5,18 +5,32 @@ import Pie from '../components/Pie.astro'
 import { EMPRESA, rutaDe } from '../lib/empresa'
 import '../styles/global.css'
 
+interface Imagen {
+  url: string
+  ancho: number
+  alto: number
+  alt: string
+}
 interface Props {
   titulo: string
   descripcion: string
-  /** Imagen para compartir (URL absoluta) */
-  imagen?: string
+  /** Imagen para compartir (URL absoluta y medidas). Sin ella, la de la marca. */
+  imagen?: Imagen
   /** Datos estructurados (schema.org) propios de la página */
   datos?: object[]
   /** Páginas que no deben salir en buscadores (el 404) */
   sinIndexar?: boolean
 }
 
-const { titulo, descripcion, imagen, datos = [], sinIndexar = false } = Astro.props
+// La de la marca: public/compartir.jpg, hecha con scripts/imagen-compartir.mjs
+const MARCA: Imagen = {
+  url: `${EMPRESA.dominio}/compartir.jpg`,
+  ancho: 1200,
+  alto: 630,
+  alt: 'IMTEX: impermeabilización, reparación y refuerzo de estructuras. Membrana de poliurea en la Central Nuclear de Almaraz.',
+}
+
+const { titulo, descripcion, imagen = MARCA, datos = [], sinIndexar = false } = Astro.props
 // Un solo dominio: la canónica siempre apunta a www.imtexsl.com
 const canonica = new URL(rutaDe(Astro.url), EMPRESA.dominio).href
 const tituloCompleto = titulo.includes('IMTEX') ? titulo : `${titulo} · IMTEX`
@@ -98,7 +112,11 @@ const tituloCompleto = titulo.includes('IMTEX') ? titulo : `${titulo} · IMTEX`
     <meta property="og:title" content={tituloCompleto} />
     <meta property="og:description" content={descripcion} />
     <meta property="og:url" content={canonica} />
-    {imagen && <meta property="og:image" content={imagen} />}
+    <meta property="og:image" content={imagen.url} />
+    <meta property="og:image:width" content={String(imagen.ancho)} />
+    <meta property="og:image:height" content={String(imagen.alto)} />
+    <meta property="og:image:alt" content={imagen.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
     {datos.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d).replace(/</g, '\\u003c')} />)}
   </head>
   <body>
