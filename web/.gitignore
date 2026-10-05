@@ -38,3 +38,5 @@ pnpm-debug.log*
 .polyhaven/
 # fotogramas de los vídeos renderizados con Blender (render/*.py)
 .render/
+# caché de Python que deja Blender al importar render/comun.py
+__pycache__/
