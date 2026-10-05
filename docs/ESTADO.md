@@ -1,34 +1,34 @@
 # Estado del proyecto IMTEX
 
-Actualizado el domingo 04/10/2026 por la noche. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
+Actualizado el lunes 05/10/2026. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
 El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [decisiones.md](decisiones.md).
 
-## Para el lunes 05/10 en la oficina (por dónde empezar)
+## Por dónde vamos (lunes 05/10)
 
-Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/web` e incluye todo lo anterior). No hay nada a medias.
+Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo anterior (`feat/web-animaciones`, `feat/web`, `feat/bajas`…).
 
-**Qué se hizo el domingo 04/10** (detalle en el punto 12 de «Hecho» y en `decisiones.md`):
-- **Menú del móvil** a pantalla completa, con el estándar de extreweb: logo arriba que se destapa tras una barra roja, enlaces centrados en cascada y contacto abajo.
-- **Animaciones de entrada** en las páginas interiores: cada bloque entra solo la primera vez que se ve.
-- **Objetos 3D en bucle** en la entrada de Servicios (la pieza de los cuatro oficios), Obras (mapa de obras), Empresa (palé de materiales), Particulares (casa que deja de filtrar) y Contacto (mapa con arcos desde la sede).
+**Qué se hizo el lunes 05/10:**
+- **En la oficina:** la casa de Particulares con materiales y luz reales. A Saúl le pareció poco real y se cambió de camino: **vídeo renderizado con Blender**. Detalle en «Escenas realistas», en el punto 12 de «Hecho».
+- **En la sesión de Claude en la nube:** se midió la web con Lighthouse en el móvil por primera vez y se arregló lo que salió:
+  - El 3D solo se carga si el navegador tiene tarjeta gráfica; si no, la foto sale al momento.
+  - Contraste suficiente en los dos temas.
+  - Canónicas sin barra final.
+  - Imagen para compartir la web en redes y WhatsApp.
+  - Resultado: de 36–42 a 94–99 en las páginas con 3D. Detalle en «Rendimiento y accesibilidad», también en el punto 12.
 
-**Por dónde empezar:**
-1. Trae la rama e instala lo nuevo. Los comandos están en «Cómo arrancar en otro ordenador». **Hay que hacer `npm install` en `web/`**, porque se añadieron dos dependencias de desarrollo para el mapa.
-2. Arranca la web (`cd web && npm run dev`) y mírala en http://localhost:4321. La primera vez tarda unos 35 s; si sale en negro, espera y recarga. Los pasos están en «Qué probar → Web pública»; lo nuevo, en los puntos 8 y 9.
-3. Lo que Claude necesita de ti para seguir:
-   - Qué te parecen los objetos 3D: si se entiende lo que pasa, si el ritmo va bien (cada vuelta dura de 13 a 24 s) y cómo se ven en el móvil.
-   - Qué cambiarías del resto de la web (portada, páginas, textos).
-   - Si el acabado de la maqueta 3D de la portada se queda en gris pizarra o lo prefieres rojo.
-   - Probar las bajas en el CRM con archivos de verdad («Qué probar → Bajas»).
-4. Lo que hay que pedir o confirmar con IMTEX está al final del punto 12 de «Hecho».
-5. Para seguir con Claude: abre Claude Code en la carpeta del repo y dile «Lee `docs/ESTADO.md` y seguimos con la web».
+**Lo que Claude necesita de ti:**
+- Mirar la imagen para compartir (`web/public/compartir.jpg`): marca, titular de la portada y la foto de Almaraz.
+- Comprobar en tu PC que la portada y las páginas interiores siguen enseñando el 3D. Con tarjeta gráfica debe salir igual que antes.
+- Lo pendiente del vídeo de Particulares (punto 12 de «Hecho»).
+
+**Para seguir con Claude:** abre Claude Code en la carpeta del repo y dile «Lee `docs/ESTADO.md` y seguimos con la web».
 
 ## Dónde está cada cosa
 
 | Qué | Dónde |
 |---|---|
 | Código | GitHub, `ContactoExtreweb/Imtex` (privado) |
-| Rama con todo el trabajo | **`feat/web-animaciones`** (menú del móvil, animaciones de entrada y objetos 3D de las páginas interiores). Incluye `feat/web`, `feat/bajas` y las anteriores: `feat/cierre-meses`, `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
+| Rama con todo el trabajo | **`feat/web-realista`** (escenas realistas, vídeo de Particulares con Blender, Lighthouse). Incluye `feat/web-animaciones`, `feat/web`, `feat/bajas` y las anteriores: `feat/cierre-meses`, `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
 | `main` | Llega hasta Presupuestos. Lo demás se fusiona cuando Saúl lo pruebe |
 | Base de datos de desarrollo | Supabase, proyecto `imtex-dev`, ref `vrhpxwnzthenjxubagys` (Fráncfort). Tiene aplicadas todas las migraciones del repo |
 | Base de datos de producción | Sin crear todavía |
@@ -103,7 +103,7 @@ Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/
 
 **12. Web pública (rama `feat/web`)**. Plan aprobado el 02/10/2026. **Todas las páginas están hechas; falta el visto bueno de Saúl y lo de producción.**
 - **Diseño**: dirección «La obra por fases», elegida por Saúl con la skill impeccable (contrato en `web/.impeccable/surfaces/`, producto en `web/PRODUCT.md`). Tipografía Archivo variable autoalojada. **Tema oscuro por defecto**, con botón en la cabecera para pasar al claro (se recuerda en el navegador).
-- **Portada**: maqueta 3D de una esquina de cubierta (three.js, hecha con código en `web/src/scripts/pieza.ts`) que al bajar pasa por seis fases reales de obra, con las herramientas trabajando, un encuadre de cámara por fase y el logo de IMTEX pintado al final. Saúl la dio por buena. Sin WebGL, con animaciones reducidas o poca memoria, salen las fotos reales de cada fase. En desarrollo, `__pieza.saltar(3.6)` en la consola lleva a una fase concreta.
+- **Portada**: maqueta 3D de una esquina de cubierta (three.js, hecha con código en `web/src/scripts/pieza.ts`) que al bajar pasa por seis fases reales de obra, con las herramientas trabajando, un encuadre de cámara por fase y el logo de IMTEX pintado al final. Saúl la dio por buena. Sin WebGL o sin tarjeta gráfica, con animaciones reducidas o poca memoria, salen las fotos reales de cada fase. En desarrollo, `__pieza.saltar(3.6)` en la consola lleva a una fase concreta.
 - **Páginas**: `/servicios` y sus cuatro fichas, `/obras` (con filtro por servicio) y la ficha de cada obra (datos, trabajos paso a paso y visor de fotos), `/empresa`, `/particulares`, `/contacto`, los tres legales y el 404.
 - **Menú del móvil** (04/10, estándar de extreweb): a pantalla completa, con el logo arriba que se destapa tras una barra roja, los enlaces en el centro entrando en cascada y presupuesto, teléfono y email abajo. Es un popover nativo; la cabecera no cambia.
 - **Animaciones de entrada** (04/10): en las páginas interiores y en las secciones de la portada bajo la maqueta, los bloques marcados con `data-aparece` entran solos (fundido y subida, escalonados con `--i`) la primera vez que se ven, sin ir atados al scroll. El mecanismo está en `web/src/layouts/Base.astro` y `global.css`. No se ponen en elementos con su propia transición ni en la foto que viaja a la ficha de la obra.
@@ -114,7 +114,7 @@ Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/
   - **Particulares:** una casa en corte que deja de filtrar, con la piscina y el garaje. Las tomas de la piscina y del garaje se abrieron el 05/10: antes cortaban la casa por el borde.
   - **Contacto:** el mismo mapa, con arcos desde la sede.
   
-  Código en `web/src/scripts/escena3d/` (base común, una escena por fichero) y `web/src/components/Objeto3D.astro`. Mismas condiciones que la portada: sin WebGL, con animaciones reducidas, con ahorro de datos o con poca memoria sale una foto o el mapa en SVG.
+  Código en `web/src/scripts/escena3d/` (base común, una escena por fichero) y `web/src/components/Objeto3D.astro`. Mismas condiciones que la portada: sin WebGL o sin tarjeta gráfica, con animaciones reducidas, con ahorro de datos o con poca memoria sale una foto o el mapa en SVG.
   - **Sobre el mapa:** cada obra se sitúa por su texto de «lugar» con la tabla de `web/src/lib/lugares.ts`; una obra en un sitio que no esté en la tabla no sale en el mapa y el servidor lo avisa en la consola. El contorno sale de Natural Earth y se regenera con `cd web && node scripts/generar-mapa.mjs`.
   - **En desarrollo:** `__escena.fijar(7.5)` en la consola congela la escena en ese segundo; `__escena.fijar(null)` la suelta.
 - **Escenas realistas** (05/10, rama `feat/web-realista`, **prueba en Particulares, pendiente del visto bueno de Saúl**): la casa lleva hormigón y barro cocido escaneados, luz y reflejos de un cielo real, oclusión ambiental (rincones más oscuros), ventanas con persiana y puerta de garaje enrollable de verdad, agua con refracción y ondas, gresite, albardillas, rodapié, puerta de paso, bajante y lluvia en trazos. **El coche está quitado** hasta tener un modelo realista: lo consigue Saúl y Claude lo deja por debajo de 1,5 MB.
@@ -125,8 +125,15 @@ Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/
 - **Animaciones atadas al scroll** (se mantienen): paso de una página a otra con barrido, y la foto de una obra viaja del listado a su ficha (transiciones de vista nativas del navegador, sin JavaScript); fotos que se destapan y se mueven algo más despacio que la página; números de paso que se encienden al pasar. Todo se apaga si el visitante tiene las animaciones desactivadas, y en navegadores sin soporte simplemente no se anima.
 - **Galería**: las 22 obras de la web antigua están en dev (205 fotos con miniatura, fichas publicadas, seis destacadas). Se repite con `web/scripts/importar-obras.mjs` (leer → fotos → sql) y `supabase/seed_web_obras.sql`; las instrucciones para subir las fotos están en la cabecera del script. La web lee la galería con `fetch` (`web/src/lib/galeria.ts`): lo que se publica en el CRM sale sin volver a desplegar (caché de 5 minutos).
 - **Formulario de contacto** (`web/src/pages/api/contacto.ts`): valida, tiene campo trampa y tiempo mínimo contra robots, y envía con Resend. **Sin `RESEND_API_KEY` no envía**: avisa y enseña teléfono y email. Funciona también sin JavaScript.
-- **SEO**: título, descripción y canónica (`www.imtexsl.com`) por página, Open Graph, datos estructurados (empresa, servicios y migas), `/sitemap.xml` con las obras publicadas, `robots.txt` y las redirecciones 301 de la web antigua (`web/public/_redirects`).
-- **Sin comprobar**: Lighthouse, un móvil de verdad, las animaciones en movimiento (Claude solo ve capturas fijas) y el envío real del formulario.
+- **SEO**: título, descripción y canónica (`www.imtexsl.com`, sin barra final) por página, Open Graph con imagen, datos estructurados (empresa, servicios y migas), `/sitemap.xml` con las obras publicadas, `robots.txt` y las redirecciones 301 de la web antigua (`web/public/_redirects`).
+  - Las páginas estáticas se generan como `empresa.html` (`build.format: 'file'`) y Netlify las sirve en `/empresa`. `rutaDe` (`web/src/lib/empresa.ts`) quita el `.html` que Astro pone al compilarlas.
+  - Imagen para compartir: `web/public/compartir.jpg` (1200 × 630, unos 90 KB), en todas las páginas salvo las fichas de obra, que usan su foto. Se rehace con `cd web && node scripts/imagen-compartir.mjs`, a partir de la plantilla `scripts/imagen-compartir.html` y con el Chrome instalado.
+- **Rendimiento y accesibilidad** (05/10). Medido con Lighthouse en móvil, en local y sin la galería:
+  - Antes: 36–42 en las páginas con 3D. Sin tarjeta gráfica, cada fotograma bloqueaba la página. Sin WebGL, la foto de respaldo no salía hasta que three.js se descargaba y fallaba.
+  - Ahora: portada 94–96, Particulares 98, Empresa y Servicios 97, Contacto 99. Accesibilidad, buenas prácticas y SEO, 100. axe da 0 fallos de contraste en los dos temas.
+  - Cómo se decide el 3D: `puede3d` en `web/src/layouts/Base.astro`. Para ver el 3D en un equipo sin tarjeta gráfica, en la consola: `localStorage.setItem('forzar-3d', 'si')`.
+  - Lo que espera su turno (números y cifras de las fases, números de los pasos) usa el color `apagado`, distinto en cada tema, para no bajar de 3:1.
+- **Sin comprobar**: Lighthouse con las obras de la galería y ya en Netlify, un móvil de verdad, las animaciones en movimiento (Claude solo ve capturas fijas) y el envío real del formulario.
 - **A confirmar con IMTEX**: fechas de CETARSA (2012-2022 o 2012-2024); razón social exacta y datos del Registro Mercantil para el aviso legal; que los legales los revise su asesoría; el texto de `/particulares` (es una suposición razonable de lo que hacen en viviendas); qué significan exactamente los códigos de clasificación; permiso para logotipos de fabricantes (hoy van en texto); fotos a más resolución y logo en vector. El mapa de contacto señala el centro del polígono, no la parcela 31.
 - En el bucket de dev quedan 8 archivos duplicados en `obras/obras/viaducto-casatejada/`, de una subida a la carpeta equivocada. No molestan.
 
@@ -161,14 +168,15 @@ Todo está subido a GitHub en la rama **`feat/web-animaciones`** (sale de `feat/
 - Tablet en vertical (768 px o más): los botones y las casillas tienen el tamaño de escritorio (32 px). Si IMTEX va a usar tablets, se agrandan según el tipo de puntero (`pointer-coarse`) en vez de según el ancho.
 - Cargar los gráficos solo al entrar en Control de obra: el JavaScript pesa 1,3 MB.
 - Pruebas de recorrido completo con un usuario de prueba.
-- Actualizar las dependencias de `web/`: `npm audit` da 8 avisos en el adaptador de Netlify.
+- Actualizar las dependencias de `web/`: `npm audit` da 15 avisos altos, casi todos en las herramientas de desarrollo local del adaptador de Netlify. No llegan a la web publicada.
 
 **Web corporativa, para ponerla en producción** (PLAN.md C1). El desarrollo está hecho (punto 12 de «Hecho»).
 - Visto bueno de Saúl y de IMTEX a textos, fotos y legales.
 - Netlify: sitio `imtex-web` con base `web/` y sus variables (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `RESEND_API_KEY`, `CONTACTO_EMAIL_DESTINO`).
 - Resend: sin la cuenta y el dominio de envío, el formulario no manda correos.
 - Galería en producción: repetir la importación de las 22 obras contra `imtex-prod`.
-- Lighthouse en móvil ≥ 90 y revisión en un iPhone.
+- Lighthouse en móvil ≥ 90: en local da 94–99 sin la galería. Falta medir `/obras` y las fichas con las fotos, y repetirlo en Netlify. Revisión en un iPhone.
+- En el primer despliegue de Netlify: comprobar que `/empresa` responde 200 sin redirigir y que la canónica coincide con la dirección.
 - DNS (solo los registros de la web; el MX no se toca), SSL y Search Console.
 - Material que hay que pedir a IMTEX: logo en vector, fotos de obras a buena resolución, datos del Registro Mercantil y acceso al DNS.
 
@@ -184,7 +192,7 @@ Hace falta Git, Node 22 o superior y Claude Code.
 
 **Si el repo ya está en ese ordenador**, basta con traer la rama e instalar lo nuevo:
 ```bash
-git fetch && git checkout feat/web-animaciones && git pull
+git fetch && git checkout feat/web-realista && git pull
 ```
 ```bash
 cd crm && npm install
@@ -200,7 +208,7 @@ Si en ese ordenador no existe `web/.env`, créalo copiando `web/.env.example` y 
    git clone https://github.com/ContactoExtreweb/Imtex.git
    ```
    ```bash
-   cd Imtex && git checkout feat/web-animaciones
+   cd Imtex && git checkout feat/web-realista
    ```
 2. Instalar dependencias:
    ```bash
@@ -303,6 +311,8 @@ Cómo se ha trabajado hasta ahora, por si Claude no lo recuerda en ese ordenador
 
 - **Si la web se ve sin estilos en alguna página nueva, o la maqueta 3D no carga** (en la consola sale «504 Outdated Optimize Dep»), para el servidor, borra `web/node_modules/.vite` y vuelve a arrancar. Pasa al añadir páginas o dependencias con el servidor en marcha.
 - **No arranques dos servidores de la web a la vez** en la misma carpeta: se pisan y se quedan colgados.
+- **En local, una dirección con barra final da 404** (`/empresa/`). Es lo esperado: las direcciones van sin barra (`trailingSlash: 'never'`).
+- **En un equipo sin tarjeta gráfica no sale el 3D**, sino la foto. Para verlo igualmente: `localStorage.setItem('forzar-3d', 'si')` en la consola, y `localStorage.removeItem('forzar-3d')` para volver.
 
 - **La API de Supabase da como mucho 1.000 filas por petición** y corta el resto sin avisar. Para listados que pueden crecer, usa `todasLasFilas` (`crm/src/lib/todas-las-filas.ts`); para sumas, una vista SQL.
 - **`crypto.randomUUID()` solo existe en HTTPS o en localhost.** Entrando desde el móvil por la IP no está. Usa `idAleatorio` (`crm/src/lib/id.ts`).
