@@ -24,7 +24,7 @@ const ESCENAS = {
   },
   empresa: {
     cielos: ['small_hangar_01'],
-    texturas: ['concrete_floor_02', 'raw_plank_wall'],
+    texturas: ['concrete_floor_02', 'raw_plank_wall', 'painted_plaster_wall'],
     modelos: ['cement_bag', 'steel_frame_shelves_01', 'hand_truck'],
   },
 }

@@ -5,6 +5,7 @@
 # Opciones comunes: --muestras N, --ancho N (el alto sale a 4:3), --guardar (deja también el .blend),
 # --video con --desde N y --hasta N, --con-hiprt (AMD con trazado por hardware; sale mal en la RX 6650 XT).
 
+import math
 import os
 import sys
 
@@ -428,3 +429,63 @@ def clave(objeto, ruta, valor, f, indice=-1):
     else:
         setattr(objeto, ruta, valor)
         objeto.keyframe_insert(ruta, frame=f)
+
+
+# ------------------------------------------------------------------------------------------------
+# Rotulación: calcomanías (una imagen con transparencia) y textos, para logos, vinilos y carteles
+# ------------------------------------------------------------------------------------------------
+def calcomania(nombre, ruta, ancho, posicion, giro=(0.0, 0.0, 0.0), objetivo=None, separa=0.002, rugosidad=0.35):
+    """Un plano con la imagen de `ruta` (PNG con transparencia), de `ancho` metros y el alto que pida la imagen.
+    De frente mira hacia -Y (como un cartel visto desde delante); `giro` lo orienta. Con `objetivo`, se ajusta a su
+    superficie (un vinilo sobre la chapa), separado `separa` para que no parpadee."""
+    imagen_c = bpy.data.images.load(ruta, check_existing=True)
+    alto = ancho * imagen_c.size[1] / imagen_c.size[0]
+    malla_c = bpy.data.meshes.new(nombre)
+    bm = bmesh.new()
+    bm.loops.layers.uv.new()  # sin esta capa, create_grid no pone coordenadas de textura y la imagen no se ve
+    bmesh.ops.create_grid(bm, x_segments=48, y_segments=max(2, round(48 * alto / ancho)), size=0.5, calc_uvs=True)
+    for v in bm.verts:
+        v.co = (v.co.x * ancho, 0.0, v.co.y * alto)
+    bm.to_mesh(malla_c)
+    bm.free()
+    o = bpy.data.objects.new(nombre, malla_c)
+    coleccion.objects.link(o)
+    m = bpy.data.materials.new(f"Vinilo {nombre}")
+    m.use_nodes = True
+    p = m.node_tree.nodes["Principled BSDF"]
+    t = m.node_tree.nodes.new("ShaderNodeTexImage")
+    t.image = imagen_c
+    t.interpolation = "Cubic"
+    m.node_tree.links.new(t.outputs["Color"], p.inputs["Base Color"])
+    m.node_tree.links.new(t.outputs["Alpha"], p.inputs["Alpha"])
+    p.inputs["Roughness"].default_value = rugosidad
+    malla_c.materials.append(m)
+    for cara in malla_c.polygons:
+        cara.use_smooth = True
+    o.location = posicion
+    o.rotation_euler = giro
+    if objetivo is not None:
+        ajuste = o.modifiers.new("Ajuste", "SHRINKWRAP")
+        ajuste.target = objetivo
+        ajuste.wrap_method = "NEAREST_SURFACEPOINT"
+        ajuste.wrap_mode = "OUTSIDE_SURFACE"
+        ajuste.offset = separa
+    return o
+
+
+def texto(nombre, contenido, alto, posicion, giro=(math.pi / 2, 0.0, 0.0), color=(0.02, 0.02, 0.025), fuente="bahnschrift.ttf", alinear="CENTER"):
+    """Texto plano (un vinilo de letras), de `alto` metros de cuerpo. De frente mira hacia -Y.
+    La fuente se busca en las de Windows y, si no está, se usa la de Blender."""
+    curva = bpy.data.curves.new(nombre, "FONT")
+    curva.body = contenido
+    curva.size = alto
+    curva.align_x = alinear
+    ruta = os.path.join(os.environ.get("WINDIR", "C:/Windows"), "Fonts", fuente)
+    if os.path.exists(ruta):
+        curva.font = bpy.data.fonts.load(ruta, check_existing=True)
+    o = bpy.data.objects.new(nombre, curva)
+    coleccion.objects.link(o)
+    curva.materials.append(material(f"Letras {nombre}", color, 0.4))
+    o.location = posicion
+    o.rotation_euler = giro
+    return o

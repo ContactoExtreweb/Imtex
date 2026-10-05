@@ -1,17 +1,19 @@
-# «Lo que aplicamos», renderizada con Blender (Cycles): la versión en vídeo del palé de /empresa.
-# Un palé europeo en la nave, y encima van llegando los materiales del oficio, uno tras otro:
-#   1. Morteros: tres sacos que se asientan al apoyar.
-#   2. Láminas: dos rollos de pie.
-#   3. Resinas: dos cubos de 20 L.
+# «Lo que aplicamos», renderizada con Blender (Cycles): el vídeo de la entrada de /empresa.
+# La furgoneta de IMTEX, aparcada en la nave con las puertas traseras abiertas, baja con su plataforma elevadora
+# el palé cargado con los materiales del oficio; la cámara se acerca y los recorre uno a uno, con la leyenda:
+#   1. Morteros: tres sacos.  2. Láminas: dos rollos de pie.  3. Resinas: dos cubos de 20 L.
 #   4. Fibra de carbono: la bobina, tumbada sobre los sacos.
-# Lleno, un momento quieto; luego todo sube y sale de cuadro en orden inverso, y vuelve a empezar sin salto.
-# La cámara va y vuelve en un arco lento alrededor del palé. Sin marcas: los sacos llevan una impresión propia.
+# Al final la cámara vuelve a ver la furgoneta y el cartel de la nave; el vídeo se funde y vuelve a empezar.
+# Todo lleva el logo de IMTEX (src/assets/logo-imtex.png) y la banda del lema (src/assets/lema-imtex.png).
 #
-# Se ejecuta desde web/ (los recursos los baja `node render/recursos.mjs empresa`):
-#   blender -b --factory-startup --python render/empresa.py -- --fotogramas 40,100,160,250
+# Se ejecuta desde web/. Recursos: `node render/recursos.mjs empresa` (Poly Haven) y la furgoneta de Sketchfab en
+# .modelos/sprinter/ (Mercedes-Benz Sprinter, de Savelliy 07, CC BY 4.0: hay que citarlo en la web). Sin ella,
+# una caja en su sitio para probar el resto.
+#   blender -b --factory-startup --python render/empresa.py -- --fotogramas 0,90,170,250,330
 #   blender -b --factory-startup --python render/empresa.py -- --video
-# Opciones comunes en render/comun.py. Además: --giro-cielo N (grados) para mover la nave alrededor del palé.
+# Opciones comunes en render/comun.py. Además: --giro-cielo N (grados) para girar la luz de la nave.
 
+import glob
 import math
 import os
 import sys
@@ -23,19 +25,25 @@ from mathutils import Vector
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from comun import *  # noqa: E402,F403  (render/comun.py)
 
-VUELTA = 14.0  # segundos; los tramos de la leyenda de /empresa salen de aquí
+VUELTA = 16.0  # segundos; los tramos de la leyenda de /empresa salen de aquí
 FOTOGRAMAS = round(VUELTA * FPS)
 
-# --- Medidas, en metros. X a la derecha, Y hacia el fondo, Z arriba. El palé está centrado en el origen. ---
+# --- Medidas, en metros. X a la derecha, Y hacia el fondo, Z arriba. ---
+# La furgoneta, a lo largo de X con la trasera en x = 0; el palé, sobre la plataforma, detrás de ella.
 PALE = dict(largo=1.2, fondo=0.8, alto=0.144)
-CAIDA = 0.7  # segundos que tarda cada cosa en bajar
-SALIDA_TODO = 10.6  # cuándo empieza a vaciarse
+FURGO = dict(largo=5.93, ancho=2.02, alto=2.6, suelo=0.66)  # Sprinter L2H2; `suelo`: el de la zona de carga
+PLATAFORMA = dict(fondo=1.5, ancho=1.7, grueso=0.06, pivote=(-0.35, 0.38))
+PARED_Y = 4.4  # la pared del fondo de la nave, con el cartel
+# La historia, en segundos
+BAJA = (1.4, 5.6)  # la plataforma baja
+PARADAS = [(6.2, 7.8), (7.8, 9.4), (9.4, 11.0), (11.0, 12.6)]  # la cámara en cada material (la leyenda)
+VUELVE = (12.6, 15.2)  # la cámara se retira
 
 escena = preparar("empresa", VUELTA)
 coleccion = escena.collection
 # El ruido que quede cambia en cada fotograma: parece grano, no una mancha fija
 escena.cycles.use_animated_seed = True
-# Lo que cae lleva su estela, como en una cámara de verdad
+# Lo que se mueve lleva su estela, como en una cámara de verdad
 escena.render.use_motion_blur = True
 escena.render.motion_blur_shutter = 0.4
 
@@ -383,85 +391,207 @@ def bobina(nombre):
     return pieza(nombre, tela, tubo, banda)
 
 
-# Dónde acaba cada cosa y cuándo llega. `grupo` es el material de la leyenda (Morteros, Láminas, Resinas, Fibra).
+# ------------------------------------------------------------------------------------------------
+# La carga: el palé con los materiales, colocados. Todo cuelga de un vacío que va con la plataforma.
+# ------------------------------------------------------------------------------------------------
 SACO = 0.165  # alto de un saco ya asentado
-llegadas = [
-    dict(pieza=sacos[0], destino=(-0.3, 0.02, ARRIBA), giro=math.radians(2), llega=0.3, grupo=0, blando=True),
-    dict(pieza=sacos[1], destino=(-0.3, 0.0, ARRIBA + SACO), giro=math.radians(-5), llega=0.9, grupo=0, blando=True),
-    dict(pieza=sacos[2], destino=(-0.31, 0.01, ARRIBA + 2 * SACO), giro=math.radians(4), llega=1.5, grupo=0, blando=True),
-    dict(pieza=rollo("Rollo 1"), destino=(0.2, 0.24, ARRIBA), giro=0.4, llega=2.3, grupo=1),
-    dict(pieza=rollo("Rollo 2"), destino=(0.46, 0.2, ARRIBA), giro=1.9, llega=2.85, grupo=1),
-    dict(pieza=cubo("Cubo 1"), destino=(0.16, -0.2, ARRIBA), giro=0.3, llega=3.6, grupo=2),
-    dict(pieza=cubo("Cubo 2"), destino=(0.48, -0.19, ARRIBA), giro=2.2, llega=4.15, grupo=2),
-    dict(pieza=bobina("Bobina"), destino=(-0.31, 0.0, ARRIBA + 3 * SACO), giro=math.radians(90), llega=5.0, grupo=3),
+COLOCADOS = [
+    (sacos[0], (-0.3, 0.02, ARRIBA), math.radians(2)),
+    (sacos[1], (-0.3, 0.0, ARRIBA + SACO), math.radians(-5)),
+    (sacos[2], (-0.31, 0.01, ARRIBA + 2 * SACO), math.radians(4)),
+    (rollo("Rollo 1"), (0.2, 0.24, ARRIBA), 0.4),
+    (rollo("Rollo 2"), (0.46, 0.2, ARRIBA), 1.9),
+    (cubo("Cubo 1"), (0.16, -0.2, ARRIBA), 0.3),
+    (cubo("Cubo 2"), (0.48, -0.19, ARRIBA), 2.2),
+    (bobina("Bobina"), (-0.31, 0.0, ARRIBA + 3 * SACO), math.radians(90)),
 ]
-
-# Al fondo, desenfocados: dos estanterías con cubos y la carretilla. El modelo de la estantería viene a escala 10:1;
-# sus baldas quedan a 0,13, 0,64, 1,15 y 1,65 m.
-Y_FONDO = 4.0
-for x in (-1.3, -0.15):
-    modelo("steel_frame_shelves_01", (x, Y_FONDO, 0), giro=math.pi, escala=(0.1, 0.1, 0.1))
-for i, (x, z) in enumerate(((-1.6, 0.639), (-1.15, 0.639), (-0.35, 1.145), (0.1, 0.133), (-1.45, 1.651))):
-    c = cubo(f"Cubo estantería {i}")
-    c.location = (x, Y_FONDO, z)
-modelo("hand_truck", (2.4, 2.6, 0), giro=-0.9)  # apartada: que no asome por detrás de los rollos
+carga = bpy.data.objects.new("Carga", None)
+coleccion.objects.link(carga)
+for pieza_c, donde, giro_c in COLOCADOS:
+    pieza_c.location = donde
+    pieza_c.rotation_euler.z = giro_c
+    pieza_c.parent = carga
+for o in coleccion.objects:
+    if o.name.startswith("Palé") and o.parent is None:
+        o.parent = carga
+# Dónde mira la cámara en cada material, en coordenadas del palé (Morteros, Láminas, Resinas, Fibra)
+CENTROS = [Vector((-0.3, 0.0, 0.42)), Vector((0.33, 0.22, 0.75)), Vector((0.32, -0.2, 0.33)), Vector((-0.31, 0.0, 0.73))]
 
 # ------------------------------------------------------------------------------------------------
-# Cámara: un arco lento de ida y vuelta (el bucle cierra solo) y foco en el palé
+# La nave: pared del fondo con zócalo y el cartel de IMTEX; estanterías y carretilla junto a ella
+# ------------------------------------------------------------------------------------------------
+mat_pared = material_escaneado("Pared de la nave", "painted_plaster_wall", 2.5, tinte=(0.93, 0.93, 0.92), brillo=1.5, relieve=0.4)
+mat_zocalo = material("Zócalo", (0.11, 0.115, 0.13), 0.55)
+caja("Pared", -14, 10, PARED_Y, PARED_Y + 0.3, 0.0, 7.5, mat_pared, bisel=0)
+caja("Zócalo", -14, 10, PARED_Y - 0.01, PARED_Y, 0.0, 1.2, mat_zocalo, bisel=0)
+CARTEL = dict(x=-2.4, z=4.5, ancho=4.8, alto=2.1)
+mat_panel = material("Panel del cartel", (0.88, 0.88, 0.87), 0.3)
+caja(
+    "Cartel",
+    CARTEL["x"] - CARTEL["ancho"] / 2,
+    CARTEL["x"] + CARTEL["ancho"] / 2,
+    PARED_Y - 0.05,
+    PARED_Y - 0.01,
+    CARTEL["z"] - CARTEL["alto"] / 2,
+    CARTEL["z"] + CARTEL["alto"] / 2,
+    mat_panel,
+    bisel=0.006,
+)
+ASSETS = os.path.join(WEB, "src", "assets")
+calcomania("Cartel logo", os.path.join(ASSETS, "logo-imtex.png"), 3.4, (CARTEL["x"], PARED_Y - 0.052, CARTEL["z"] + 0.22))
+calcomania("Cartel lema", os.path.join(ASSETS, "lema-imtex.png"), 4.3, (CARTEL["x"], PARED_Y - 0.052, CARTEL["z"] - 0.78))
+
+for x in (4.2, 5.35):
+    modelo("steel_frame_shelves_01", (x, PARED_Y - 0.35, 0), giro=math.pi, escala=(0.1, 0.1, 0.1))
+for i, (x, z) in enumerate(((3.9, 0.639), (4.35, 0.639), (5.15, 1.145), (5.6, 0.133), (4.05, 1.651))):
+    c_e = cubo(f"Cubo estantería {i}")
+    c_e.location = (x, PARED_Y - 0.35, z)
+modelo("hand_truck", (3.0, PARED_Y - 0.6, 0), giro=-0.4)
+
+
+# ------------------------------------------------------------------------------------------------
+# La furgoneta (Sprinter de Sketchfab en .modelos/sprinter/) o, si no está, una caja en su sitio
+# ------------------------------------------------------------------------------------------------
+def furgoneta():
+    ficheros = sorted(glob.glob(os.path.join(WEB, ".modelos", "sprinter", "**", "*.gl*"), recursive=True))
+    if not ficheros:
+        print("FURGONETA: no está en .modelos/sprinter/; se pone una caja en su sitio")
+        mat_chapa = material("Chapa blanca", (0.85, 0.86, 0.87), 0.25, **{"Coat Weight": 1.0, "Coat Roughness": 0.05})
+        caja("Furgoneta (provisional)", -FURGO["largo"], 0.0, -FURGO["ancho"] / 2, FURGO["ancho"] / 2, 0.35, FURGO["alto"], mat_chapa, bisel=0.05)
+        neumatico = material("Neumático", (0.02, 0.02, 0.02), 0.8)
+        for x in (-4.6, -0.95):
+            for y in (-0.9, 0.9):
+                r = cilindro(f"Rueda {x} {y}", 0.35, 0.35, 0.22, neumatico)
+                r.rotation_euler.x = math.pi / 2
+                r.location = (x, y + 0.11, 0.35)
+        return None
+    print("FURGONETA:", ficheros[0])
+    antes = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=ficheros[0])
+    return [o for o in bpy.data.objects if o not in antes]
+
+
+furgo = furgoneta()
+
+
+# ------------------------------------------------------------------------------------------------
+# Plataforma elevadora trasera: dos brazos en paralelogramo bajo la trasera mantienen la plataforma horizontal
+# mientras baja del suelo de carga al de la nave; al apoyar, la punta se inclina un poco hasta tocar el suelo.
+# ------------------------------------------------------------------------------------------------
+def material_chapa_estriada():
+    m = material("Chapa estriada", (0.62, 0.63, 0.65), 0.38, Metallic=1.0)
+    n = m.node_tree.nodes
+    l = m.node_tree.links
+    mapa = n.new("ShaderNodeMapping")
+    mapa.inputs["Rotation"].default_value = (0, 0, math.radians(45))
+    l.new(n.new("ShaderNodeTexCoord").outputs["Object"], mapa.inputs["Vector"])
+    estrias = n.new("ShaderNodeTexChecker")
+    estrias.inputs["Scale"].default_value = 60.0
+    l.new(mapa.outputs["Vector"], estrias.inputs["Vector"])
+    relieve = n.new("ShaderNodeBump")
+    relieve.inputs["Strength"].default_value = 0.25
+    l.new(estrias.outputs["Fac"], relieve.inputs["Height"])
+    l.new(relieve.outputs["Normal"], n["Principled BSDF"].inputs["Normal"])
+    return m
+
+
+mat_estriada = material_chapa_estriada()
+mat_negro = material("Acero negro", (0.03, 0.03, 0.035), 0.45, Metallic=0.6)
+P = Vector((PLATAFORMA["pivote"][0], 0.0, PLATAFORMA["pivote"][1]))
+Q_ARRIBA = Vector((0.0, 0.0, FURGO["suelo"]))
+BRAZO = (Q_ARRIBA - P).length
+
+# La plataforma, con su origen en el borde de giro (junto a la furgoneta) y la cara de arriba en z = 0
+plataforma = caja("Plataforma", 0.0, PLATAFORMA["fondo"], -PLATAFORMA["ancho"] / 2, PLATAFORMA["ancho"] / 2, -PLATAFORMA["grueso"], 0.0, mat_estriada, bisel=0.006)
+brazos = [caja(f"Brazo {y}", 0.0, BRAZO, y - 0.04, y + 0.04, -0.05, 0.05, mat_negro, bisel=0.008) for y in (-0.62, 0.62)]
+caja("Bastidor de la plataforma", P.x - 0.12, P.x + 0.12, -0.75, 0.75, P.z - 0.06, P.z + 0.08, mat_negro, bisel=0.01)
+caja("Grupo hidráulico", -1.2, -0.55, -0.35, 0.05, 0.3, 0.5, mat_negro, bisel=0.01)
+# Lo que lleva encima: la carga, centrada en la plataforma
+SOBRE = PLATAFORMA["fondo"] / 2 + 0.05
+
+
+def plataforma_en(b):
+    """b de 0 (arriba, al nivel del suelo de carga) a 1 (en el suelo de la nave): el borde de giro de la plataforma,
+    el ángulo de los brazos y lo que se inclina la punta al apoyar"""
+    z = mezcla(Q_ARRIBA.z, PLATAFORMA["grueso"], b)
+    dz = z - P.z
+    dx = math.sqrt(max(0.0, BRAZO * BRAZO - dz * dz))
+    inclina = math.radians(2.2) * suave(tramo(b, 0.93, 1.0))
+    return Vector((P.x + dx, 0.0, z)), math.atan2(dz, dx), inclina
+
+
+def poner_plataforma(b, f):
+    """Pone la plataforma, los brazos y la carga en el fotograma `f`; devuelve dónde queda el centro de la carga"""
+    q, angulo, inclina = plataforma_en(b)
+    clave(plataforma, "location", q, f)
+    clave(plataforma, "rotation_euler", Vector((0, inclina, 0)), f)
+    for b_o in brazos:
+        clave(b_o, "location", Vector((P.x, 0.0, P.z)), f)
+        clave(b_o, "rotation_euler", Vector((0, -angulo, 0)), f)
+    # Girar +Y baja la punta (+X): la carga va sobre la plataforma inclinada
+    centro = q + Vector((SOBRE * math.cos(inclina), 0.0, -SOBRE * math.sin(inclina)))
+    clave(carga, "location", centro, f)
+    clave(carga, "rotation_euler", Vector((0, inclina, 0)), f)
+    return centro
+
+
+# ------------------------------------------------------------------------------------------------
+# Cámara: plano general (furgoneta y cartel) → se acerca mientras baja → recorre los materiales → vuelve
 # ------------------------------------------------------------------------------------------------
 camara_datos = bpy.data.cameras.new("Cámara")
-camara_datos.lens = 42
+camara_datos.lens = 35
 camara_datos.dof.use_dof = True
-camara_datos.dof.aperture_fstop = 1.8
+camara_datos.dof.aperture_fstop = 2.8
 camara = bpy.data.objects.new("Cámara", camara_datos)
 coleccion.objects.link(camara)
 escena.camera = camara
 mira = bpy.data.objects.new("Mira", None)
-mira.location = (0.02, 0.0, 0.5)
 coleccion.objects.link(mira)
 seguir = camara.constraints.new("TRACK_TO")
 seguir.target = mira
 seguir.track_axis = "TRACK_NEGATIVE_Z"
 seguir.up_axis = "UP_Y"
 camara_datos.dof.focus_object = mira
-DISTANCIA, ALTURA, RUMBO = 3.1, 1.25, math.radians(-28)
+
+GENERAL = (Vector((4.6, -8.2, 2.3)), Vector((-1.6, 1.0, 1.7)))  # la furgoneta de tres cuartos y el cartel
+CERCA = (Vector((3.0, -3.6, 1.45)), Vector((0.85, 0.0, 0.6)))  # la plataforma bajando
 
 
-def encuadre(t):
-    a = RUMBO + math.radians(20) * math.sin(2 * math.pi * t / VUELTA)
-    return Vector((DISTANCIA * math.sin(a), -DISTANCIA * math.cos(a), ALTURA))
+def parada(i, centro_carga):
+    """Encuadre de un material: algo por delante y por encima, mirando a su centro"""
+    c = centro_carga + CENTROS[i]
+    return c + Vector((0.35, -1.55, 0.35)), c
+
+
+def encuadre(t, centro_carga):
+    if t < BAJA[0]:
+        return GENERAL
+    if t < PARADAS[0][0]:
+        f = suave(tramo(t, BAJA[0], PARADAS[0][0]))
+        return GENERAL[0].lerp(CERCA[0], f), GENERAL[1].lerp(CERCA[1], f)
+    for i, (a, b) in enumerate(PARADAS):
+        if t < b:
+            destino = parada(i, centro_carga)
+            origen = CERCA if i == 0 else parada(i - 1, centro_carga)
+            f = suave(tramo(t, a, a + 0.9))
+            return origen[0].lerp(destino[0], f), origen[1].lerp(destino[1], f)
+    f = suave(tramo(t, VUELVE[0], VUELVE[1]))
+    ultima = parada(len(PARADAS) - 1, centro_carga)
+    return ultima[0].lerp(GENERAL[0], f), ultima[1].lerp(GENERAL[1], f)
 
 
 # ------------------------------------------------------------------------------------------------
 # Animación: un fotograma clave por fotograma
 # ------------------------------------------------------------------------------------------------
-minimo = 0.0005
 for f in range(FOTOGRAMAS):
     t = f / FPS
-    for i, c in enumerate(llegadas):
-        destino = Vector(c["destino"])
-        # Baja acelerando (como al soltarlo) y se asienta; los sacos se aplastan un poco al apoyar
-        baja = tramo(t, c["llega"], c["llega"] + CAIDA)
-        alto = 1.6 * (1 - baja * baja)
-        apoyo = tramo(t, c["llega"] + CAIDA, c["llega"] + CAIDA + 0.35)
-        aplasta = 0.0
-        if c.get("blando") and 0 < apoyo < 1:
-            aplasta = 0.1 * math.sin(math.pi * apoyo) * (1 - apoyo)
-        # Al vaciar, sube en orden inverso, acelerando, y sale de cuadro
-        orden = len(llegadas) - 1 - i
-        sube = tramo(t, SALIDA_TODO + orden * 0.2, SALIDA_TODO + orden * 0.2 + 0.7)
-        alto += 2.2 * sube * sube
-        dentro = baja > 0 and sube < 1
-        clave(c["pieza"], "location", destino + Vector((0, 0, alto)), f)
-        clave(c["pieza"], "rotation_euler", Vector((0, 0, c["giro"] + 0.25 * (1 - baja))), f)
-        clave(c["pieza"], "scale", Vector((1 + aplasta * 0.5, 1 + aplasta * 0.5, 1 - aplasta)) if dentro else Vector((minimo,) * 3), f)
-    clave(camara, "location", encuadre(t), f)
+    centro = poner_plataforma(suave(tramo(t, *BAJA)), f)
+    pos_c, mira_c = encuadre(t, centro)
+    clave(camara, "location", pos_c, f)
+    clave(mira, "location", mira_c, f)
 
 # Los tramos de la leyenda, en segundos (los mismos que en src/pages/empresa.astro)
-# Cada parte, desde que llega su primera pieza hasta que llega la de la siguiente; la última, hasta que se asienta
-inicios = [next(c["llega"] for c in llegadas if c["grupo"] == g) for g in range(4)]
-finales = inicios[1:] + [llegadas[-1]["llega"] + CAIDA + 0.4]
-for nombre, a, b in zip(("Morteros", "Láminas", "Resinas", "Fibra de carbono"), inicios, finales):
-    print(f"TRAMO {nombre}: [{a:.2f}, {b:.2f}]")
+for nombre, (a, b_t) in zip(("Morteros", "Láminas", "Resinas", "Fibra de carbono"), PARADAS):
+    print(f"TRAMO {nombre}: [{a:.2f}, {b_t:.2f}]")
 
 render()
