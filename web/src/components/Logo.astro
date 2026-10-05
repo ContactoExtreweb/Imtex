@@ -16,4 +16,5 @@ const { class: clase, ancho = 400, carga = 'lazy', fijo = false } = Astro.props
 ---
 
 <Image src={letrasBlancas} alt="IMTEX" width={ancho} loading={carga} class:list={[clase, !fijo && 'claro:hidden']} />
-{!fijo && <Image src={letrasNegras} alt="IMTEX" width={ancho} loading={carga} class:list={[clase, 'hidden claro:block']} />}
+{/* El de letras negras está oculto en el tema oscuro, el de por defecto: en diferido no se descarga hasta que se ve */}
+{!fijo && <Image src={letrasNegras} alt="IMTEX" width={ancho} loading="lazy" class:list={[clase, 'hidden claro:block']} />}

@@ -112,7 +112,8 @@ const dos = (n: number) => String(n).padStart(2, '0')
   <div class="sticky top-(--alto-cabecera) z-10 order-first -mx-(--margen) h-[46svh] border-b border-(--filete) bg-papel lg:order-none lg:mx-0 lg:h-[calc(100svh-var(--alto-cabecera))] lg:border-0">
     <div class="relative flex h-full flex-col">
       <div class="relative min-h-0 flex-1">
-        {/* Fotos reales de cada fase: llenan el panel si no hay 3D; con 3D pasan a una esquina */}
+        {/* Fotos reales de cada fase: llenan el panel si no hay 3D; con 3D pasan a una esquina.
+            Están apiladas a la vista, así que se descargan todas: la primera, antes que nada; las demás, después. */}
         <figure data-fotos class="absolute inset-0 transition-all duration-700 ease-(--ease-encaje)">
           {
             FASES.map((f, i) => (
@@ -122,6 +123,7 @@ const dos = (n: number) => String(n).padStart(2, '0')
                 widths={[480, 900]}
                 sizes="(min-width: 64rem) 46vw, 100vw"
                 loading={i === 0 ? 'eager' : 'lazy'}
+                fetchpriority={i === 0 ? 'high' : 'low'}
                 data-foto
                 class:list={['absolute inset-0 size-full object-cover transition-opacity duration-500', i > 0 && 'opacity-0']}
               />
