@@ -1,8 +1,8 @@
 ---
-import { EMPRESA, NAVEGACION } from '../lib/empresa'
+import { EMPRESA, NAVEGACION, rutaDe } from '../lib/empresa'
 import Logo from './Logo.astro'
 
-const ruta = Astro.url.pathname
+const ruta = rutaDe(Astro.url)
 const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
 ---
 

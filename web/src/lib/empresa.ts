@@ -34,6 +34,10 @@ export const NAVEGACION = [
   { a: '/contacto', texto: 'Contacto' },
 ] as const
 
+/** La dirección de la página tal como se enlaza: sin «.html» ni barra final. Las estáticas se generan como
+ *  empresa.html (astro.config.mjs) y al compilarlas Astro.url lleva ese «.html»; y Netlify sirve también /obras/. */
+export const rutaDe = (url: URL) => url.pathname.replace(/\.html$/, '').replace(/(.)\/+$/, '$1')
+
 /** Los cuatro servicios, con lo que la web actual dice de cada uno. `categoria` es la de la galería. */
 export const SERVICIOS = [
   {

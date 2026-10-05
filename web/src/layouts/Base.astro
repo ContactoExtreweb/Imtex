@@ -2,7 +2,7 @@
 import fuente from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url'
 import Cabecera from '../components/Cabecera.astro'
 import Pie from '../components/Pie.astro'
-import { EMPRESA } from '../lib/empresa'
+import { EMPRESA, rutaDe } from '../lib/empresa'
 import '../styles/global.css'
 
 interface Props {
@@ -18,7 +18,7 @@ interface Props {
 
 const { titulo, descripcion, imagen, datos = [], sinIndexar = false } = Astro.props
 // Un solo dominio: la canónica siempre apunta a www.imtexsl.com
-const canonica = new URL(Astro.url.pathname, EMPRESA.dominio).href
+const canonica = new URL(rutaDe(Astro.url), EMPRESA.dominio).href
 const tituloCompleto = titulo.includes('IMTEX') ? titulo : `${titulo} · IMTEX`
 ---
 

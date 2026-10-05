@@ -1,7 +1,7 @@
 ---
 // Arranque de las páginas interiores: migas, titular grande y una entradilla.
 // Devuelve también las migas como datos estructurados (BreadcrumbList).
-import { EMPRESA } from '../lib/empresa'
+import { EMPRESA, rutaDe } from '../lib/empresa'
 
 interface Miga {
   texto: string
@@ -23,7 +23,7 @@ const datos = {
     '@type': 'ListItem',
     position: i + 1,
     name: m.texto,
-    item: new URL(m.a ?? Astro.url.pathname, EMPRESA.dominio).href,
+    item: new URL(m.a ?? rutaDe(Astro.url), EMPRESA.dominio).href,
   })),
 }
 ---
