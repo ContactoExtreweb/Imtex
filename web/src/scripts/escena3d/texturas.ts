@@ -91,39 +91,6 @@ export function pintarGrano(tam: number, rnd: () => number, fuerza = 1) {
   return l
 }
 
-/** Mapa de normales de agua en calma: unas pocas ondas cruzadas que repiten sin costura */
-export function pintarOndas(tam: number) {
-  const [l, ctx] = lienzo2d(tam, tam)
-  const img = ctx.createImageData(tam, tam)
-  const k = (2 * Math.PI) / tam
-  // [ciclos en x, ciclos en y, fase]
-  const ondas = [
-    [3, 1, 0],
-    [1, 4, 1.3],
-    [5, -2, 2.1],
-    [-2, 3, 0.7],
-    [7, 5, 4],
-  ]
-  for (let y = 0; y < tam; y++)
-    for (let x = 0; x < tam; x++) {
-      let dx = 0
-      let dy = 0
-      for (const [fx, fy, fase] of ondas) {
-        const c = Math.cos(k * (fx * x + fy * y) + fase) / Math.hypot(fx, fy)
-        dx += fx * c
-        dy += fy * c
-      }
-      const n = Math.hypot(dx * 0.25, dy * 0.25, 1)
-      const o = (y * tam + x) * 4
-      img.data[o] = ((-dx * 0.25) / n) * 127.5 + 127.5
-      img.data[o + 1] = ((-dy * 0.25) / n) * 127.5 + 127.5
-      img.data[o + 2] = (1 / n) * 127.5 + 127.5
-      img.data[o + 3] = 255
-    }
-  ctx.putImageData(img, 0, 0)
-  return l
-}
-
 /** Punto redondo y difuso para las partículas */
 export function pintarPunto() {
   const [l, ctx] = lienzo2d(48, 48)
