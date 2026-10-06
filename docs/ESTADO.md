@@ -28,7 +28,8 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
 **Martes 06/10, en la oficina:**
 - Saúl da por buenos los vídeos de Blender de Particulares y Empresa: **se quedan como están**.
 - **Cabecera en tableta:** a 1024 px (donde entra el menú completo) no cabía y el teléfono y «Pedir presupuesto» se partían en dos líneas. Ahora, de 1024 a 1279 px solo se ve el icono del teléfono (el número sale desde 1280 px), el menú se aprieta un poco y los botones (`.boton`) nunca se parten. Comprobado a 375, 1024 y 1280 px.
-- **Cinta sin fin** (`web/src/components/Marquesina.astro`): el lema de la banda roja de la portada y los fabricantes de Empresa ya no se cortan por los lados en el móvil. Pasan solos y sin fin, y se paran al pasar el ratón. Con las animaciones reducidas no se mueven y el texto se parte en líneas. Se quitó la animación `deriva`, que ya no usaba nadie.
+- **Fabricantes de Empresa en una cinta sin fin** (`web/src/components/Marquesina.astro`): ya no se cortan por los lados en el móvil; pasan solos y se paran al pasar el ratón. Con las animaciones reducidas no se mueven y el texto se parte en líneas.
+- **Lema de la portada** (la banda roja): quieto, como pidió Saúl, y entero en el móvil. El rojo sigue saliendo por los lados, pero el texto se queda dentro de la pantalla y, si no cabe, se parte en dos líneas (en el móvil: «Soluciones técnicas para / industria y construcción»). Desde 768 px va en una línea. Se quitó la animación `deriva`, que ya no usaba nadie.
 - **Pie:** «Desarrollado por extreweb», con enlace a extreweb.es. Y se arregló el código postal pegado a la localidad («06700Villanueva»).
 
 **Lo que Claude necesita de ti:**
