@@ -1,6 +1,6 @@
 # Estado del proyecto IMTEX
 
-Actualizado el lunes 05/10/2026. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
+Actualizado el martes 06/10/2026. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
 El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [decisiones.md](decisiones.md).
 
 ## Por dónde vamos (lunes 05/10)
@@ -25,8 +25,14 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
   - Saúl vio la vista previa y pidió pasarla a la web tal cual: **`/empresa` ya enseña el vídeo** (`empresa.webm` 1,8 MB, `empresa.mp4` 1,6 MB) y el palé en 3D se ha quitado.
   - El PC de casa renderiza con la Radeon (HIP): Empresa salió en 32 min, a unos 4 s por fotograma.
 
+**Martes 06/10, en la oficina:**
+- Saúl da por buenos los vídeos de Blender de Particulares y Empresa: **se quedan como están**.
+- **Cabecera en tableta:** a 1024 px (donde entra el menú completo) no cabía y el teléfono y «Pedir presupuesto» se partían en dos líneas. Ahora, de 1024 a 1279 px solo se ve el icono del teléfono (el número sale desde 1280 px), el menú se aprieta un poco y los botones (`.boton`) nunca se parten. Comprobado a 375, 1024 y 1280 px.
+- **Cinta sin fin** (`web/src/components/Marquesina.astro`): el lema de la banda roja de la portada y los fabricantes de Empresa ya no se cortan por los lados en el móvil. Pasan solos y sin fin, y se paran al pasar el ratón. Con las animaciones reducidas no se mueven y el texto se parte en líneas. Se quitó la animación `deriva`, que ya no usaba nadie.
+- **Pie:** «Desarrollado por extreweb», con enlace a extreweb.es. Y se arregló el código postal pegado a la localidad («06700Villanueva»).
+
 **Lo que Claude necesita de ti:**
-- Ver `/empresa` y `/particulares` con el vídeo en movimiento, en el ordenador y en el iPhone (Claude solo ve fotogramas sueltos).
+- Ver `/empresa` y `/particulares` con el vídeo en movimiento, en el ordenador y en el iPhone (Claude solo ve fotogramas sueltos), y las cintas del lema y de los fabricantes en el móvil.
 - Mirar la imagen para compartir (`web/public/compartir.jpg`): marca, titular de la portada y la foto de Almaraz.
 - Decidir si se hace lo mismo (vídeo con Blender) en Servicios, Obras y Contacto, y después en la portada.
 - El coche del garaje, si lo compras (enlaces en el chat del 05/10; el recomendado es el «Generic Hatchback Car With Interior» de Superhive, 20 $).
