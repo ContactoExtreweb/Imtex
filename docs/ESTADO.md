@@ -33,7 +33,7 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
 - **Pie:** «Desarrollado por extreweb», con enlace a extreweb.es. Y se arregló el código postal pegado a la localidad («06700Villanueva»).
 
 **Lo que Claude necesita de ti:**
-- Ver `/empresa` y `/particulares` con el vídeo en movimiento, en el ordenador y en el iPhone (Claude solo ve fotogramas sueltos), y las cintas del lema y de los fabricantes en el móvil.
+- Ver `/empresa` y `/particulares` con el vídeo en movimiento, en el ordenador y en el iPhone (Claude solo ve fotogramas sueltos), el lema de la portada y la cinta de los fabricantes en el móvil.
 - Mirar la imagen para compartir (`web/public/compartir.jpg`): marca, titular de la portada y la foto de Almaraz.
 - Decidir si se hace lo mismo (vídeo con Blender) en Servicios, Obras y Contacto, y después en la portada.
 - El coche del garaje, si lo compras (enlaces en el chat del 05/10; el recomendado es el «Generic Hatchback Car With Interior» de Superhive, 20 $).
@@ -129,8 +129,7 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
 - **Objetos 3D de las páginas interiores** (04/10): en la entrada de cada página, un objeto que trabaja solo, en bucle, sin depender del scroll, con una leyenda en HTML que marca lo que pasa en cada momento:
   - **Servicios:** un tablero sobre una viga que pasa por los cuatro servicios. Al señalar uno en la leyenda, salta a él y espera.
   - **Obras:** el mapa de España y Portugal en relieve; las obras publicadas se encienden una a una, con enlace a su ficha.
-  - **Empresa:** un palé en el que se apilan los materiales.
-  - **Particulares:** una casa en corte que deja de filtrar, con la piscina y el garaje. Las tomas de la piscina y del garaje se abrieron el 05/10: antes cortaban la casa por el borde.
+  - **Empresa** y **Particulares:** ya no son 3D, sino vídeos de Blender (ver «Escenas realistas»).
   - **Contacto:** el mismo mapa, con arcos desde la sede.
   
   Código en `web/src/scripts/escena3d/` (base común, una escena por fichero) y `web/src/components/Objeto3D.astro`. Mismas condiciones que la portada: sin WebGL o sin tarjeta gráfica, con animaciones reducidas, con ahorro de datos o con poca memoria sale una foto o el mapa en SVG.
