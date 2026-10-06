@@ -18,8 +18,9 @@ Qué está hecho, qué falta y cómo arrancar en otro ordenador: `docs/ESTADO.md
 - Tipos: `npx supabase gen types typescript --linked > crm/src/lib/database.types.ts` (y copia en `web/src/lib/`)
 - Prueba de permisos por rol (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/permisos.sql`. Tabla nueva → añade sus casos en ese fichero.
 - Prueba del cierre de meses (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/cierre.sql`
+- Prueba de apuntar partes en papel (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/partes.sql`
 - Advisors de seguridad y rendimiento: `npx supabase db advisors --linked --type all`
-- Edge Functions (sin Docker): `npx supabase functions deploy <nombre> --use-api`
+- Edge Functions (sin Docker): `npx supabase functions deploy <nombre> --use-api` (`invitar-usuario`, `leer-parte`, `whatsapp`; secrets en `supabase/functions/.env.example`). Lo que comparten el CRM y las funciones de partes está en `supabase/functions/_shared/partes.ts`, sin nada de Deno.
 
 ## Puesta en marcha de un proyecto Supabase (dev o producción)
 1. Authentication → Sign In / Providers: desactivar «Allow new users to sign up». En producción (plan Pro), activar también «Leaked password protection»: el Security Advisor avisa si está apagada.

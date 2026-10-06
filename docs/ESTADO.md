@@ -3,9 +3,11 @@
 Actualizado el martes 06/10/2026. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
 El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [decisiones.md](decisiones.md).
 
-## Por dónde vamos (lunes 05/10)
+## Por dónde vamos (martes 06/10)
 
-Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo anterior (`feat/web-animaciones`, `feat/web`, `feat/bajas`…).
+Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo anterior (`feat/web-realista`, `feat/web`, `feat/bajas`…).
+
+**Martes 06/10 por la tarde: partes de trabajo por WhatsApp** (ampliación; detalle en el punto 13 de «Hecho»). Los trabajadores mandan la foto del parte en papel por WhatsApp, la IA la lee, se les contesta con un resumen para confirmar y, confirmado, se apunta en el control de obra. Hecho todo lo que no depende de cuentas: base de datos, funciones de Supabase (desplegadas en dev) y la bandeja «Partes de trabajo» del CRM, desde donde también se pueden subir las fotos. **Falta:** la cuenta de WhatsApp Business de Meta y la clave de la API de Anthropic (ver «Puesta en marcha» en el punto 13). El primer parte real (Mercadona, Madrid) se leyó bien.
 
 **Qué se hizo el lunes 05/10:**
 - **En la oficina:** la casa de Particulares con materiales y luz reales. A Saúl le pareció poco real y se cambió de camino: **vídeo renderizado con Blender**. Detalle en «Escenas realistas», en el punto 12 de «Hecho».
@@ -33,6 +35,7 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
 - **Pie:** «Desarrollado por extreweb», con enlace a extreweb.es. Y se arregló el código postal pegado a la localidad («06700Villanueva»).
 
 **Lo que Claude necesita de ti:**
+- Partes por WhatsApp: la cuenta de Meta Business y el número, y la clave de Anthropic (los pasos, en el punto 13). Más partes rellenados de distintos trabajadores, para afinar la lectura. Y mirar las pantallas nuevas («Qué probar» → Partes de trabajo), que Claude no puede ver sin usuario.
 - Ver `/empresa` y `/particulares` con el vídeo en movimiento, en el ordenador y en el iPhone (Claude solo ve fotogramas sueltos), el lema de la portada y la cinta de los fabricantes en el móvil.
 - Mirar la imagen para compartir (`web/public/compartir.jpg`): marca, titular de la portada y la foto de Almaraz.
 - Decidir si se hace lo mismo (vídeo con Blender) en Servicios, Obras y Contacto, y después en la portada.
@@ -178,6 +181,58 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
 - **A confirmar con IMTEX**: fechas de CETARSA (2012-2022 o 2012-2024); razón social exacta y datos del Registro Mercantil para el aviso legal; que los legales los revise su asesoría; el texto de `/particulares` (es una suposición razonable de lo que hacen en viviendas); qué significan exactamente los códigos de clasificación; permiso para logotipos de fabricantes (hoy van en texto); fotos a más resolución y logo en vector. El mapa de contacto señala el centro del polígono, no la parcela 31.
 - En el bucket de dev quedan 8 archivos duplicados en `obras/obras/viaducto-casatejada/`, de una subida a la carpeta equivocada. No molestan.
 
+**13. Partes de trabajo en papel por WhatsApp** (06/10/2026, rama `feat/partes-whatsapp`). Ampliación. **Hecho lo que no depende de cuentas; faltan la de Meta y la clave de Anthropic.**
+- **Qué es:** la hoja diaria que rellena la cuadrilla a mano (obra, fecha, trabajadores con horas y extras, vehículo y km, trabajos, material, mediciones). La manda por WhatsApp quien tenga su teléfono en su ficha (normalmente el encargado). La IA la lee y le contesta con un resumen y tres botones: «Está bien», «Corregir» y «Anular». Las correcciones se escriben con sus palabras («Pedro hizo 9 horas») y la IA las aplica. Al confirmar, se apunta solo en el control de obra: una línea de Personal por trabajador (con los precios de su categoría) y una de Combustible con los km. Si no se puede apuntar (falta la categoría de alguien, el mes está cerrado…), pasa a la oficina y se le avisa.
+- **Base de datos** (migraciones `partes_trabajo` y `partes_trabajo_mediciones`):
+  - Tabla `partes_trabajo`, con la foto en el bucket privado `partes`, y teléfono de WhatsApp en `trabajadores`.
+  - `apuntar_parte(id)`: pasa la hoja al control de obra, todo o nada. Rechaza más de 16 h por persona y día o más de 1.500 km (una mala lectura no llega a los costes), y respeta el cierre de meses.
+  - Permisos, los del módulo `partes_horas`. Un parte apuntado ya no se edita, y los partes no se borran: se descartan.
+  - Los apuntes llevan `parte_trabajo_id`: en el control de obra salen como «del parte en papel».
+  - Pruebas: `supabase/pruebas/partes.sql` (38 comprobaciones) y `permisos.sql` (903), con 0 fallos.
+- **Funciones de Supabase**, desplegadas en dev:
+  - `whatsapp`: el webhook de Meta. Comprueba la firma de cada aviso; sin los secrets, lo rechaza todo.
+  - `leer-parte`: la lectura para las fotos subidas desde el CRM.
+  - Lo común, en `supabase/functions/_shared/` (`partes.ts`, sin nada de Deno, lo importa también el CRM; 20 pruebas en `crm/src/lib/partes.test.ts`).
+  - Modelo: Claude Sonnet (constante `MODELO` en `_shared/lector.ts`).
+- **CRM:**
+  - Menú «Partes de trabajo»: bandeja con pendientes, apuntados y descartados.
+  - Ficha con la foto al lado (se gira y se abre entera) y todo editable. Avisa de lo que hay que mirar y enseña lo que se va a apuntar, con su coste.
+  - «Subir partes» para meter fotos sin WhatsApp: se leen con la IA y, si no hay clave, se rellenan a mano.
+  - Teléfono en Ajustes → Trabajadores.
+  - Cifra «Partes de trabajo por revisar» en la portada.
+- **Primer parte real** (Mercadona, Madrid, 01/07/2026):
+  - Se lee bien: nombres, horas, trabajos, material y mediciones. Solo quedaron dudosas las horas de salida.
+  - Enseñó tres cosas, ya recogidas: no escriben el código de obra (se casa por cliente y localidad, y si hay dos parecidas se pregunta), usan comillas para repetir lo de arriba, y en «Croquis/mediciones» hay medidas (campo `mediciones`).
+  - **Conviene pedir a los trabajadores que escriban siempre el código de obra.**
+- **Coste:**
+  - WhatsApp: gratis, porque escribe el trabajador y se le contesta en las 24 h siguientes.
+  - IA: unos céntimos por hoja (por cada lectura o corrección). La API de Anthropic no tiene versión gratuita: es de prepago y se le pone un tope de gasto mensual.
+- **Puesta en marcha** (lo hace Saúl o IMTEX; Claude no crea cuentas ni toca claves):
+  1. **Anthropic:**
+     - En console.anthropic.com, cuenta (de IMTEX o de extreweb), saldo y un límite de gasto mensual.
+     - Crear una clave y guardarla con `npx supabase secrets set ANTHROPIC_API_KEY=…`.
+     - Con eso ya funciona «Subir partes» en el CRM, sin WhatsApp.
+  2. **Meta:**
+     - Cuenta de Meta Business de IMTEX verificada (la verificación puede tardar días).
+     - En developers.facebook.com, una app de tipo empresa con el producto WhatsApp.
+     - Un número para la API. Puede ser nuevo o el WhatsApp Business que ya tengan, si Meta permite usarlo a la vez en la app (coexistencia).
+     - Mientras tanto, la app trae un número de pruebas que puede escribir a hasta 5 móviles verificados.
+  3. **Secrets** (`supabase/functions/.env.example`):
+     - `WHATSAPP_TOKEN`: token permanente de un usuario del sistema de Meta Business.
+     - `WHATSAPP_NUMERO_ID`: el identificador del número, no el número.
+     - `WHATSAPP_SECRETO_APP`: Configuración de la app → Básica.
+     - `WHATSAPP_TOKEN_VERIFICACION`: un texto que nos inventamos.
+  4. **Webhook en Meta** (WhatsApp → Configuración):
+     - URL `https://<proyecto>.supabase.co/functions/v1/whatsapp`, con el mismo token de verificación.
+     - Suscribirse a `messages`.
+  5. **Teléfonos y prueba:** poner los teléfonos en Ajustes → Trabajadores y mandar una foto desde uno de ellos.
+  6. **Producción:** lo mismo contra `imtex-prod`. Desplegar con `npx supabase functions deploy whatsapp --use-api` y `… leer-parte --use-api`; el `config.toml` ya les quita la verificación JWT.
+- **Límites conocidos:**
+  - Solo fotos (un PDF o un audio se contestan con la ayuda).
+  - La conversación tiene que seguir dentro de las 24 h desde el último mensaje del trabajador.
+  - Lo que no se confirma se queda pendiente en la bandeja.
+  - Las pantallas nuevas no las ha podido ver Claude, porque hace falta entrar con un usuario.
+
 ## Pendiente
 
 **De Saúl, ahora: probar lo que no ha visto con la sesión iniciada.** Claude no puede entrar con los usuarios, así que las pantallas de los puntos 5 a 8 solo están comprobadas con tests y con los datos de dev. Los pasos están en «Qué probar».
@@ -198,6 +253,12 @@ Todo está en GitHub en la rama **`feat/web-realista`**, que incluye todo lo ant
 - Carga de datos reales: categorías, tarifas, obras en curso y usuarios. Formación y guía rápida por perfil.
 - Contrato de encargado del tratamiento (RGPD) firmado antes de cargar datos personales. Con las bajas, el programa guarda **datos de salud** (categoría especial): el contrato tiene que decirlo.
 - Avisar a IMTEX: desde abril de 2023 el servicio de salud comunica los partes a la empresa por vía telemática y el trabajador ya no está obligado a entregar el papel. El apartado de bajas sirve como archivo interno.
+
+**Partes por WhatsApp, para ponerlos en marcha** (punto 13)
+- Cuentas: Meta Business con el número de WhatsApp y API de Anthropic con saldo y tope de gasto.
+- Decidir si esta ampliación se le factura a IMTEX.
+- Pedir a la cuadrilla que escriba siempre el código de obra en el parte.
+- Más partes reales de distintos trabajadores para afinar la lectura.
 
 **Ampliación aprobada que espera**
 - Seguimiento comercial de presupuestos (envío por correo, recordatorios y versiones): se hace cuando esté Resend.
@@ -320,6 +381,16 @@ Vite enseña la dirección de red (por ejemplo, `http://192.168.1.143:5173`): á
 5. En «De todos los trabajadores», pulsa **Subir papel**, elige un trabajador sin usuario y sube algo. Debe salir «Subido … por» con tu nombre.
 6. Entra como `encargado@prueba.es`: solo ve sus papeles, puede subir y borrar los suyos, y no ve la pestaña de todos. Si gerencia le subió uno en su nombre, lo ve pero no tiene papelera.
 7. Como gerencia, borra un papel. Intenta borrar en Ajustes una ficha de trabajador con papeles: no debe dejar.
+
+**Partes de trabajo** (sin clave de Anthropic, la IA no lee: se rellena a mano)
+1. Ajustes → Trabajadores: pon un móvil en una ficha («600 11 22 33») y comprueba que sale en el listado como «+34 600 11 22 33». Un número mal escrito debe dar error.
+2. **Partes de trabajo → Subir partes** y elige la foto del parte de Mercadona. Avisará de que no se ha podido leer y abrirá su ficha.
+3. Pulsa **Girar** hasta verla derecha y **Abrir entera** para ampliarla.
+4. Rellénala: obra «Obra Prueba», fecha, dos trabajadores con categoría y sus horas, y unos km. Abajo debe decir cuántas horas y km se van a apuntar y su coste.
+5. **Apuntar en el control de obra**. En la obra, Personal y Combustible deben tener las líneas nuevas, marcadas «del parte en papel». El parte pasa a «Apuntados» y ya no se puede editar.
+6. Sube otro y prueba a apuntarlo con un trabajador sin categoría, con 18 horas o en un mes cerrado: debe avisar y no apuntar nada.
+7. Descarta uno y recupéralo desde «Descartados».
+8. En la portada debe salir «Partes de trabajo por revisar». El encargado ve la bandeja y puede apuntar; oficina técnica solo mira.
 
 **Web pública** (`cd web && npm run dev`, http://localhost:4321)
 1. Portada: baja despacio y mira las seis fases de la maqueta 3D. Gírala arrastrando. Recarga la página a media lectura: debe aparecer ya en esa fase.
