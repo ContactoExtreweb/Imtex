@@ -122,6 +122,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.6em;
+    white-space: nowrap;
     min-height: 3rem;
     padding: 0.7rem 1.4rem;
     border: 0;
@@ -299,20 +300,6 @@
       }
     }
 
-    /* Una banda que se desliza despacio mientras cruza la pantalla */
-    .deriva {
-      animation: deriva linear both;
-      animation-timeline: view();
-      animation-range: entry 0% exit 100%;
-    }
-    @keyframes deriva {
-      from {
-        translate: 6% 0;
-      }
-      to {
-        translate: -6% 0;
-      }
-    }
 
     /* Un filete que se traza de izquierda a derecha */
     .traza {

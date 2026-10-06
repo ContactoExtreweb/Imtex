@@ -14,7 +14,7 @@ const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
     </a>
 
     <nav aria-label="Principal" class="ml-auto hidden lg:block">
-      <ul class="flex items-center gap-7">
+      <ul class="flex items-center gap-5 xl:gap-7">
         {
           NAVEGACION.map((n) => (
             <li>
@@ -39,7 +39,8 @@ const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
       <svg aria-hidden="true" viewBox="0 0 24 24" class="size-4.5 fill-none stroke-rojo-tinta stroke-2">
         <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" stroke-linejoin="round"></path>
       </svg>
-      <span class="max-sm:sr-only">{EMPRESA.telefono}</span>
+      {/* El número se ve en tableta y en pantallas anchas; en el móvil y justo cuando entra el menú completo, solo el icono */}
+      <span class="whitespace-nowrap max-sm:sr-only lg:max-xl:sr-only">{EMPRESA.telefono}</span>
     </a>
 
     {/* Tema: oscuro por defecto; el botón pasa al claro y vuelve. El texto lo pone el script. */}
