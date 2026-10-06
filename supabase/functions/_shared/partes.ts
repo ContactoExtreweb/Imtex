@@ -14,7 +14,7 @@ export type Linea = {
 /** Una fila tal como se lee: horas_ord null si la casilla HORAS está vacía (= la jornada de su contrato). */
 export type LineaLeida = Omit<Linea, 'horas_ord'> & { horas_ord: number | null }
 
-/** Lo que devuelve la IA al leer una hoja (la herramienta HERRAMIENTA). */
+/** Lo que devuelve la IA al leer una hoja (con la forma de ESQUEMA). */
 export interface Lectura {
   es_parte: boolean
   codigo_obra: string | null
@@ -111,61 +111,62 @@ const texto = { type: ['string', 'null'] }
 const numero = { type: ['number', 'null'] }
 const hora = { type: ['string', 'null'], description: 'HH:MM, 24 h' }
 
-/** Herramienta que obliga a la IA a contestar con los datos de la hoja, campo a campo. */
-export const HERRAMIENTA = {
-  name: 'parte',
-  description: 'Datos del parte de trabajo leído en la foto.',
-  input_schema: {
-    type: 'object',
-    properties: {
-      es_parte: { type: 'boolean', description: 'false si la imagen no es un parte de trabajo de IMTEX' },
-      codigo_obra: { ...texto, description: 'CÓDIGO OBRA, tal cual' },
-      cliente: texto,
-      obra: { ...texto, description: 'OBRA, tal cual' },
-      localidad: texto,
-      obra_id: { ...texto, description: 'id de la obra de la lista que corresponde; null si no estás seguro' },
-      fecha: { ...texto, description: 'AAAA-MM-DD' },
-      trabajadores: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            nombre: { type: 'string', description: 'lo que pone, tal cual' },
-            trabajador_id: { ...texto, description: 'id del trabajador de la lista; null si no estás seguro' },
-            horas_ord: { type: ['number', 'null'], description: 'columna HORAS; null si la casilla está vacía' },
-            horas_ext: { type: 'number', description: 'columna EXTRAS (0 si está vacía)' },
-          },
-          required: ['nombre', 'trabajador_id', 'horas_ord', 'horas_ext'],
+/**
+ * Forma exacta de la respuesta: la API la impone con salida estructurada (output_config.format), así que
+ * el JSON siempre trae estos campos. Sonnet 5.5 no admite forzar una herramienta (tool_choice da error 400).
+ */
+export const ESQUEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    es_parte: { type: 'boolean', description: 'false si la imagen no es un parte de trabajo de IMTEX' },
+    codigo_obra: { ...texto, description: 'CÓDIGO OBRA, tal cual' },
+    cliente: texto,
+    obra: { ...texto, description: 'OBRA, tal cual' },
+    localidad: texto,
+    obra_id: { ...texto, description: 'id de la obra de la lista que corresponde; null si no estás seguro' },
+    fecha: { ...texto, description: 'AAAA-MM-DD' },
+    trabajadores: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          nombre: { type: 'string', description: 'lo que pone, tal cual' },
+          trabajador_id: { ...texto, description: 'id del trabajador de la lista; null si no estás seguro' },
+          horas_ord: { type: ['number', 'null'], description: 'columna HORAS; null si la casilla está vacía' },
+          horas_ext: { type: 'number', description: 'columna EXTRAS (0 si está vacía)' },
         },
-      },
-      vehiculo: texto,
-      tipo_vehiculo: { type: ['string', 'null'], enum: ['furgon', 'camion', null] },
-      km_salida: numero,
-      km_llegada: numero,
-      salida_nave: hora,
-      llegada_obra: hora,
-      salida_obra: hora,
-      llegada_nave: hora,
-      trabajos: { ...texto, description: 'TRABAJOS REALIZADOS (FASE DE LA OBRA)' },
-      material_retirado: { ...texto, description: 'MATERIAL RETIRADO ALMACÉN, una línea por material' },
-      material_utilizado: { ...texto, description: 'MATERIAL UTILIZADO EN OBRA, una línea por material' },
-      material_devuelto: { ...texto, description: 'MATERIAL DEVUELTO A ALMACÉN, una línea por material' },
-      instrucciones_calidad: { ...texto, description: 'INSTRUCCIONES TÉCNICAS, CONTROL DE CALIDAD (ISO 9001)' },
-      medio_ambiente: { ...texto, description: 'ASPECTOS MEDIOAMBIENTALES (ISO 14001)' },
-      mediciones: { ...texto, description: 'CROQUIS/MEDICIONES: el texto y las medidas, una línea por cosa' },
-      dudas: {
-        type: 'array',
-        items: { type: 'string' },
-        description: 'Una frase corta por cada cosa que no se lea bien o no cuadre',
+        required: ['nombre', 'trabajador_id', 'horas_ord', 'horas_ext'],
       },
     },
-    required: [
-      'es_parte', 'codigo_obra', 'cliente', 'obra', 'localidad', 'obra_id', 'fecha', 'trabajadores', 'vehiculo',
-      'tipo_vehiculo', 'km_salida', 'km_llegada', 'salida_nave', 'llegada_obra', 'salida_obra', 'llegada_nave',
-      'trabajos', 'material_retirado', 'material_utilizado', 'material_devuelto', 'instrucciones_calidad',
-      'medio_ambiente', 'mediciones', 'dudas',
-    ],
+    vehiculo: texto,
+    tipo_vehiculo: { type: ['string', 'null'], enum: ['furgon', 'camion', null] },
+    km_salida: numero,
+    km_llegada: numero,
+    salida_nave: hora,
+    llegada_obra: hora,
+    salida_obra: hora,
+    llegada_nave: hora,
+    trabajos: { ...texto, description: 'TRABAJOS REALIZADOS (FASE DE LA OBRA)' },
+    material_retirado: { ...texto, description: 'MATERIAL RETIRADO ALMACÉN, una línea por material' },
+    material_utilizado: { ...texto, description: 'MATERIAL UTILIZADO EN OBRA, una línea por material' },
+    material_devuelto: { ...texto, description: 'MATERIAL DEVUELTO A ALMACÉN, una línea por material' },
+    instrucciones_calidad: { ...texto, description: 'INSTRUCCIONES TÉCNICAS, CONTROL DE CALIDAD (ISO 9001)' },
+    medio_ambiente: { ...texto, description: 'ASPECTOS MEDIOAMBIENTALES (ISO 14001)' },
+    mediciones: { ...texto, description: 'CROQUIS/MEDICIONES: el texto y las medidas, una línea por cosa' },
+    dudas: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'Una frase corta por cada cosa que no se lea bien o no cuadre',
+    },
   },
+  required: [
+    'es_parte', 'codigo_obra', 'cliente', 'obra', 'localidad', 'obra_id', 'fecha', 'trabajadores', 'vehiculo',
+    'tipo_vehiculo', 'km_salida', 'km_llegada', 'salida_nave', 'llegada_obra', 'salida_obra', 'llegada_nave',
+    'trabajos', 'material_retirado', 'material_utilizado', 'material_devuelto', 'instrucciones_calidad',
+    'medio_ambiente', 'mediciones', 'dudas',
+  ],
 }
 
 /** Instrucciones para la IA, con las obras en marcha y los trabajadores para casar nombres. */
@@ -222,8 +223,7 @@ export function peticionLectura(o: {
     model: o.modelo,
     max_tokens: 4096,
     system: instrucciones(o.obras, o.trabajadores, o.hoy),
-    tools: [HERRAMIENTA],
-    tool_choice: { type: 'tool', name: HERRAMIENTA.name },
+    output_config: { format: { type: 'json_schema', schema: ESQUEMA } },
     messages: [
       {
         role: 'user',
@@ -253,13 +253,16 @@ const fechaValida = (v: unknown) => {
 
 /** La lectura que viene en la respuesta de la API, con cada campo comprobado. Error si no hay lectura. */
 export function extraerLectura(respuesta: unknown): Lectura {
-  const bloques = (respuesta as { content?: unknown[] })?.content ?? []
-  const uso = bloques.find(
-    (b): b is { input: Record<string, unknown> } =>
-      (b as { type?: string })?.type === 'tool_use' && (b as { name?: string }).name === HERRAMIENTA.name,
-  )
-  if (!uso || typeof uso.input !== 'object' || uso.input === null) throw new Error('La IA no ha devuelto la lectura.')
-  const e = uso.input
+  const r = respuesta as { content?: { type?: string; text?: string }[]; stop_reason?: string } | null
+  if (r?.stop_reason === 'refusal') throw new Error('La IA no ha querido leer la imagen.')
+  if (r?.stop_reason === 'max_tokens') throw new Error('La lectura se ha quedado a medias (respuesta demasiado larga).')
+  let e: Record<string, unknown>
+  try {
+    e = JSON.parse(r?.content?.find((b) => b?.type === 'text')?.text ?? '')
+  } catch {
+    throw new Error('La IA no ha devuelto la lectura.')
+  }
+  if (typeof e !== 'object' || e === null || Array.isArray(e)) throw new Error('La IA no ha devuelto la lectura.')
   const filas = Array.isArray(e.trabajadores) ? (e.trabajadores as Record<string, unknown>[]) : []
   return {
     es_parte: e.es_parte !== false,

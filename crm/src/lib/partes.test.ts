@@ -57,8 +57,10 @@ const MERCADONA: Lectura = {
   dudas: ['No estoy seguro de las horas de salida (15:30 / 16:00).'],
 }
 
-const respuestaApi = (input: Record<string, unknown>) => ({
-  content: [{ type: 'tool_use', name: 'parte', input }],
+// Con salida estructurada, el JSON llega como texto en el primer bloque
+const respuestaApi = (lectura: Record<string, unknown>) => ({
+  content: [{ type: 'text', text: JSON.stringify(lectura) }],
+  stop_reason: 'end_turn',
 })
 
 describe('normalizarTelefono', () => {
@@ -104,8 +106,11 @@ describe('extraerLectura', () => {
     expect(l.km_salida).toBe(12310)
     expect(l.dudas).toEqual(['La fecha no se lee'])
   })
-  it('sin la herramienta en la respuesta, error', () => {
+  it('sin JSON, cortada o rechazada, error', () => {
     expect(() => extraerLectura({ content: [{ type: 'text', text: 'hola' }] })).toThrow()
+    expect(() => extraerLectura({ content: [{ type: 'text', text: '[]' }] })).toThrow()
+    expect(() => extraerLectura({ ...respuestaApi({ es_parte: true }), stop_reason: 'max_tokens' })).toThrow('a medias')
+    expect(() => extraerLectura({ content: [], stop_reason: 'refusal' })).toThrow()
     expect(() => extraerLectura(null)).toThrow()
   })
 })
@@ -201,9 +206,14 @@ describe('resumen', () => {
 
 describe('peticionLectura', () => {
   const base = { modelo: 'm', imagen: { base64: 'AAA', tipo: 'image/jpeg' }, obras: OBRAS, trabajadores: TRABAJADORES, hoy: HOY }
-  it('obliga a contestar con la herramienta y le da las listas', () => {
+  it('pide la salida estructurada (Sonnet 5.5 no admite forzar una herramienta) y le da las listas', () => {
     const p = peticionLectura(base)
-    expect(p.tool_choice).toEqual({ type: 'tool', name: 'parte' })
+    expect(p).not.toHaveProperty('tool_choice')
+    expect(p.output_config.format.type).toBe('json_schema')
+    // La salida estructurada exige additionalProperties: false en cada objeto
+    expect(p.output_config.format.schema.additionalProperties).toBe(false)
+    expect(p.output_config.format.schema.properties.trabajadores.items.additionalProperties).toBe(false)
+    expect(p.output_config.format.schema.required).toEqual(Object.keys(p.output_config.format.schema.properties))
     expect(p.system).toContain('o-merc | OB-2026-14 | Mercadona Arapiles | Mercadona | Madrid')
     expect(p.system).toContain('t-dav | David Gil')
     expect(p.system).toContain('Hoy es 2026-10-06')

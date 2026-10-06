@@ -194,7 +194,7 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
   - `whatsapp`: el webhook de Meta. Comprueba la firma de cada aviso; sin los secrets, lo rechaza todo.
   - `leer-parte`: la lectura para las fotos subidas desde el CRM.
   - Lo común, en `supabase/functions/_shared/` (`partes.ts`, sin nada de Deno, lo importa también el CRM; 20 pruebas en `crm/src/lib/partes.test.ts`).
-  - Modelo: Claude Sonnet (constante `MODELO` en `_shared/lector.ts`).
+  - Modelo: Claude Sonnet 5.5 (constante `MODELO` en `_shared/lector.ts`). La respuesta va con salida estructurada (`output_config.format`): Sonnet 5.5 no admite forzar una herramienta.
 - **CRM:**
   - Menú «Partes de trabajo»: bandeja con pendientes, apuntados y descartados.
   - Ficha con la foto al lado (se gira y se abre entera) y todo editable. Avisa de lo que hay que mirar y enseña lo que se va a apuntar, con su coste.
@@ -207,7 +207,7 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
   - **Conviene pedir a los trabajadores que escriban siempre el código de obra.**
 - **Coste:**
   - WhatsApp: gratis, porque escribe el trabajador y se le contesta en las 24 h siguientes.
-  - IA: unos céntimos por hoja (por cada lectura o corrección). La API de Anthropic no tiene versión gratuita: es de prepago y se le pone un tope de gasto mensual.
+  - IA (precios oficiales de Sonnet 5.5, octubre de 2026: 2 $ por millón de tokens de entrada y 10 $ de salida): unos 2 céntimos de dólar por lectura (unos 7.000 tokens de entrada, de ellos 2.500–3.900 la foto, y 700 de salida). Con 200 partes al mes y un 30 % con una corrección, unos 5,5 $ (unos 5 €) al mes; en el peor caso, unos 12 $. La API no tiene versión gratuita (solo un poco de saldo de prueba al empezar): es de prepago y se le pone un tope de gasto mensual.
 - **Puesta en marcha** (lo hace Saúl o IMTEX; Claude no crea cuentas ni toca claves):
   1. **Anthropic:**
      - En console.anthropic.com, cuenta (de IMTEX o de extreweb), saldo y un límite de gasto mensual.
