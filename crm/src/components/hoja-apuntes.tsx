@@ -1,5 +1,6 @@
-import { Lock, Plus } from 'lucide-react'
+import { ClipboardList, Lock, Plus } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { Campo, Selector } from '@/components/campo'
 import { ConfirmarBorrado, DialogoFormulario, FilaListado } from '@/components/listado'
@@ -106,6 +107,16 @@ export function HojaApuntes({
               detalle={[etiquetaMes(f.mes), config.detalle(f, todas)].filter(Boolean).join(' · ')}
               extra={
                 <span className="flex items-center gap-1.5 text-sm font-medium tabular-nums">
+                  {/* Lo que salió de un parte en papel enlaza a él: su foto es el justificante */}
+                  {f.parte_trabajo_id && (
+                    <Link
+                      to={`/partes/${f.parte_trabajo_id}`}
+                      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-xs font-normal text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                    >
+                      <ClipboardList className="size-3.5" aria-hidden />
+                      Parte
+                    </Link>
+                  )}
                   {cerrados.has(f.mes) && <Lock className="size-3.5 text-muted-foreground" aria-label="Mes cerrado" />}
                   {euros(config.importe(f, todas))}
                 </span>

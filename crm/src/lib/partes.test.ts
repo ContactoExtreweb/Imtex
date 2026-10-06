@@ -18,13 +18,14 @@ const OBRAS = [
   { id: 'o-otra', codigo: 'OB-2026-11', nombre: 'Depósito', cliente: 'Ayto. Mérida', localidad: 'Mérida' },
 ]
 const TRABAJADORES = [
-  { id: 't-isi', nombre: 'Isidoro Sánchez' },
-  { id: 't-dav', nombre: 'David Gil' },
-  { id: 't-emi', nombre: 'Emilio Pérez' },
+  { id: 't-isi', nombre: 'Isidoro Sánchez', jornada_horas: 8 },
+  { id: 't-dav', nombre: 'David Gil', jornada_horas: 8 },
+  { id: 't-emi', nombre: 'Emilio Pérez', jornada_horas: 7 }, // contrato de 7 horas
 ]
 const HOY = '2026-10-06'
 
-// El primer parte real (06/10/2026), tal como lo devolvería la IA
+// El primer parte real (06/10/2026), tal como lo devolvería la IA. Con las correcciones de Saúl: es del día 2
+// (se leyó un 1) y los «4» son horas EXTRAS; la casilla HORAS vacía es la jornada de su contrato.
 const MERCADONA: Lectura = {
   es_parte: true,
   codigo_obra: null,
@@ -32,11 +33,11 @@ const MERCADONA: Lectura = {
   obra: 'Mercadona',
   localidad: 'Madrid Arapiles',
   obra_id: 'o-merc',
-  fecha: '2026-07-01',
+  fecha: '2026-07-02',
   trabajadores: [
-    { nombre: 'Isidoro', trabajador_id: 't-isi', horas_ord: 4, horas_ext: 0 },
-    { nombre: 'David Gil', trabajador_id: 't-dav', horas_ord: 4, horas_ext: 0 },
-    { nombre: 'Emilio', trabajador_id: 't-emi', horas_ord: 4, horas_ext: 0 },
+    { nombre: 'Isidoro', trabajador_id: 't-isi', horas_ord: null, horas_ext: 4 },
+    { nombre: 'David Gil', trabajador_id: 't-dav', horas_ord: null, horas_ext: 4 },
+    { nombre: 'Emilio', trabajador_id: 't-emi', horas_ord: null, horas_ext: 4 },
   ],
   vehiculo: 'Trafic 3 plazas',
   tipo_vehiculo: 'furgon',
@@ -95,6 +96,8 @@ describe('extraerLectura', () => {
     expect(l.es_parte).toBe(true)
     expect(l.fecha).toBeNull() // 30 de febrero no existe
     expect(l.trabajadores).toEqual([{ nombre: 'Ana', trabajador_id: null, horas_ord: 7.5, horas_ext: 0 }])
+    // La casilla HORAS vacía llega como null: no es 0, es la jornada
+    expect(extraerLectura(respuestaApi({ trabajadores: [{ nombre: 'Ana', horas_ord: null, horas_ext: 4 }] })).trabajadores[0].horas_ord).toBeNull()
     expect(l.salida_nave).toBe('07:05')
     expect(l.llegada_obra).toBeNull()
     expect(l.tipo_vehiculo).toBeNull()
@@ -112,19 +115,22 @@ describe('aColumnas', () => {
     const c = aColumnas(MERCADONA, OBRAS, TRABAJADORES, HOY)
     expect(c.obra_id).toBe('o-merc')
     expect(c.lineas.map((l) => l.trabajador_id)).toEqual(['t-isi', 't-dav', 't-emi'])
+    // HORAS vacía: la jornada de cada contrato, más las extras escritas
+    expect(c.lineas.map((l) => [l.horas_ord, l.horas_ext])).toEqual([[8, 4], [8, 4], [7, 4]])
     expect(c.mediciones).toContain('pizarrilla')
     expect(c.avisos).toEqual(MERCADONA.dudas)
     expect(faltaParaApuntar(c)).toEqual([])
   })
   it('no acepta ids que no estén en las listas', () => {
     const c = aColumnas(
-      { ...MERCADONA, obra_id: 'inventada', trabajadores: [{ nombre: 'Manolo', trabajador_id: 'x', horas_ord: 8, horas_ext: 0 }] },
+      { ...MERCADONA, obra_id: 'inventada', trabajadores: [{ nombre: 'Manolo', trabajador_id: 'x', horas_ord: null, horas_ext: 2 }] },
       OBRAS,
       TRABAJADORES,
       HOY,
     )
     expect(c.obra_id).toBeNull()
     expect(c.lineas[0].trabajador_id).toBeNull()
+    expect(c.lineas[0].horas_ord).toBe(8) // sin saber quién es, la jornada por defecto
     expect(c.avisos).toContain('No reconozco la obra (pone «Mercadona · Madrid Arapiles»).')
     expect(c.avisos).toContain('No sé quién es «Manolo».')
     expect(faltaParaApuntar(c)).toEqual(['la obra', 'quién es «Manolo»'])
@@ -168,9 +174,10 @@ describe('aColumnas', () => {
 describe('resumen', () => {
   it('lo que se manda para confirmar', () => {
     const texto = resumen(aColumnas(MERCADONA, OBRAS, TRABAJADORES, HOY), OBRAS, TRABAJADORES)
-    expect(texto).toContain('*Parte del 01/07/2026*')
+    expect(texto).toContain('*Parte del 02/07/2026*')
     expect(texto).toContain('OB-2026-14 · Mercadona Arapiles (Madrid)')
-    expect(texto).toContain('• David Gil: 4 h')
+    expect(texto).toContain('• David Gil: 8 h + 4 h extra')
+    expect(texto).toContain('• Emilio Pérez: 7 h + 4 h extra')
     expect(texto).toContain('🚐 Trafic 3 plazas: km incompletos')
     expect(texto).toContain('ida 15:30–16:00')
     expect(texto).toContain('⚠️ No estoy seguro de las horas de salida')

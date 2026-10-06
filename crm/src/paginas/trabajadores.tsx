@@ -6,12 +6,12 @@ import { Campo, Casilla, Selector } from '@/components/campo'
 import { ConfirmarBorrado, DialogoFormulario, FilaListado, PaginaListado } from '@/components/listado'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { coincide } from '@/lib/formato'
+import { coincide, numeroATexto } from '@/lib/formato'
 import { normalizarTelefono, telefonoATexto } from '@/lib/partes'
 import { useSesion } from '@/lib/sesion'
 import type { Fila } from '@/lib/supabase'
 import { useTabla } from '@/lib/tabla'
-import { obligatorio, opcional } from '@/lib/validacion'
+import { numero, obligatorio, opcional } from '@/lib/validacion'
 
 type Trabajador = Fila<'trabajadores'>
 
@@ -32,6 +32,8 @@ const esquema = z.object({
       }
       return telefono
     }),
+  // Horas al día de su contrato: en los partes en papel, la casilla HORAS vacía vale esto
+  jornada_horas: numero.refine((n) => n > 0 && n <= 12, 'Entre 1 y 12 horas'),
   activo: z.boolean(),
 })
 
@@ -62,7 +64,13 @@ export function Trabajadores() {
           <FilaListado
             key={t.id}
             titulo={t.nombre}
-            detalle={[nombreCategoria(t.categoria_id) ?? 'Sin categoría', t.telefono && telefonoATexto(t.telefono)].filter(Boolean).join(' · ')}
+            detalle={[
+              nombreCategoria(t.categoria_id) ?? 'Sin categoría',
+              t.jornada_horas !== 8 && `jornada de ${numeroATexto(t.jornada_horas)} h`,
+              t.telefono && telefonoATexto(t.telefono),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
             extra={!t.activo && <Badge variant="secondary">Inactivo</Badge>}
             onAbrir={() => setAbierto(t)}
             onBorrar={editable ? () => setBorrando(t) : undefined}
@@ -119,6 +127,7 @@ function FormularioTrabajador({
       categoria_id: trabajador?.categoria_id ?? '',
       perfil_id: trabajador?.perfil_id ?? '',
       telefono: trabajador?.telefono ? telefonoATexto(trabajador.telefono) : '',
+      jornada_horas: numeroATexto(trabajador?.jornada_horas ?? 8),
       activo: trabajador?.activo ?? true,
     },
   })
@@ -156,6 +165,9 @@ function FormularioTrabajador({
             </option>
           ))}
         </Selector>
+      </Campo>
+      <Campo etiqueta="Jornada de contrato (horas al día)" error={e.jornada_horas?.message}>
+        <Input inputMode="decimal" {...register('jornada_horas')} />
       </Campo>
       <Campo etiqueta="Teléfono de WhatsApp (para mandar partes)" error={e.telefono?.message}>
         <Input type="tel" autoComplete="off" placeholder="600 11 22 33" {...register('telefono')} />

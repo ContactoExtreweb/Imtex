@@ -1283,6 +1283,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          jornada_horas: number
           nombre: string
           perfil_id: string | null
           telefono: string | null
@@ -1294,6 +1295,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          jornada_horas?: number
           nombre: string
           perfil_id?: string | null
           telefono?: string | null
@@ -1305,6 +1307,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          jornada_horas?: number
           nombre?: string
           perfil_id?: string | null
           telefono?: string | null

@@ -32,7 +32,7 @@ export interface Leido {
 async function contexto(admin: SupabaseClient) {
   const [obras, trabajadores] = await Promise.all([
     admin.from('obras').select('id, codigo, nombre, localidad, clientes(nombre)').eq('estado', 'en_ejecucion'),
-    admin.from('trabajadores').select('id, nombre').eq('activo', true).order('nombre'),
+    admin.from('trabajadores').select('id, nombre, jornada_horas').eq('activo', true).order('nombre'),
   ])
   if (obras.error) throw obras.error
   if (trabajadores.error) throw trabajadores.error

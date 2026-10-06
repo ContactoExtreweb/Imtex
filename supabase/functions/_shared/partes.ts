@@ -11,6 +11,9 @@ export type Linea = {
   horas_ext: number
 }
 
+/** Una fila tal como se lee: horas_ord null si la casilla HORAS está vacía (= la jornada de su contrato). */
+export type LineaLeida = Omit<Linea, 'horas_ord'> & { horas_ord: number | null }
+
 /** Lo que devuelve la IA al leer una hoja (la herramienta HERRAMIENTA). */
 export interface Lectura {
   es_parte: boolean
@@ -20,7 +23,7 @@ export interface Lectura {
   localidad: string | null
   obra_id: string | null
   fecha: string | null
-  trabajadores: Linea[]
+  trabajadores: LineaLeida[]
   vehiculo: string | null
   tipo_vehiculo: 'furgon' | 'camion' | null
   km_salida: number | null
@@ -49,6 +52,8 @@ export interface ObraContexto {
 export interface TrabajadorContexto {
   id: string
   nombre: string
+  /** Horas al día de su contrato: lo que vale una casilla HORAS vacía */
+  jornada_horas: number
 }
 
 /** Las columnas de partes_trabajo que salen de una lectura. */
@@ -78,6 +83,8 @@ export interface ColumnasParte {
 /** Las mismas cotas que apuntar_parte en SQL: más es una mala lectura. */
 export const MAX_HORAS_DIA = 16
 export const MAX_KM_DIA = 1500
+/** La jornada que se supone si no se sabe quién es (la misma que pone la base de datos por defecto) */
+export const JORNADA_POR_DEFECTO = 8
 
 // Teléfonos -------------------------------------------------------------------------------------
 
@@ -125,7 +132,7 @@ export const HERRAMIENTA = {
           properties: {
             nombre: { type: 'string', description: 'lo que pone, tal cual' },
             trabajador_id: { ...texto, description: 'id del trabajador de la lista; null si no estás seguro' },
-            horas_ord: { type: 'number', description: 'columna HORAS' },
+            horas_ord: { type: ['number', 'null'], description: 'columna HORAS; null si la casilla está vacía' },
             horas_ext: { type: 'number', description: 'columna EXTRAS (0 si está vacía)' },
           },
           required: ['nombre', 'trabajador_id', 'horas_ord', 'horas_ext'],
@@ -175,7 +182,8 @@ Reglas:
 - Copia lo que pone, sin inventar. Lo que no esté o no se lea: null (o lista vacía).
 - Obra: elige de la lista de obras en marcha la que corresponda por código, nombre, cliente o localidad, y pon su id en obra_id. Muchas veces no ponen el código: si por cliente, obra y localidad encaja más de una, o ninguna, obra_id null.
 - Trabajadores: una entrada por cada fila con nombre o con horas. En nombre va lo escrito tal cual; en trabajador_id, el id de la lista que corresponda (puede venir solo el nombre, el apellido, un diminutivo o un mote). Si no estás seguro, trabajador_id null.
-- HORAS son las horas ordinarias y EXTRAS las horas extra, como número: «8» es 8, «7,5» o «7 y media» es 7.5, «8:30» es 8.5. Una casilla de extras vacía es 0.
+- HORAS son las horas ordinarias y EXTRAS las horas extra, como número: «8» es 8, «7,5» o «7 y media» es 7.5, «8:30» es 8.5. Fíjate bien en qué columna está cada número. Lo normal es que solo apunten las EXTRAS y dejen HORAS vacía, que quiere decir «su jornada de contrato»: entonces horas_ord es null (no 0). Una casilla de EXTRAS vacía es 0.
+- Ojo con las cifras escritas a mano que se parecen (1 y 2, 1 y 7, 4 y 9, 3 y 8, 5 y 6): compáralas con otras de la misma mano en la hoja (la fecha, las horas, las cantidades) y, si alguna no está clara, dilo en dudas.
 - Fecha en AAAA-MM-DD. En España se escribe día/mes/año. Si no pone el año, el más reciente que no sea posterior a hoy. Hoy es ${hoy}.
 - km sin puntos de miles. tipo_vehiculo: 'camion' solo si es un camión; furgoneta o coche, 'furgon'; sin vehículo, null.
 - Horas de salida y llegada en HH:MM (24 h; si por el contexto es de tarde, súmale 12).
@@ -266,7 +274,7 @@ export function extraerLectura(respuesta: unknown): Lectura {
       .map((f) => ({
         nombre: cadena(f.nombre) ?? '',
         trabajador_id: cadena(f.trabajador_id),
-        horas_ord: Math.max(0, cifra(f.horas_ord) ?? 0),
+        horas_ord: cifra(f.horas_ord) === null ? null : Math.max(0, cifra(f.horas_ord)!),
         horas_ext: Math.max(0, cifra(f.horas_ext) ?? 0),
       })),
     vehiculo: cadena(e.vehiculo),
@@ -319,7 +327,12 @@ export function aColumnas(
   const ids = new Set(trabajadores.map((t) => t.id))
   const lineas = l.trabajadores
     .filter((x) => x.nombre || x.trabajador_id || x.horas_ord || x.horas_ext)
-    .map((x) => ({ ...x, trabajador_id: x.trabajador_id && ids.has(x.trabajador_id) ? x.trabajador_id : null }))
+    .map((x) => {
+      const id = x.trabajador_id && ids.has(x.trabajador_id) ? x.trabajador_id : null
+      // HORAS vacía = la jornada de su contrato (lo que se escribe suele ser solo las extras)
+      const jornada = trabajadores.find((t) => t.id === id)?.jornada_horas ?? JORNADA_POR_DEFECTO
+      return { ...x, trabajador_id: id, horas_ord: x.horas_ord ?? jornada }
+    })
   if (lineas.length === 0) avisos.push('No se leen los trabajadores.')
   for (const x of lineas) {
     const quien = trabajadores.find((t) => t.id === x.trabajador_id)?.nombre ?? `«${x.nombre || '(sin nombre)'}»`

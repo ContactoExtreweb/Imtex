@@ -187,7 +187,8 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
   - Tabla `partes_trabajo`, con la foto en el bucket privado `partes`, y teléfono de WhatsApp en `trabajadores`.
   - `apuntar_parte(id)`: pasa la hoja al control de obra, todo o nada. Rechaza más de 16 h por persona y día o más de 1.500 km (una mala lectura no llega a los costes), y respeta el cierre de meses.
   - Permisos, los del módulo `partes_horas`. Un parte apuntado ya no se edita, y los partes no se borran: se descartan.
-  - Los apuntes llevan `parte_trabajo_id`: en el control de obra salen como «del parte en papel».
+  - Los apuntes llevan `parte_trabajo_id`: en el control de obra salen con un enlace «Parte» que abre el parte y su foto.
+  - Jornada de contrato en `trabajadores` (`jornada_horas`, 8 por defecto). En el papel, la casilla HORAS vacía es la jornada y lo que se escribe son las EXTRAS (así lo rellenan).
   - Pruebas: `supabase/pruebas/partes.sql` (38 comprobaciones) y `permisos.sql` (903), con 0 fallos.
 - **Funciones de Supabase**, desplegadas en dev:
   - `whatsapp`: el webhook de Meta. Comprueba la firma de cada aviso; sin los secrets, lo rechaza todo.
@@ -198,10 +199,10 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
   - Menú «Partes de trabajo»: bandeja con pendientes, apuntados y descartados.
   - Ficha con la foto al lado (se gira y se abre entera) y todo editable. Avisa de lo que hay que mirar y enseña lo que se va a apuntar, con su coste.
   - «Subir partes» para meter fotos sin WhatsApp: se leen con la IA y, si no hay clave, se rellenan a mano.
-  - Teléfono en Ajustes → Trabajadores.
+  - Teléfono de WhatsApp y jornada de contrato en Ajustes → Trabajadores.
   - Cifra «Partes de trabajo por revisar» en la portada.
-- **Primer parte real** (Mercadona, Madrid, 01/07/2026):
-  - Se lee bien: nombres, horas, trabajos, material y mediciones. Solo quedaron dudosas las horas de salida.
+- **Primer parte real** (Mercadona, Madrid, 02/07/2026):
+  - Se lee bien: nombres, trabajos, material y mediciones. Dos fallos, corregidos por Saúl: un 2 leído como 1 en la fecha, y los «4» eran horas extra, no ordinarias (HORAS vacía = la jornada). La IA ya aplica las dos cosas: la jornada y comparar las cifras dudosas con otras de la misma mano. Saúl no puede pasar más partes por privacidad.
   - Enseñó tres cosas, ya recogidas: no escriben el código de obra (se casa por cliente y localidad, y si hay dos parecidas se pregunta), usan comillas para repetir lo de arriba, y en «Croquis/mediciones» hay medidas (campo `mediciones`).
   - **Conviene pedir a los trabajadores que escriban siempre el código de obra.**
 - **Coste:**
@@ -227,6 +228,7 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
      - Suscribirse a `messages`.
   5. **Teléfonos y prueba:** poner los teléfonos en Ajustes → Trabajadores y mandar una foto desde uno de ellos.
   6. **Producción:** lo mismo contra `imtex-prod`. Desplegar con `npx supabase functions deploy whatsapp --use-api` y `… leer-parte --use-api`; el `config.toml` ya les quita la verificación JWT.
+- **La foto queda siempre:** se guarda antes de leerla, así que se conserva aunque la IA falle o diga que no es un parte. No se puede borrar ni sustituir, y se ve en la ficha del parte, enlazada desde cada apunte del control de obra que salió de él.
 - **Límites conocidos:**
   - Solo fotos (un PDF o un audio se contestan con la ayuda).
   - La conversación tiene que seguir dentro de las 24 h desde el último mensaje del trabajador.
@@ -383,11 +385,11 @@ Vite enseña la dirección de red (por ejemplo, `http://192.168.1.143:5173`): á
 7. Como gerencia, borra un papel. Intenta borrar en Ajustes una ficha de trabajador con papeles: no debe dejar.
 
 **Partes de trabajo** (sin clave de Anthropic, la IA no lee: se rellena a mano)
-1. Ajustes → Trabajadores: pon un móvil en una ficha («600 11 22 33») y comprueba que sale en el listado como «+34 600 11 22 33». Un número mal escrito debe dar error.
+1. Ajustes → Trabajadores: pon un móvil en una ficha («600 11 22 33») y comprueba que sale en el listado como «+34 600 11 22 33». Un número mal escrito debe dar error. Mira también la «Jornada de contrato» (8 por defecto).
 2. **Partes de trabajo → Subir partes** y elige la foto del parte de Mercadona. Avisará de que no se ha podido leer y abrirá su ficha.
 3. Pulsa **Girar** hasta verla derecha y **Abrir entera** para ampliarla.
 4. Rellénala: obra «Obra Prueba», fecha, dos trabajadores con categoría y sus horas, y unos km. Abajo debe decir cuántas horas y km se van a apuntar y su coste.
-5. **Apuntar en el control de obra**. En la obra, Personal y Combustible deben tener las líneas nuevas, marcadas «del parte en papel». El parte pasa a «Apuntados» y ya no se puede editar.
+5. **Apuntar en el control de obra**. En la obra, Personal y Combustible deben tener las líneas nuevas con el enlace «Parte», que lleva a la foto. El parte pasa a «Apuntados» y ya no se puede editar.
 6. Sube otro y prueba a apuntarlo con un trabajador sin categoría, con 18 horas o en un mes cerrado: debe avisar y no apuntar nada.
 7. Descarta uno y recupéralo desde «Descartados».
 8. En la portada debe salir «Partes de trabajo por revisar». El encargado ve la bandeja y puede apuntar; oficina técnica solo mira.
