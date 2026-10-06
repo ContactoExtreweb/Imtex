@@ -1,0 +1,62 @@
+---
+// Una cinta que pasa sola y sin fin. El contenido se repite cuatro veces y la pista se desplaza la mitad de su largo
+// en bucle: el empalme no se nota. Se para al pasar el ratón por encima.
+// Con las animaciones reducidas no se mueve: queda una sola copia y el texto se parte en líneas si no cabe.
+// El contenido debe terminar en su separador, para que una copia empalme con la siguiente.
+import type { HTMLAttributes } from 'astro/types'
+
+interface Props extends HTMLAttributes<'div'> {
+  /** Segundos que tarda en pasar dos copias */
+  duracion?: number
+}
+const { duracion = 30, class: clase, ...resto } = Astro.props
+const contenido = await Astro.slots.render('default')
+---
+
+<div class:list={['marquesina', clase]} style={`--duracion: ${duracion}s`} {...resto}>
+  <div class="marquesina-pista">
+    {/* Solo la primera copia se lee en voz alta; las demás son decorado */}
+    {[0, 1, 2, 3].map((i) => <div class="marquesina-copia" aria-hidden={i > 0 ? 'true' : undefined} set:html={contenido} />)}
+  </div>
+</div>
+
+<style>
+  .marquesina {
+    overflow: hidden;
+  }
+  .marquesina-pista {
+    display: flex;
+    width: max-content;
+  }
+  .marquesina-copia {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .marquesina-pista {
+      animation: marquesina var(--duracion) linear infinite;
+    }
+    .marquesina:hover .marquesina-pista {
+      animation-play-state: paused;
+    }
+  }
+  @keyframes marquesina {
+    to {
+      translate: -50% 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquesina-pista {
+      width: auto;
+    }
+    .marquesina-copia {
+      flex: 1 1 auto;
+      white-space: normal;
+    }
+    .marquesina-copia + .marquesina-copia {
+      display: none;
+    }
+  }
+</style>

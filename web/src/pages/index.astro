@@ -4,6 +4,7 @@ import iso14001 from '../assets/empresa/14001.jpg'
 import iso9001 from '../assets/empresa/9001.jpg'
 import Cierre from '../components/Cierre.astro'
 import Fases from '../components/Fases.astro'
+import Marquesina from '../components/Marquesina.astro'
 import TarjetaObra from '../components/TarjetaObra.astro'
 import Base from '../layouts/Base.astro'
 import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO, SERVICIOS } from '../lib/empresa'
@@ -29,10 +30,13 @@ Astro.response.headers.set('Netlify-CDN-Cache-Control', CACHE_GALERIA)
 >
   <Fases />
 
-  {/* Banda del lema, como en la marca: roja, inclinada, en mayúsculas condensadas */}
+  {/* Banda del lema, como en la marca: roja, inclinada, en mayúsculas condensadas. Pasa sola y sin fin,
+      así se lee entera también en el móvil, donde no cabe. */}
   <div class="overflow-hidden py-10 lg:py-16" aria-hidden="true">
     <div class="-mx-[8%] -rotate-2 bg-rojo py-4 lg:py-6">
-      <p class="titular deriva text-center text-[clamp(1.4rem,3.8vw,3.4rem)] whitespace-nowrap text-white">{EMPRESA.lema}</p>
+      <Marquesina duracion={36} class="titular text-center text-[clamp(1.4rem,3.8vw,3.4rem)] text-white">
+        {EMPRESA.lema}<span class="mx-[0.6em] opacity-60">/</span>
+      </Marquesina>
     </div>
   </div>
 

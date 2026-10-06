@@ -10,6 +10,7 @@ import Cierre from '../components/Cierre.astro'
 import Portadilla from '../components/Portadilla.astro'
 import VideoBucle from '../components/VideoBucle.astro'
 import Base from '../layouts/Base.astro'
+import Marquesina from '../components/Marquesina.astro'
 import { CLASIFICACION, EMPRESA, FABRICANTES, NEGOCIO } from '../lib/empresa'
 
 // La animación de la entrada es un vídeo renderizado con Blender (render/empresa.py y render/codificar.py).
@@ -78,17 +79,18 @@ const TRAMOS: [number, number][] = [
     </div>
   </section>
 
-  {/* Los fabricantes, a gran tamaño: una banda que se desliza despacio al cruzar la pantalla */}
+  {/* Los fabricantes, a gran tamaño: una cinta que pasa sola y sin fin (se para al pasar el ratón) */}
   <section class="overflow-hidden border-y border-(--filete) py-10 lg:py-14" aria-label="Fabricantes que nos homologan">
     <p class="contenedor rotulo text-pizarra">Aplicador homologado por</p>
-    <p class="titular deriva mt-4 text-[clamp(2.6rem,9vw,8rem)] leading-none whitespace-nowrap">
-      {FABRICANTES.map((f, i) => (
+    <p class="sr-only">{FABRICANTES.join(', ')}</p>
+    <Marquesina duracion={40} aria-hidden="true" class="titular mt-4 text-[clamp(2.6rem,9vw,8rem)] leading-none">
+      {FABRICANTES.map((f) => (
         <>
-          {i > 0 && <span class="mx-[0.25em] text-rojo" aria-hidden="true">/</span>}
           {f}
+          <span class="mx-[0.25em] text-rojo">/</span>
         </>
       ))}
-    </p>
+    </Marquesina>
   </section>
 
   <section class="contenedor grid gap-x-16 gap-y-10 py-14 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:py-24">
