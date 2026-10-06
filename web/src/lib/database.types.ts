@@ -284,6 +284,7 @@ export type Database = {
           km: number
           mes: string
           obra_id: string
+          parte_trabajo_id: string | null
           tarifa_km: number
           tipo_vehiculo: string
           updated_at: string
@@ -298,6 +299,7 @@ export type Database = {
           km?: number
           mes: string
           obra_id: string
+          parte_trabajo_id?: string | null
           tarifa_km?: number
           tipo_vehiculo: string
           updated_at?: string
@@ -312,6 +314,7 @@ export type Database = {
           km?: number
           mes?: string
           obra_id?: string
+          parte_trabajo_id?: string | null
           tarifa_km?: number
           tipo_vehiculo?: string
           updated_at?: string
@@ -323,6 +326,13 @@ export type Database = {
             columns: ["obra_id"]
             isOneToOne: false
             referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "combustible_parte_trabajo_id_fkey"
+            columns: ["parte_trabajo_id"]
+            isOneToOne: false
+            referencedRelation: "partes_trabajo"
             referencedColumns: ["id"]
           },
         ]
@@ -581,6 +591,7 @@ export type Database = {
           mes: string
           obra_id: string
           operario: string
+          parte_trabajo_id: string | null
           precio_ext: number
           precio_ord: number
           trabajador_id: string | null
@@ -599,6 +610,7 @@ export type Database = {
           mes: string
           obra_id: string
           operario: string
+          parte_trabajo_id?: string | null
           precio_ext?: number
           precio_ord?: number
           trabajador_id?: string | null
@@ -617,6 +629,7 @@ export type Database = {
           mes?: string
           obra_id?: string
           operario?: string
+          parte_trabajo_id?: string | null
           precio_ext?: number
           precio_ord?: number
           trabajador_id?: string | null
@@ -638,10 +651,157 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "partes_horas_parte_trabajo_id_fkey"
+            columns: ["parte_trabajo_id"]
+            isOneToOne: false
+            referencedRelation: "partes_trabajo"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "partes_horas_trabajador_id_fkey"
             columns: ["trabajador_id"]
             isOneToOne: false
             referencedRelation: "trabajadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partes_trabajo: {
+        Row: {
+          apuntado_el: string | null
+          apuntado_por: string | null
+          avisos: string[]
+          confirmado_el: string | null
+          correccion_pedida_el: string | null
+          created_at: string
+          enviado_por: string | null
+          estado: string
+          fecha: string | null
+          foto: string
+          id: string
+          instrucciones_calidad: string | null
+          km_llegada: number | null
+          km_salida: number | null
+          lectura: Json | null
+          lineas: Json
+          llegada_nave: string | null
+          llegada_obra: string | null
+          material_devuelto: string | null
+          material_retirado: string | null
+          material_utilizado: string | null
+          medio_ambiente: string | null
+          obra_id: string | null
+          origen: string
+          salida_nave: string | null
+          salida_obra: string | null
+          subido_por: string | null
+          telefono: string | null
+          tipo_vehiculo: string | null
+          trabajos: string | null
+          updated_at: string
+          vehiculo: string | null
+          whatsapp_mensaje_id: string | null
+          whatsapp_resumen_id: string | null
+        }
+        Insert: {
+          apuntado_el?: string | null
+          apuntado_por?: string | null
+          avisos?: string[]
+          confirmado_el?: string | null
+          correccion_pedida_el?: string | null
+          created_at?: string
+          enviado_por?: string | null
+          estado?: string
+          fecha?: string | null
+          foto: string
+          id?: string
+          instrucciones_calidad?: string | null
+          km_llegada?: number | null
+          km_salida?: number | null
+          lectura?: Json | null
+          lineas?: Json
+          llegada_nave?: string | null
+          llegada_obra?: string | null
+          material_devuelto?: string | null
+          material_retirado?: string | null
+          material_utilizado?: string | null
+          medio_ambiente?: string | null
+          obra_id?: string | null
+          origen?: string
+          salida_nave?: string | null
+          salida_obra?: string | null
+          subido_por?: string | null
+          telefono?: string | null
+          tipo_vehiculo?: string | null
+          trabajos?: string | null
+          updated_at?: string
+          vehiculo?: string | null
+          whatsapp_mensaje_id?: string | null
+          whatsapp_resumen_id?: string | null
+        }
+        Update: {
+          apuntado_el?: string | null
+          apuntado_por?: string | null
+          avisos?: string[]
+          confirmado_el?: string | null
+          correccion_pedida_el?: string | null
+          created_at?: string
+          enviado_por?: string | null
+          estado?: string
+          fecha?: string | null
+          foto?: string
+          id?: string
+          instrucciones_calidad?: string | null
+          km_llegada?: number | null
+          km_salida?: number | null
+          lectura?: Json | null
+          lineas?: Json
+          llegada_nave?: string | null
+          llegada_obra?: string | null
+          material_devuelto?: string | null
+          material_retirado?: string | null
+          material_utilizado?: string | null
+          medio_ambiente?: string | null
+          obra_id?: string | null
+          origen?: string
+          salida_nave?: string | null
+          salida_obra?: string | null
+          subido_por?: string | null
+          telefono?: string | null
+          tipo_vehiculo?: string | null
+          trabajos?: string | null
+          updated_at?: string
+          vehiculo?: string | null
+          whatsapp_mensaje_id?: string | null
+          whatsapp_resumen_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partes_trabajo_apuntado_por_fkey"
+            columns: ["apuntado_por"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partes_trabajo_enviado_por_fkey"
+            columns: ["enviado_por"]
+            isOneToOne: false
+            referencedRelation: "trabajadores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partes_trabajo_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partes_trabajo_subido_por_fkey"
+            columns: ["subido_por"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1122,6 +1282,7 @@ export type Database = {
           id: string
           nombre: string
           perfil_id: string | null
+          telefono: string | null
           updated_at: string
         }
         Insert: {
@@ -1132,6 +1293,7 @@ export type Database = {
           id?: string
           nombre: string
           perfil_id?: string | null
+          telefono?: string | null
           updated_at?: string
         }
         Update: {
@@ -1142,6 +1304,7 @@ export type Database = {
           id?: string
           nombre?: string
           perfil_id?: string | null
+          telefono?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1316,6 +1479,7 @@ export type Database = {
       }
     }
     Functions: {
+      apuntar_parte: { Args: { p_parte: string }; Returns: undefined }
       guardar_partida_tipo: { Args: { p: Json }; Returns: string }
       guardar_presupuesto: { Args: { p: Json }; Returns: string }
     }

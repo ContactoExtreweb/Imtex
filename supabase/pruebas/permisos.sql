@@ -50,6 +50,9 @@ declare
   f_baja_en_su_nombre uuid;
   f_objeto_baja uuid;
   f_objeto_baja_propio uuid;
+  f_parte uuid;
+  f_parte_apuntado uuid;
+  f_objeto_parte uuid;
   n int;
   ok boolean;
 begin
@@ -167,6 +170,13 @@ begin
           returning id into f_objeto_baja_propio;
       end if;
 
+      -- Partes de trabajo en papel: uno por revisar y otro ya apuntado, y una foto en el bucket
+      insert into public.partes_trabajo (foto) values (gen_random_uuid()::text) returning id into f_parte;
+      insert into public.partes_trabajo (foto, estado) values (gen_random_uuid()::text, 'apuntado')
+        returning id into f_parte_apuntado;
+      insert into storage.objects (bucket_id, name) values ('partes', gen_random_uuid()::text)
+        returning id into f_objeto_parte;
+
       -- Cambio de identidad
       if u.rol is null then
         perform set_config('request.jwt.claims', '', true);
@@ -254,6 +264,16 @@ begin
           ('storage_bajas', 'ver_propio', 'select from storage.objects where id = $1', f_objeto_baja_propio),
           ('storage_bajas', 'insertar', 'insert into storage.objects (bucket_id, name) values (''bajas'', $1::text || ''/'' || gen_random_uuid())', f_trabajador_baja),
           ('storage_bajas', 'insertar_propio', 'insert into storage.objects (bucket_id, name) values (''bajas'', coalesce($1::text, ''x'') || ''/'' || gen_random_uuid())', f_propia),
+
+          -- Partes en papel: con el módulo partes_horas. Apuntado ya no se edita, y no se borran (se descartan)
+          ('partes_trabajo', 'ver', 'select from public.partes_trabajo where id = $1', f_parte),
+          ('partes_trabajo', 'insertar', 'insert into public.partes_trabajo (foto) values (gen_random_uuid()::text)', null),
+          ('partes_trabajo', 'insertar_whatsapp', 'insert into public.partes_trabajo (foto, origen, telefono, whatsapp_mensaje_id) values (gen_random_uuid()::text, ''whatsapp'', ''34600000000'', gen_random_uuid()::text)', null),
+          ('partes_trabajo', 'editar', 'update public.partes_trabajo set trabajos = trabajos where id = $1', f_parte),
+          ('partes_trabajo', 'editar_apuntado', 'update public.partes_trabajo set trabajos = trabajos where id = $1', f_parte_apuntado),
+          ('partes_trabajo', 'borrar', 'delete from public.partes_trabajo where id = $1', f_parte),
+          ('storage_partes', 'ver', 'select from storage.objects where id = $1', f_objeto_parte),
+          ('storage_partes', 'insertar', 'insert into storage.objects (bucket_id, name) values (''partes'', gen_random_uuid()::text)', null),
 
           -- Antes que perfiles: borrar el perfil ajeno borraría su nota en cascada
           ('notas', 'ver', 'select from public.notas where id = $1', f_nota_ajena),
@@ -377,6 +397,8 @@ m (tabla, ver, editar) as (values
   ('meses_cerrados', array['control_obra', 'cierre_meses'], 'cierre_meses'),
   ('bajas_documentos', array['bajas'], 'bajas'),
   ('storage_bajas', array['bajas'], 'bajas'),
+  ('partes_trabajo', array['partes_horas'], 'partes_horas'),
+  ('storage_partes', array['partes_horas'], 'partes_horas'),
   ('notas', null, null),
   ('roles', null, null),
   ('permisos_rol', null, null)
@@ -395,6 +417,8 @@ c as (
       when r.accion = 'ver_propio' then true
       when r.tabla = 'tarifas_combustible' and r.accion in ('insertar', 'borrar') then false
       when r.tabla = 'meses_cerrados' and r.accion = 'editar' then false -- se cierra o se reabre, no se edita
+      -- Partes en papel: los de WhatsApp solo los crea la Edge Function; apuntado no se toca; no se borran
+      when r.tabla = 'partes_trabajo' and r.accion in ('insertar_whatsapp', 'editar_apuntado', 'borrar') then false
       else r.activo and exists (
         select 1 from public.permisos_rol pr
         where pr.rol = r.rol
