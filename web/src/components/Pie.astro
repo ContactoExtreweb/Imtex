@@ -34,10 +34,7 @@ const legales = [
 
     <address class="grid content-start gap-1 not-italic text-claro/85">
       <span>{EMPRESA.direccion}</span>
-      <span>
-        {EMPRESA.cp}
-        {EMPRESA.localidad} ({EMPRESA.provincia})
-      </span>
+      <span>{`${EMPRESA.cp} ${EMPRESA.localidad} (${EMPRESA.provincia})`}</span>
       <a href={EMPRESA.telefonoEnlace} class="mt-3 w-fit py-2 font-semibold text-claro no-underline hover:text-rojo">{EMPRESA.telefono}</a>
       <a href={`mailto:${EMPRESA.email}`} class="w-fit py-2 font-semibold text-claro no-underline hover:text-rojo">{EMPRESA.email}</a>
       <span class="mt-3 flex gap-5">
@@ -61,6 +58,9 @@ const legales = [
           ))
         }
       </ul>
+      <span class="sm:ml-auto">
+        Desarrollado por <a href="https://extreweb.es" rel="noopener" class="inline-block py-2.5 font-semibold text-claro no-underline hover:text-rojo">extreweb</a>
+      </span>
     </div>
   </div>
 </footer>
