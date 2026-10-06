@@ -281,7 +281,22 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
 - Galería en producción: repetir la importación de las 22 obras contra `imtex-prod`.
 - Lighthouse en móvil ≥ 90: en local da 94–99 sin la galería. Falta medir `/obras` y las fichas con las fotos, y repetirlo en Netlify. Revisión en un iPhone.
 - En el primer despliegue de Netlify: comprobar que `/empresa` responde 200 sin redirigir y que la canónica coincide con la dirección.
-- DNS (solo los registros de la web; el MX no se toca), SSL y Search Console.
+- DNS, SSL y Search Console. **Sin tocar el correo** (consulta pública del 06/10/2026):
+  - **Todo está hoy en Profesional Hosting:**
+    - El dominio, registrado desde 2005 a través del registrador Name SRS AB. **Caduca el 05/09/2027.**
+    - Los DNS (`ns110236.phdns6.es`).
+    - El correo (`mail.imtexsl.com` y `webmail`, en 185.68.110.236).
+    - La web actual, en otro servidor suyo (185.177.153.45).
+  - **Solo se cambian dos registros**, en el panel de Profesional Hosting: `imtexsl.com` (A) y `www` (CNAME), a Netlify. Se añaden `gestion` (el CRM) y los de Resend en el subdominio `avisos`.
+  - **No se toca nada más:** ni MX, ni `mail`, ni `webmail`, ni el SPF. Tampoco se cambian los servidores de nombres a Netlify: es la forma típica de perder el correo.
+  - **Antes del cambio:**
+    - Que IMTEX tenga acceso propio al área de cliente de Profesional Hosting y que el dominio esté a nombre de IMTEX S.L.
+    - Exportar la zona DNS completa.
+    - Saber qué incluye cada contrato.
+    - Hacer copia de los buzones.
+    - Bajar a 300 s el TTL de los dos registros de la web, que hoy es de 4 h.
+  - **Después:** probar a mandar y a recibir correo. No dar de baja ningún contrato hasta saber que el correo no va en él.
+  - **Mejoras para más adelante** (con el proveedor del correo): el SPF lleva `a`, que autorizaría a mandar correo a la IP de la web nueva, así que conviene quitarlo; y no hay registro DMARC.
 - Material que hay que pedir a IMTEX: logo en vector, fotos de obras a buena resolución, datos del Registro Mercantil y acceso al DNS.
 
 **Tienda online**
