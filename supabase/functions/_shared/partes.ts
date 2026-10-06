@@ -3,7 +3,8 @@
 // La tabla es public.partes_trabajo (migración partes_trabajo).
 
 /** Una fila de la hoja: un trabajador con sus horas. `nombre` es lo que pone, tal cual. */
-export interface Linea {
+// type y no interface: así cabe en una columna jsonb (los tipos de Supabase piden firma de índice)
+export type Linea = {
   nombre: string
   trabajador_id: string | null
   horas_ord: number

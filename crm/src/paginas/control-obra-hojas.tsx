@@ -228,6 +228,7 @@ export function useHojas(): Record<IdHoja, ConfigHoja> {
       detalle: (f) =>
         unir(
           conFecha(f),
+          !!f.parte_trabajo_id && 'del parte en papel',
           categorias.find((c) => c.id === f.categoria_id)?.nombre,
           `${numeroATexto(n(f, 'horas_ord'))} h + ${numeroATexto(n(f, 'horas_ext'))} h extra`,
           n(f, 'dietas') + n(f, 'alojamiento') > 0 &&
@@ -342,6 +343,7 @@ export function useHojas(): Record<IdHoja, ConfigHoja> {
       detalle: (f) =>
         unir(
           conFecha(f),
+          !!f.parte_trabajo_id && 'del parte en papel',
           t(f, 'tipo_vehiculo') === 'maquinaria'
             ? 'Maquinaria'
             : `${numeroATexto(n(f, 'km'))} km × ${numeroATexto(n(f, 'tarifa_km'))} €/km`,

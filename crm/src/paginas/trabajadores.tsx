@@ -7,6 +7,7 @@ import { ConfirmarBorrado, DialogoFormulario, FilaListado, PaginaListado } from 
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { coincide } from '@/lib/formato'
+import { normalizarTelefono, telefonoATexto } from '@/lib/partes'
 import { useSesion } from '@/lib/sesion'
 import type { Fila } from '@/lib/supabase'
 import { useTabla } from '@/lib/tabla'
@@ -18,6 +19,19 @@ const esquema = z.object({
   nombre: obligatorio,
   categoria_id: opcional,
   perfil_id: opcional,
+  // Con él puede mandar partes de trabajo por WhatsApp; se guarda como lo da WhatsApp (34600112233)
+  telefono: z
+    .string()
+    .trim()
+    .transform((s, ctx) => {
+      if (!s) return null
+      const telefono = normalizarTelefono(s)
+      if (!telefono) {
+        ctx.addIssue({ code: 'custom', message: 'Escribe un móvil de 9 cifras, o con el prefijo si es de fuera (+351…)' })
+        return z.NEVER
+      }
+      return telefono
+    }),
   activo: z.boolean(),
 })
 
@@ -32,7 +46,7 @@ export function Trabajadores() {
   const [borrando, setBorrando] = useState<Trabajador | null>(null)
 
   const nombreCategoria = (id: string | null) => categorias.find((c) => c.id === id)?.nombre
-  const filas = (lista.data ?? []).filter((t) => coincide(busqueda, t.nombre, nombreCategoria(t.categoria_id)))
+  const filas = (lista.data ?? []).filter((t) => coincide(busqueda, t.nombre, nombreCategoria(t.categoria_id), t.telefono))
 
   return (
     <>
@@ -48,7 +62,7 @@ export function Trabajadores() {
           <FilaListado
             key={t.id}
             titulo={t.nombre}
-            detalle={nombreCategoria(t.categoria_id) ?? 'Sin categoría'}
+            detalle={[nombreCategoria(t.categoria_id) ?? 'Sin categoría', t.telefono && telefonoATexto(t.telefono)].filter(Boolean).join(' · ')}
             extra={!t.activo && <Badge variant="secondary">Inactivo</Badge>}
             onAbrir={() => setAbierto(t)}
             onBorrar={editable ? () => setBorrando(t) : undefined}
@@ -104,6 +118,7 @@ function FormularioTrabajador({
       nombre: trabajador?.nombre ?? '',
       categoria_id: trabajador?.categoria_id ?? '',
       perfil_id: trabajador?.perfil_id ?? '',
+      telefono: trabajador?.telefono ? telefonoATexto(trabajador.telefono) : '',
       activo: trabajador?.activo ?? true,
     },
   })
@@ -141,6 +156,9 @@ function FormularioTrabajador({
             </option>
           ))}
         </Selector>
+      </Campo>
+      <Campo etiqueta="Teléfono de WhatsApp (para mandar partes)" error={e.telefono?.message}>
+        <Input type="tel" autoComplete="off" placeholder="600 11 22 33" {...register('telefono')} />
       </Campo>
       <Casilla etiqueta="Activo" {...register('activo')} />
     </DialogoFormulario>

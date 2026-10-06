@@ -47,13 +47,14 @@ export function Inicio() {
     precios: puede('base_precios', 'ver'),
     usuarios: puede('usuarios', 'ver'),
     control: puede('control_obra', 'ver'),
+    partes: puede('partes_horas', 'editar'),
   }
 
   const resumen = useQuery({
     queryKey: ['inicio', perfil?.rol],
     queryFn: async () => {
       const si = <T,>(condicion: boolean, consulta: () => Promise<T>) => (condicion ? consulta() : null)
-      const [obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos, origen] =
+      const [obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos, origen, partes] =
         await Promise.all([
           si(ve.obras, () => contar(supabase.from('obras').select('*', SOLO_CONTAR).eq('estado', 'en_ejecucion'))),
           si(ve.presupuestos, () =>
@@ -92,8 +93,12 @@ export function Inicio() {
           }),
           // Obras en ejecución: totales a origen, cifras del mes y avisos, con las mismas cuentas que la ficha
           si(ve.control, () => resumenEnEjecucion(ve.presupuestos)),
+          // Partes en papel que esperan a la oficina (los de WhatsApp sin confirmar, aún no)
+          si(ve.partes, () =>
+            contar(supabase.from('partes_trabajo').select('*', SOLO_CONTAR).in('estado', ['revisar', 'leyendo'])),
+          ),
         ])
-      return { obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos, origen }
+      return { obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos, origen, partes }
     },
   })
 
@@ -129,6 +134,7 @@ export function Inicio() {
       etiqueta: 'Margen a origen en obras en ejecución',
       a: '/control-obra',
     },
+    { visible: ve.partes, valor: r?.partes, etiqueta: 'Partes de trabajo por revisar', a: '/partes' },
     { visible: ve.presupuestos, valor: r?.enviados, etiqueta: 'Presupuestos pendientes de respuesta', a: '/presupuestos' },
     { visible: ve.presupuestos, valor: r?.borradores, etiqueta: 'Presupuestos en borrador', a: '/presupuestos' },
     { visible: ve.clientes, valor: r?.clientes, etiqueta: 'Clientes', a: '/clientes' },

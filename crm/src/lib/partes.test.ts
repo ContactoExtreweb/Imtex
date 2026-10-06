@@ -266,5 +266,5 @@ describe('firmaValida', () => {
 
 it('aBase64 vale para una foto entera', () => {
   const bytes = new Uint8Array(200_000).map((_, i) => (i * 7) % 256)
-  expect(aBase64(bytes)).toBe(Buffer.from(bytes).toString('base64'))
+  expect(Uint8Array.from(atob(aBase64(bytes)), (c) => c.charCodeAt(0))).toEqual(bytes)
 })

@@ -18,6 +18,8 @@ import { Galeria } from '@/paginas/galeria'
 import { GaleriaFicha } from '@/paginas/galeria-ficha'
 import { Inicio } from '@/paginas/inicio'
 import { Obras } from '@/paginas/obras'
+import { ParteFicha } from '@/paginas/parte-ficha'
+import { Partes } from '@/paginas/partes'
 import { PartidasTipo } from '@/paginas/partidas-tipo'
 import { Precios } from '@/paginas/precios'
 import { Presupuesto } from '@/paginas/presupuesto'
@@ -47,6 +49,8 @@ const router = createBrowserRouter([
           { path: 'obras', element: <ConPermiso modulo="obras"><Obras /></ConPermiso> },
           { path: 'control-obra', element: <ConPermiso modulo="control_obra"><ControlObra /></ConPermiso> },
           { path: 'control-obra/:id', element: <ConPermiso modulo="control_obra"><ControlObraFicha /></ConPermiso> },
+          { path: 'partes', element: <ConPermiso modulo="partes_horas"><Partes /></ConPermiso> },
+          { path: 'partes/:id', element: <ConPermiso modulo="partes_horas"><ParteFicha /></ConPermiso> },
           { path: 'presupuestos', element: <ConPermiso modulo="presupuestos"><Presupuestos /></ConPermiso> },
           { path: 'presupuestos/:id', element: <ConPermiso modulo="presupuestos"><Presupuesto /></ConPermiso> },
           { path: 'partidas-tipo', element: <ConPermiso modulo="base_precios"><PartidasTipo /></ConPermiso> },

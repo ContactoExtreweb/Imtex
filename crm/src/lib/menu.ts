@@ -1,6 +1,7 @@
 import {
   BookOpen,
   BriefcaseMedical,
+  ClipboardList,
   FileText,
   Fuel,
   HardHat,
@@ -31,6 +32,7 @@ const SECCIONES: { titulo?: string; enlaces: Enlace[] }[] = [
       { a: '/clientes', texto: 'Clientes', icono: Users, modulo: 'clientes' },
       { a: '/obras', texto: 'Obras', icono: HardHat, modulo: 'obras' },
       { a: '/control-obra', texto: 'Control de obra', icono: TrendingUp, modulo: 'control_obra' },
+      { a: '/partes', texto: 'Partes de trabajo', icono: ClipboardList, modulo: 'partes_horas' },
     ],
   },
   {
