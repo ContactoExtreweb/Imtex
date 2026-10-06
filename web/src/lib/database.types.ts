@@ -689,6 +689,7 @@ export type Database = {
           material_devuelto: string | null
           material_retirado: string | null
           material_utilizado: string | null
+          mediciones: string | null
           medio_ambiente: string | null
           obra_id: string | null
           origen: string
@@ -725,6 +726,7 @@ export type Database = {
           material_devuelto?: string | null
           material_retirado?: string | null
           material_utilizado?: string | null
+          mediciones?: string | null
           medio_ambiente?: string | null
           obra_id?: string | null
           origen?: string
@@ -761,6 +763,7 @@ export type Database = {
           material_devuelto?: string | null
           material_retirado?: string | null
           material_utilizado?: string | null
+          mediciones?: string | null
           medio_ambiente?: string | null
           obra_id?: string | null
           origen?: string
