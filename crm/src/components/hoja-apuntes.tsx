@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { ClipboardList, Lock, Plus } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
@@ -8,8 +9,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { etiquetaMes, mesDeFecha } from '@/lib/calculos/control-obra'
 import { useApuntes, type Apunte, type TablaApuntes } from '@/lib/control-obra'
-import { euros, numeroATexto } from '@/lib/formato'
+import { euros, fecha as fechaATexto, fechaHora, numeroATexto } from '@/lib/formato'
 import { useSesion, type Modulo } from '@/lib/sesion'
+import { supabase } from '@/lib/supabase'
 
 type Valores = Record<string, string>
 
@@ -266,6 +268,77 @@ function FormularioApunte({
       {config.previa && (
         <div className="rounded-lg bg-muted p-3 text-sm tabular-nums">{config.previa(valores, filas, apunte)}</div>
       )}
+      {apunte && <HistorialApunte config={config} id={apunte.id} />}
     </DialogoFormulario>
+  )
+}
+
+/** Columnas que no se enseñan en el historial: las pone la base de datos o no las toca nadie a mano */
+const SIN_HISTORIAL = new Set(['id', 'obra_id', 'created_at', 'updated_at', 'created_by', 'parte_trabajo_id'])
+
+/** Quién dio de alta y cambió el apunte, cuándo y qué valor tenía antes (lo guarda un trigger en `historial`). */
+function HistorialApunte({ config, id }: { config: ConfigHoja; id: string }) {
+  const historial = useQuery({
+    queryKey: ['historial', config.tabla, id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('historial')
+        .select('id, accion, antes, despues, usuario_nombre, fecha')
+        .eq('tabla', config.tabla)
+        .eq('fila_id', id)
+        .order('fecha')
+      if (error) throw error
+      return data
+    },
+  })
+  const filas = historial.data ?? []
+  if (filas.length === 0) return null
+
+  const etiquetas: Record<string, string> = {
+    [config.campoFecha]: 'Fecha',
+    mes: 'Mes de imputación',
+    ...Object.fromEntries(config.campos.map((c) => [c.campo, c.etiqueta])),
+  }
+  const valor = (campo: string, v: unknown) => {
+    if (v == null || v === '') return '—'
+    const opcion = config.campos.find((c) => c.campo === campo)?.opciones?.find((o) => o.valor === String(v))
+    if (opcion) return opcion.texto
+    if (campo === 'mes') return etiquetaMes(String(v))
+    if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return fechaATexto(v)
+    if (typeof v === 'number') return numeroATexto(v)
+    return String(v)
+  }
+
+  return (
+    <details className="text-sm">
+      <summary className="cursor-pointer text-muted-foreground">Historial de cambios ({filas.length})</summary>
+      <ul className="mt-2 grid gap-2">
+        {filas.map((h) => {
+          const antes = (h.antes ?? {}) as Record<string, unknown>
+          const despues = (h.despues ?? {}) as Record<string, unknown>
+          const cambios =
+            h.accion === 'cambio'
+              ? Object.keys(despues).filter(
+                  (k) => !SIN_HISTORIAL.has(k) && JSON.stringify(antes[k]) !== JSON.stringify(despues[k]),
+                )
+              : []
+          return (
+            <li key={h.id}>
+              <span className="font-medium">{h.accion === 'alta' ? 'Alta' : 'Cambio'}</span> · {fechaHora(h.fecha)} ·{' '}
+              {h.usuario_nombre ?? 'automático'}
+              {cambios.length > 0 && (
+                <ul className="text-muted-foreground">
+                  {cambios.map((k) => (
+                    <li key={k}>
+                      {etiquetas[k] ?? k.replaceAll('_', ' ')}: {valor(k, antes[k])} → {valor(k, despues[k])}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </details>
   )
 }
