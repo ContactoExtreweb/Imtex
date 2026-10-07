@@ -1,0 +1,72 @@
+# Copia semanal de la base de datos, fuera de Supabase: los lunes a las 5:00 (hora de España en
+# verano) y a mano desde Actions → «Copia de seguridad» → Run workflow. Se guarda cifrada como
+# artefacto de la ejecución durante 90 días (unas 12 copias).
+#
+# Para activarla (lo hace Saúl; Claude no toca estas claves), en GitHub → Settings → Secrets and
+# variables → Actions:
+#   SUPABASE_DB_URL  Supabase → Connect → «Session pooler» (los equipos de GitHub no llegan a la conexión
+#                    directa, que es solo IPv6), con la contraseña de la base de datos.
+#   COPIA_CLAVE      Una frase larga inventada. Guárdala también en el gestor de contraseñas: sin ella
+#                    las copias no se pueden abrir.
+# Solo funciona con el repositorio privado: si es público, falla sin subir nada.
+#
+# Recuperar: descargar el artefacto, `gpg -d imtex-AAAA-MM-DD.tar.gz.gpg | tar xz` (pide la frase) y,
+# en un proyecto de Supabase nuevo y vacío:
+#   psql --single-transaction --variable ON_ERROR_STOP=1 --file copia/roles.sql --file copia/esquema.sql \
+#     --command 'SET session_replication_role = replica' --file copia/datos.sql --dbname "<URL del proyecto nuevo>"
+#
+# ponytail: solo la base de datos. Los archivos de los buckets (fotos de la galería y de los partes,
+# papeles de baja) no entran: el artefacto tiene poco espacio. Cuando haya un almacén externo (R2, B2…),
+# añadir un paso con `aws s3 sync` contra el endpoint S3 de Supabase Storage.
+name: Copia de seguridad
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  copia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Solo con el repositorio privado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(gh api repos/${{ github.repository }} --jq .private)" != "true" ]; then
+            echo "::error::El repositorio es público: la copia no se sube."
+            exit 1
+          fi
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Volcado de la base de datos
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then echo "::error::Falta el secreto SUPABASE_DB_URL."; exit 1; fi
+          mkdir copia
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f copia/roles.sql --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f copia/esquema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f copia/datos.sql --use-copy --data-only
+
+      - name: Cifrado
+        env:
+          COPIA_CLAVE: ${{ secrets.COPIA_CLAVE }}
+        run: |
+          if [ -z "$COPIA_CLAVE" ]; then echo "::error::Falta el secreto COPIA_CLAVE."; exit 1; fi
+          nombre="imtex-$(date -u +%F)"
+          tar czf - copia | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 3 \
+            --symmetric --cipher-algo AES256 -o "$nombre.tar.gz.gpg" 3<<<"$COPIA_CLAVE"
+          rm -rf copia
+          echo "NOMBRE=$nombre" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.NOMBRE }}
+          path: ${{ env.NOMBRE }}.tar.gz.gpg
+          retention-days: 90
+          compression-level: 0
