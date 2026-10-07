@@ -53,7 +53,11 @@ const datos = {
     <h1
       data-aparece
       style="--i: 1"
-      class:list={['titular mt-3 max-w-[20ch]', conObjeto ? 'text-[clamp(2.5rem,6vw,4.75rem)]' : 'text-[clamp(2.5rem,7vw,5.75rem)]']}
+      class:list={[
+        // En móviles de 320 px «Impermeabilización» no cabe a 2,5rem: un poco más pequeño solo ahí
+        'titular mt-3 max-w-[20ch] max-[22rem]:text-[2.2rem]',
+        conObjeto ? 'text-[clamp(2.5rem,6vw,4.75rem)]' : 'text-[clamp(2.5rem,7vw,5.75rem)]',
+      ]}
     >
       {titulo}
     </h1>
