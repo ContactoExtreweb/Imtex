@@ -296,6 +296,16 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
     - Hacer copia de los buzones.
     - Bajar a 300 s el TTL de los dos registros de la web, que hoy es de 4 h.
   - **Después:** probar a mandar y a recibir correo. No dar de baja ningún contrato hasta saber que el correo no va en él.
+  - **9Technology (Don Benito), que es el intermediario, no responde** (07/10):
+    - El dominio **no está bloqueado** para transferirlo (estado `active`), solo hace falta el código de autorización. Está pagado hasta el 05/09/2027 y el titular sale oculto en la consulta pública.
+    - El servidor de correo admite IMAP (puertos 993 y 143), así que IMTEX puede copiar sus buzones hoy mismo con sus contraseñas, sin depender de nadie.
+    - Plan:
+      1. Copia de los buzones.
+      2. Buscar en el correo de IMTEX avisos de Profesional Hosting o Name SRS (dicen a qué correo va el dominio).
+      3. Pedir por escrito a 9Technology el código y los accesos (correo y burofax, con plazo).
+      4. A la vez, pedir a Profesional Hosting, como titular, que pasen el dominio, el correo y los DNS a una cuenta a nombre de IMTEX. Así los buzones no se mueven.
+      5. Si no lo dan en 5 días, reclamar a Name SRS y después a ICANN (el registrador tiene que dar el código al titular en 5 días).
+    - Mientras tanto, el CRM y la web pueden ir en direcciones provisionales de Netlify.
   - **Mejoras para más adelante** (con el proveedor del correo): el SPF lleva `a`, que autorizaría a mandar correo a la IP de la web nueva, así que conviene quitarlo; y no hay registro DMARC.
 - Material que hay que pedir a IMTEX: logo en vector, fotos de obras a buena resolución, datos del Registro Mercantil y acceso al DNS.
 
