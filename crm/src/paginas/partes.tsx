@@ -166,7 +166,7 @@ function Subir({ alSubirUno }: { alSubirUno: (id: string) => void }) {
   return (
     <label
       className={cn(
-        'inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground focus-within:ring-3 focus-within:ring-ring/50 md:h-8',
+        'inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground focus-within:ring-3 focus-within:ring-ring/50 escritorio:h-8',
         subida && 'cursor-progress opacity-70',
       )}
     >

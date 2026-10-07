@@ -27,7 +27,7 @@ export function Selector({ className, ...props }: ComponentProps<'select'>) {
   return (
     <select
       className={cn(
-        'h-10 w-full md:h-8 rounded-lg border border-input bg-transparent px-2 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 md:text-sm',
+        'h-10 w-full escritorio:h-8 rounded-lg border border-input bg-transparent px-2 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 escritorio:text-sm',
         className,
       )}
       {...props}
