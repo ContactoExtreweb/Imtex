@@ -15,6 +15,10 @@ jobs:
     defaults:
       run:
         working-directory: crm
+    # Valores de mentira: algunos tests importan el cliente de Supabase, que exige una URL. No se conecta a nada.
+    env:
+      VITE_SUPABASE_URL: http://127.0.0.1:54321
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
