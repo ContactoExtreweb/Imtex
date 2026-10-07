@@ -18,9 +18,9 @@ const OBRAS = [
   { id: 'o-otra', codigo: 'OB-2026-11', nombre: 'Depósito', cliente: 'Ayto. Mérida', localidad: 'Mérida' },
 ]
 const TRABAJADORES = [
-  { id: 't-isi', nombre: 'Isidoro Sánchez', jornada_horas: 8 },
-  { id: 't-dav', nombre: 'David Gil', jornada_horas: 8 },
-  { id: 't-emi', nombre: 'Emilio Pérez', jornada_horas: 7 }, // contrato de 7 horas
+  { id: 't-isi', nombre: 'Julián Moreno', jornada_horas: 8 },
+  { id: 't-dav', nombre: 'Pablo Ruiz', jornada_horas: 8 },
+  { id: 't-emi', nombre: 'Andrés León', jornada_horas: 7 }, // contrato de 7 horas
 ]
 const HOY = '2026-10-06'
 
@@ -35,9 +35,9 @@ const MERCADONA: Lectura = {
   obra_id: 'o-merc',
   fecha: '2026-07-02',
   trabajadores: [
-    { nombre: 'Isidoro', trabajador_id: 't-isi', horas_ord: null, horas_ext: 4 },
-    { nombre: 'David Gil', trabajador_id: 't-dav', horas_ord: null, horas_ext: 4 },
-    { nombre: 'Emilio', trabajador_id: 't-emi', horas_ord: null, horas_ext: 4 },
+    { nombre: 'Julián', trabajador_id: 't-isi', horas_ord: null, horas_ext: 4 },
+    { nombre: 'Pablo Ruiz', trabajador_id: 't-dav', horas_ord: null, horas_ext: 4 },
+    { nombre: 'Andrés', trabajador_id: 't-emi', horas_ord: null, horas_ext: 4 },
   ],
   vehiculo: 'Trafic 3 plazas',
   tipo_vehiculo: 'furgon',
@@ -150,8 +150,8 @@ describe('aColumnas', () => {
         ...MERCADONA,
         fecha: '2026-10-07',
         trabajadores: [
-          { nombre: 'Isidoro', trabajador_id: 't-isi', horas_ord: 10, horas_ext: 8 },
-          { nombre: 'Isi', trabajador_id: 't-isi', horas_ord: 0, horas_ext: 0 },
+          { nombre: 'Julián', trabajador_id: 't-isi', horas_ord: 10, horas_ext: 8 },
+          { nombre: 'Juli', trabajador_id: 't-isi', horas_ord: 0, horas_ext: 0 },
         ],
         km_salida: 200,
         km_llegada: 100,
@@ -163,9 +163,9 @@ describe('aColumnas', () => {
     expect(c.avisos).toEqual(
       expect.arrayContaining([
         'La fecha (07/10/2026) es posterior a hoy.',
-        'Revisa las horas de Isidoro Sánchez: salen 18.',
-        'Faltan las horas de Isidoro Sánchez.',
-        'Isidoro Sánchez sale dos veces.',
+        'Revisa las horas de Julián Moreno: salen 18.',
+        'Faltan las horas de Julián Moreno.',
+        'Julián Moreno sale dos veces.',
         'Los km de llegada tienen que ser más que los de salida.',
       ]),
     )
@@ -181,8 +181,8 @@ describe('resumen', () => {
     const texto = resumen(aColumnas(MERCADONA, OBRAS, TRABAJADORES, HOY), OBRAS, TRABAJADORES)
     expect(texto).toContain('*Parte del 02/07/2026*')
     expect(texto).toContain('OB-2026-14 · Mercadona Arapiles (Madrid)')
-    expect(texto).toContain('• David Gil: 8 h + 4 h extra')
-    expect(texto).toContain('• Emilio Pérez: 7 h + 4 h extra')
+    expect(texto).toContain('• Pablo Ruiz: 8 h + 4 h extra')
+    expect(texto).toContain('• Andrés León: 7 h + 4 h extra')
     expect(texto).toContain('🚐 Trafic 3 plazas: km incompletos')
     expect(texto).toContain('ida 15:30–16:00')
     expect(texto).toContain('⚠️ No estoy seguro de las horas de salida')
@@ -215,13 +215,13 @@ describe('peticionLectura', () => {
     expect(p.output_config.format.schema.properties.trabajadores.items.additionalProperties).toBe(false)
     expect(p.output_config.format.schema.required).toEqual(Object.keys(p.output_config.format.schema.properties))
     expect(p.system).toContain('o-merc | OB-2026-14 | Mercadona Arapiles | Mercadona | Madrid')
-    expect(p.system).toContain('t-dav | David Gil')
+    expect(p.system).toContain('t-dav | Pablo Ruiz')
     expect(p.system).toContain('Hoy es 2026-10-06')
   })
   it('una corrección lleva la lectura anterior y lo que dice quien la mandó', () => {
-    const texto = peticionLectura({ ...base, anterior: MERCADONA, correccion: 'Emilio hizo 5 horas' }).messages[0].content[1]
+    const texto = peticionLectura({ ...base, anterior: MERCADONA, correccion: 'Andrés hizo 5 horas' }).messages[0].content[1]
     expect(texto).toMatchObject({ type: 'text' })
-    expect(JSON.stringify(texto)).toContain('Emilio hizo 5 horas')
+    expect(JSON.stringify(texto)).toContain('Andrés hizo 5 horas')
     expect(JSON.stringify(texto)).toContain('Morterplas')
   })
 })
