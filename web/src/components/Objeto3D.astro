@@ -1,0 +1,101 @@
+---
+// Un objeto 3D que trabaja solo, en bucle, en la entrada de una página interior (va en el slot `objeto` de la Portadilla).
+// No depende del scroll. Igual que en la portada: sin WebGL o sin tarjeta gráfica, con las animaciones reducidas, con ahorro
+// de datos o en un equipo flojo se queda el sustituto (una foto, o el mapa en SVG que llega por el slot `sustituto`).
+// La leyenda (slot por defecto) es HTML: enlaces de verdad que la escena marca con aria-current.
+import type { ImageMetadata } from 'astro'
+import { Image } from 'astro:assets'
+
+interface Props {
+  escena: 'servicios' | 'obras' | 'contacto'
+  /** Qué se ve, para quien no lo ve */
+  etiqueta: string
+  foto?: ImageMetadata
+  alt?: string
+  /** Datos para la escena (las obras del mapa, por ejemplo) */
+  datos?: unknown
+}
+const { escena, etiqueta, foto, alt = '', datos } = Astro.props
+const conSustituto = Astro.slots.has('sustituto')
+---
+
+<div data-objeto={escena} class="grid gap-4">
+  {/* Antes de pintar: si el equipo puede con el 3D (puede3d, en Base.astro), la foto no aparece para luego desaparecer */}
+  <script is:inline>
+    if (window.puede3d()) document.currentScript.parentElement.setAttribute('data-espera-3d', '')
+  </script>
+  <div class="relative aspect-[4/3] overflow-hidden">
+    {
+      foto && (
+        <Image
+          src={foto}
+          alt={alt}
+          widths={[480, 900]}
+          sizes="(min-width: 64rem) 40rem, 92vw"
+          loading="eager"
+          data-sustituto="foto"
+          class="absolute inset-0 size-full object-cover transition-opacity duration-700"
+        />
+      )
+    }
+    {
+      conSustituto && (
+        <div data-sustituto="mapa" class="absolute inset-0 transition-opacity duration-700">
+          <slot name="sustituto" />
+        </div>
+      )
+    }
+    <canvas
+      data-lienzo
+      class="absolute inset-0 hidden size-full cursor-grab touch-pan-y opacity-0 transition-opacity duration-700 active:cursor-grabbing"
+      role="img"
+      aria-label={etiqueta}></canvas>
+  </div>
+  <slot />
+  {datos !== undefined && <script type="application/json" data-datos set:html={JSON.stringify(datos).replace(/</g, '\\u003c')} />}
+</div>
+
+<script>
+  import type { Escena } from '../scripts/escena3d/base'
+
+  type Montar = (lienzo: HTMLCanvasElement, opciones: { raiz: HTMLElement; datos: unknown; modo: string }) => Pick<Escena, 'fijar'>
+  // Una entrada por escena: Vite separa cada una en su fichero y la página solo descarga la suya
+  const CARGAR: Record<string, () => Promise<{ montar: Montar }>> = {
+    servicios: () => import('../scripts/escena3d/servicios'),
+    obras: () => import('../scripts/escena3d/mapa'),
+    contacto: () => import('../scripts/escena3d/mapa'),
+  }
+
+  for (const raiz of document.querySelectorAll<HTMLElement>('[data-objeto][data-espera-3d]')) {
+    const lienzo = raiz.querySelector<HTMLCanvasElement>('[data-lienzo]')!
+    const cargar = async () => {
+      try {
+        const { montar } = await CARGAR[raiz.dataset.objeto!]()
+        const datos = JSON.parse(raiz.querySelector('[data-datos]')?.textContent ?? 'null')
+        lienzo.classList.remove('hidden')
+        const escena = montar(lienzo, { raiz, datos, modo: raiz.dataset.objeto! })
+        // En desarrollo, para revisar un momento concreto desde la consola: __escena.fijar(7.5)
+        if (import.meta.env.DEV) Object.assign(window, { __escena: escena })
+        raiz.toggleAttribute('data-con-3d', true)
+        requestAnimationFrame(() => lienzo.classList.remove('opacity-0'))
+      } catch (error) {
+        // Sin WebGL: se queda el sustituto
+        if (import.meta.env.DEV) console.error(error)
+        lienzo.classList.add('hidden')
+        raiz.removeAttribute('data-espera-3d')
+      }
+    }
+    // Después de que la página esté lista, para no competir con el texto y las fotos
+    const alEstarLibre = (window as Window & { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => void }).requestIdleCallback
+    if (alEstarLibre) alEstarLibre(cargar, { timeout: 2000 })
+    else setTimeout(cargar, 500)
+  }
+</script>
+
+<style>
+  /* La foto no se enseña mientras el 3D carga; el mapa en SVG sí, y se funde con el 3D al llegar */
+  [data-espera-3d] [data-sustituto='foto'],
+  [data-con-3d] [data-sustituto] {
+    opacity: 0;
+  }
+</style>

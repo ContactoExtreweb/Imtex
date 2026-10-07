@@ -1,0 +1,43 @@
+---
+// Una obra de la galería como lámina: foto a 5:3 y la misma etiqueta en todas (lugar, año, título, trabajo).
+// La foto lleva un nombre de transición: al abrir la ficha, viaja hasta la portada de la obra.
+import { urlFoto, urlMiniatura, type Obra } from '../lib/galeria'
+
+interface Props {
+  obra: Obra
+  sizes?: string
+  /** Posición en el listado: escalona la entrada de las láminas de una misma fila */
+  orden?: number
+}
+const { obra: o, sizes = '(min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw', orden = 0 } = Astro.props
+const f = o.fotos[0]
+---
+
+<a href={`/obras/${o.slug}`} class="group block no-underline">
+  <div class="registro overflow-hidden bg-gris">
+    {
+      f && (
+        <img
+          src={urlMiniatura(f.storage_path)}
+          srcset={`${urlMiniatura(f.storage_path)} 480w, ${urlFoto(f.storage_path)} ${f.ancho}w`}
+          sizes={sizes}
+          alt={f.alt || o.titulo}
+          width={f.ancho}
+          height={f.alto}
+          loading="lazy"
+          decoding="async"
+          style={`view-transition-name: obra-${o.slug}`}
+          class="aspect-[5/3] w-full object-cover transition-transform duration-700 ease-(--ease-encaje) group-hover:scale-[1.04]"
+        />
+      )
+    }
+  </div>
+  <div data-aparece style={`--i: ${orden % 3}`}>
+    <p class="rotulo mt-4 flex justify-between gap-4 border-t border-current/25 pt-3">
+      <span class="opacity-70">{o.ubicacion}</span>
+      <span class="opacity-70">{o.anio}</span>
+    </p>
+    <h3 class="titular mt-2 text-3xl transition-colors duration-300 group-hover:text-rojo">{o.titulo}</h3>
+    <p class="mt-2 opacity-75">{o.resumen}</p>
+  </div>
+</a>

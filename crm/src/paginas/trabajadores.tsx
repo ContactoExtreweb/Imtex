@@ -6,11 +6,12 @@ import { Campo, Casilla, Selector } from '@/components/campo'
 import { ConfirmarBorrado, DialogoFormulario, FilaListado, PaginaListado } from '@/components/listado'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { coincide } from '@/lib/formato'
+import { coincide, numeroATexto } from '@/lib/formato'
+import { normalizarTelefono, telefonoATexto } from '@/lib/partes'
 import { useSesion } from '@/lib/sesion'
 import type { Fila } from '@/lib/supabase'
 import { useTabla } from '@/lib/tabla'
-import { obligatorio, opcional } from '@/lib/validacion'
+import { numero, obligatorio, opcional } from '@/lib/validacion'
 
 type Trabajador = Fila<'trabajadores'>
 
@@ -18,6 +19,21 @@ const esquema = z.object({
   nombre: obligatorio,
   categoria_id: opcional,
   perfil_id: opcional,
+  // Con él puede mandar partes de trabajo por WhatsApp; se guarda como lo da WhatsApp (34600112233)
+  telefono: z
+    .string()
+    .trim()
+    .transform((s, ctx) => {
+      if (!s) return null
+      const telefono = normalizarTelefono(s)
+      if (!telefono) {
+        ctx.addIssue({ code: 'custom', message: 'Escribe un móvil de 9 cifras, o con el prefijo si es de fuera (+351…)' })
+        return z.NEVER
+      }
+      return telefono
+    }),
+  // Horas al día de su contrato: en los partes en papel, la casilla HORAS vacía vale esto
+  jornada_horas: numero.refine((n) => n > 0 && n <= 12, 'Entre 1 y 12 horas'),
   activo: z.boolean(),
 })
 
@@ -32,7 +48,7 @@ export function Trabajadores() {
   const [borrando, setBorrando] = useState<Trabajador | null>(null)
 
   const nombreCategoria = (id: string | null) => categorias.find((c) => c.id === id)?.nombre
-  const filas = (lista.data ?? []).filter((t) => coincide(busqueda, t.nombre, nombreCategoria(t.categoria_id)))
+  const filas = (lista.data ?? []).filter((t) => coincide(busqueda, t.nombre, nombreCategoria(t.categoria_id), t.telefono))
 
   return (
     <>
@@ -48,7 +64,13 @@ export function Trabajadores() {
           <FilaListado
             key={t.id}
             titulo={t.nombre}
-            detalle={nombreCategoria(t.categoria_id) ?? 'Sin categoría'}
+            detalle={[
+              nombreCategoria(t.categoria_id) ?? 'Sin categoría',
+              t.jornada_horas !== 8 && `jornada de ${numeroATexto(t.jornada_horas)} h`,
+              t.telefono && telefonoATexto(t.telefono),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
             extra={!t.activo && <Badge variant="secondary">Inactivo</Badge>}
             onAbrir={() => setAbierto(t)}
             onBorrar={editable ? () => setBorrando(t) : undefined}
@@ -104,6 +126,8 @@ function FormularioTrabajador({
       nombre: trabajador?.nombre ?? '',
       categoria_id: trabajador?.categoria_id ?? '',
       perfil_id: trabajador?.perfil_id ?? '',
+      telefono: trabajador?.telefono ? telefonoATexto(trabajador.telefono) : '',
+      jornada_horas: numeroATexto(trabajador?.jornada_horas ?? 8),
       activo: trabajador?.activo ?? true,
     },
   })
@@ -141,6 +165,12 @@ function FormularioTrabajador({
             </option>
           ))}
         </Selector>
+      </Campo>
+      <Campo etiqueta="Jornada de contrato (horas al día)" error={e.jornada_horas?.message}>
+        <Input inputMode="decimal" {...register('jornada_horas')} />
+      </Campo>
+      <Campo etiqueta="Teléfono de WhatsApp (para mandar partes)" error={e.telefono?.message}>
+        <Input type="tel" autoComplete="off" placeholder="600 11 22 33" {...register('telefono')} />
       </Campo>
       <Casilla etiqueta="Activo" {...register('activo')} />
     </DialogoFormulario>

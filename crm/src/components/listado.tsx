@@ -71,12 +71,15 @@ export function PaginaListado({
 }
 
 export function FilaListado({
+  antes,
   titulo,
   detalle,
   extra,
   onAbrir,
   onBorrar,
 }: {
+  /** Algo delante del texto (por ejemplo, una miniatura) */
+  antes?: ReactNode
   titulo: ReactNode
   detalle?: ReactNode
   extra?: ReactNode
@@ -85,9 +88,11 @@ export function FilaListado({
 }) {
   return (
     <li className="flex items-center gap-3 px-3 py-2">
+      {antes}
       <button type="button" className="min-w-0 flex-1 py-1 text-left" onClick={onAbrir}>
-        <p className="truncate font-medium">{titulo}</p>
-        {detalle && <p className="truncate text-sm text-muted-foreground">{detalle}</p>}
+        {/* En el móvil no se corta: el título ocupa hasta dos líneas y el detalle (importes, fechas) las que necesite */}
+        <p className="font-medium max-sm:line-clamp-2 sm:truncate">{titulo}</p>
+        {detalle && <p className="text-sm text-muted-foreground sm:truncate">{detalle}</p>}
       </button>
       {extra}
       {onBorrar && (
@@ -104,6 +109,7 @@ export function DialogoFormulario({
   titulo,
   soloLectura,
   guardando,
+  acciones,
   onSubmit,
   onCerrar,
   children,
@@ -111,6 +117,8 @@ export function DialogoFormulario({
   titulo: string
   soloLectura: boolean
   guardando: boolean
+  /** Botones o enlaces extra en el pie, fuera del formulario (se ven también en solo lectura) */
+  acciones?: ReactNode
   onSubmit: FormEventHandler<HTMLFormElement>
   onCerrar: () => void
   children: ReactNode
@@ -125,11 +133,14 @@ export function DialogoFormulario({
           <fieldset disabled={soloLectura || guardando} className="grid gap-3">
             {children}
           </fieldset>
-          {!soloLectura && (
-            <DialogFooter>
-              <Button type="submit" disabled={guardando}>
-                {guardando ? 'Guardando…' : 'Guardar'}
-              </Button>
+          {(acciones || !soloLectura) && (
+            <DialogFooter className={acciones ? 'sm:justify-between' : undefined}>
+              {acciones && <div>{acciones}</div>}
+              {!soloLectura && (
+                <Button type="submit" disabled={guardando}>
+                  {guardando ? 'Guardando…' : 'Guardar'}
+                </Button>
+              )}
             </DialogFooter>
           )}
         </form>
@@ -138,30 +149,63 @@ export function DialogoFormulario({
   )
 }
 
+/** Pregunta antes de hacer algo que conviene pensar dos veces. */
+export function Confirmar({
+  titulo,
+  detalle,
+  accion,
+  destructiva = false,
+  onConfirmar,
+  onCerrar,
+}: {
+  /** null = cerrado */
+  titulo: string | null
+  detalle: string
+  /** Texto del botón que confirma */
+  accion: string
+  destructiva?: boolean
+  onConfirmar: () => void
+  onCerrar: () => void
+}) {
+  return (
+    <AlertDialog open={titulo !== null} onOpenChange={(abierto) => !abierto && onCerrar()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{titulo}</AlertDialogTitle>
+          <AlertDialogDescription>{detalle}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction variant={destructiva ? 'destructive' : 'default'} onClick={onConfirmar}>
+            {accion}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
 export function ConfirmarBorrado({
   nombre,
+  detalle = 'No se puede deshacer.',
   onConfirmar,
   onCerrar,
 }: {
   /** null = cerrado */
   nombre: string | null
+  /** Qué más se borra con ello, si hace falta avisarlo */
+  detalle?: string
   onConfirmar: () => void
   onCerrar: () => void
 }) {
   return (
-    <AlertDialog open={nombre !== null} onOpenChange={(abierto) => !abierto && onCerrar()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>¿Borrar «{nombre}»?</AlertDialogTitle>
-          <AlertDialogDescription>No se puede deshacer.</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={onConfirmar}>
-            Borrar
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <Confirmar
+      titulo={nombre === null ? null : `¿Borrar «${nombre}»?`}
+      detalle={detalle}
+      accion="Borrar"
+      destructiva
+      onConfirmar={onConfirmar}
+      onCerrar={onCerrar}
+    />
   )
 }

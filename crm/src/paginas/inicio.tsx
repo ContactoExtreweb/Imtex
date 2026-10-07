@@ -1,13 +1,16 @@
 import type { PostgrestError } from '@supabase/supabase-js'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, TriangleAlert } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
+import { Cifras } from '@/components/cifras'
 import { ConfirmarBorrado } from '@/components/listado'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { euros, fecha } from '@/lib/formato'
+import { etiquetaMes } from '@/lib/calculos/control-obra'
+import { resumenEnEjecucion, type AvisoObra } from '@/lib/control-obra'
+import { euros, fecha, pct } from '@/lib/formato'
 import { useSecciones } from '@/lib/menu'
 import type { Estado } from '@/lib/presupuestos'
 import { useSesion } from '@/lib/sesion'
@@ -43,13 +46,15 @@ export function Inicio() {
     trabajadores: puede('ajustes', 'ver') || puede('control_obra', 'ver'),
     precios: puede('base_precios', 'ver'),
     usuarios: puede('usuarios', 'ver'),
+    control: puede('control_obra', 'ver'),
+    partes: puede('partes_horas', 'editar'),
   }
 
   const resumen = useQuery({
     queryKey: ['inicio', perfil?.rol],
     queryFn: async () => {
       const si = <T,>(condicion: boolean, consulta: () => Promise<T>) => (condicion ? consulta() : null)
-      const [obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos] =
+      const [obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos, origen, partes] =
         await Promise.all([
           si(ve.obras, () => contar(supabase.from('obras').select('*', SOLO_CONTAR).eq('estado', 'en_ejecucion'))),
           si(ve.presupuestos, () =>
@@ -86,15 +91,50 @@ export function Inicio() {
             if (totales.error) throw totales.error
             return data.map((p) => ({ ...p, base: totales.data.find((t) => t.presupuesto_id === p.id)?.base ?? 0 }))
           }),
+          // Obras en ejecución: totales a origen, cifras del mes y avisos, con las mismas cuentas que la ficha
+          si(ve.control, () => resumenEnEjecucion(ve.presupuestos)),
+          // Partes en papel que esperan a la oficina (los de WhatsApp sin confirmar, aún no)
+          si(ve.partes, () =>
+            contar(supabase.from('partes_trabajo').select('*', SOLO_CONTAR).in('estado', ['revisar', 'leyendo'])),
+          ),
         ])
-      return { obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos }
+      return { obrasEnCurso, enviados, borradores, clientes, trabajadores, precios, usuarios, obras, presupuestos, origen, partes }
     },
   })
 
   const r = resumen.data
+  const nombreMes = (mes: string) => etiquetaMes(mes).split('-')[0] // «octubre-26» → «octubre»
   // Cada cifra enlaza a su apartado; sin permiso sobre el apartado, la cifra se ve pero no enlaza
-  const cifras = [
+  const cifras: { visible: boolean; valor?: ReactNode; etiqueta: string; nota?: string | null; a: string | null }[] = [
     { visible: ve.obras, valor: r?.obrasEnCurso, etiqueta: 'Obras en ejecución', a: '/obras' },
+    // Lo del mes en curso, con el mes anterior debajo para comparar
+    {
+      visible: ve.control,
+      valor: r?.origen && euros(r.origen.actual.certificado),
+      etiqueta: r?.origen ? `Certificado en ${nombreMes(r.origen.actual.mes)}` : 'Certificado este mes',
+      nota: r?.origen && `${nombreMes(r.origen.anterior.mes)}: ${euros(r.origen.anterior.certificado)}`,
+      a: '/control-obra',
+    },
+    {
+      visible: ve.control,
+      valor: r?.origen && euros(r.origen.actual.resultado),
+      etiqueta: r?.origen ? `Resultado de ${nombreMes(r.origen.actual.mes)}` : 'Resultado de este mes',
+      nota: r?.origen && `${nombreMes(r.origen.anterior.mes)}: ${euros(r.origen.anterior.resultado)}`,
+      a: '/control-obra',
+    },
+    {
+      visible: ve.control,
+      valor: r?.origen && euros(r.origen.certificado),
+      etiqueta: 'Certificado a origen en obras en ejecución',
+      a: '/control-obra',
+    },
+    {
+      visible: ve.control,
+      valor: r?.origen ? (r.origen.margen === null ? '–' : pct(r.origen.margen)) : undefined,
+      etiqueta: 'Margen a origen en obras en ejecución',
+      a: '/control-obra',
+    },
+    { visible: ve.partes, valor: r?.partes, etiqueta: 'Partes de trabajo por revisar', a: '/partes' },
     { visible: ve.presupuestos, valor: r?.enviados, etiqueta: 'Presupuestos pendientes de respuesta', a: '/presupuestos' },
     { visible: ve.presupuestos, valor: r?.borradores, etiqueta: 'Presupuestos en borrador', a: '/presupuestos' },
     { visible: ve.clientes, valor: r?.clientes, etiqueta: 'Clientes', a: '/clientes' },
@@ -124,41 +164,20 @@ export function Inicio() {
           </p>
         )}
 
-        {cifras.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Todavía no hay apartados disponibles para tu perfil.</p>
-        ) : (
-          <ul className="grid grid-cols-2 border-t border-l sm:grid-cols-3">
-            {cifras.map((c) => {
-              const contenido = (
-                <>
-                  <span className="text-2xl font-semibold tabular-nums">{c.valor ?? '–'}</span>
-                  <span className="text-sm text-muted-foreground">{c.etiqueta}</span>
-                </>
-              )
-              const clases = 'flex h-full flex-col gap-0.5 p-4'
-              return (
-                <li key={c.etiqueta} className="border-r border-b">
-                  {c.a ? (
-                    <Link to={c.a} className={`${clases} hover:bg-muted`}>
-                      {contenido}
-                    </Link>
-                  ) : (
-                    <div className={clases}>{contenido}</div>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
+        {r?.origen && <Avisos avisos={r.origen.avisos} conPresupuestos={ve.presupuestos} />}
 
-        <div className="grid gap-8 sm:grid-cols-2">
+        {/* Sin cifras (un operario): la portada son los accesos de abajo */}
+        {cifras.length > 0 && <Cifras cifras={cifras} />}
+
+        {/* Dos columnas solo si caben de verdad: con el menú abierto (tablet) el hueco es estrecho */}
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(17rem,100%),1fr))] gap-8">
           {ve.obras && (
             <Lista titulo="Obras en ejecución" a="/obras">
               {r?.obras?.length === 0 && (
                 <Vacio>No hay obras en ejecución. Se crean en Obras o desde un presupuesto aceptado.</Vacio>
               )}
               {r?.obras?.map((o) => (
-                <Fila key={o.id} a="/obras" titulo={`${o.codigo} · ${o.nombre}`} dato={euros(o.importe_pedido)} />
+                <Fila key={o.id} a={ve.control ? `/control-obra/${o.id}` : '/obras'} titulo={`${o.codigo} · ${o.nombre}`} dato={euros(o.importe_pedido)} />
               ))}
             </Lista>
           )}
@@ -211,6 +230,45 @@ export function Inicio() {
   )
 }
 
+/** Obras en ejecución que piden atención: margen bajo o desviación del presupuesto (lib/calculos/avisos.ts). */
+function Avisos({ avisos, conPresupuestos }: { avisos: AvisoObra[]; conPresupuestos: boolean }) {
+  return (
+    <section className="grid gap-2">
+      <h2 className="font-semibold">Avisos</h2>
+      {avisos.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          {conPresupuestos
+            ? 'Ninguna obra en ejecución tiene el margen bajo ni se desvía de su presupuesto.'
+            : 'Ninguna obra en ejecución tiene el margen bajo.'}
+        </p>
+      ) : (
+        <ul className="divide-y rounded-lg border">
+          {avisos.map((a) => (
+            <li key={`${a.obra.id}-${a.tipo}`}>
+              <Link
+                // Los avisos de presupuesto llevan a la comparativa de la obra
+                to={`/control-obra/${a.obra.id}${a.tipo === 'coste_superado' || a.tipo === 'desviacion' ? '?hoja=comparativa' : ''}`}
+                className="flex items-start gap-3 px-3 py-2 hover:bg-muted"
+              >
+                <TriangleAlert
+                  aria-hidden
+                  className={`mt-0.5 size-4 shrink-0 ${a.nivel === 'grave' ? 'text-destructive' : 'text-aviso'}`}
+                />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium max-sm:line-clamp-2 sm:truncate">
+                    {a.obra.codigo} · {a.obra.nombre}
+                  </span>
+                  <span className="block text-sm text-muted-foreground">{a.texto}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+
 function Lista({ titulo, a, children }: { titulo: string; a: string; children: ReactNode }) {
   return (
     <section className="grid content-start gap-2">
@@ -246,11 +304,11 @@ function Fila({
     <li>
       <Link to={a} className="flex items-center gap-3 px-3 py-2 hover:bg-muted">
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium">{titulo}</span>
+          <span className="block text-sm font-medium max-sm:line-clamp-2 sm:truncate">{titulo}</span>
           {detalle && <span className="block text-xs text-muted-foreground">{detalle}</span>}
         </span>
         {extra}
-        <span className="text-sm font-medium tabular-nums">{dato}</span>
+        <span className="shrink-0 text-sm font-medium whitespace-nowrap tabular-nums">{dato}</span>
       </Link>
     </li>
   )

@@ -418,3 +418,11 @@ enabled = true
 # (la verificación JWT de la pasarela no es compatible con las claves nuevas de Supabase).
 [functions.invitar-usuario]
 verify_jwt = false
+
+# Igual: la función comprueba la sesión y el permiso partes_horas:editar
+[functions.leer-parte]
+verify_jwt = false
+
+# Meta no manda un JWT de Supabase: la función comprueba la firma del aviso (WHATSAPP_SECRETO_APP)
+[functions.whatsapp]
+verify_jwt = false

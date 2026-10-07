@@ -1,0 +1,77 @@
+---
+// Arranque de las páginas interiores: migas, titular grande y una entradilla.
+// Devuelve también las migas como datos estructurados (BreadcrumbList).
+import { EMPRESA, rutaDe } from '../lib/empresa'
+
+interface Miga {
+  texto: string
+  a?: string
+}
+interface Props {
+  titulo: string
+  /** Camino hasta la página, sin el inicio ni la propia página */
+  migas?: Miga[]
+}
+const { titulo, migas = [] } = Astro.props
+// Con un objeto 3D (slot `objeto`), la entrada pasa a dos columnas: el texto a la izquierda y el objeto a la derecha
+const conObjeto = Astro.slots.has('objeto')
+const camino: Miga[] = [{ texto: 'Inicio', a: '/' }, ...migas, { texto: titulo }]
+const datos = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: camino.map((m, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: m.texto,
+    item: new URL(m.a ?? rutaDe(Astro.url), EMPRESA.dominio).href,
+  })),
+}
+---
+
+<header class:list={['contenedor pt-8 pb-10 lg:pt-12 lg:pb-14', conObjeto && 'grid items-center gap-x-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]']}>
+  <div>
+    <nav aria-label="Estás en" data-aparece>
+      <ol class="rotulo flex flex-wrap gap-x-2 gap-y-1 text-pizarra">
+        {
+          camino.map((m, i) => (
+            <li class="flex items-center gap-2">
+              {i > 0 && <span aria-hidden="true">/</span>}
+              {m.a ? (
+                <a href={m.a} class="inline-block py-3 no-underline hover:text-tinta hover:underline">
+                  {m.texto}
+                </a>
+              ) : (
+                <span aria-current="page" class="inline-block py-3 text-tinta">
+                  {m.texto}
+                </span>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+    <h1
+      data-aparece
+      style="--i: 1"
+      class:list={['titular mt-3 max-w-[20ch]', conObjeto ? 'text-[clamp(2.5rem,6vw,4.75rem)]' : 'text-[clamp(2.5rem,7vw,5.75rem)]']}
+    >
+      {titulo}
+    </h1>
+    {
+      Astro.slots.has('default') && (
+        <div data-aparece style="--i: 2" class="mt-6 max-w-[62ch] text-lg text-pizarra">
+          <slot />
+        </div>
+      )
+    }
+  </div>
+  {
+    conObjeto && (
+      <div data-aparece style="--i: 2" class="mt-8 lg:mt-0">
+        <slot name="objeto" />
+      </div>
+    )
+  }
+  <div class="traza col-span-full mt-10 h-0.5 bg-rojo" aria-hidden="true"></div>
+</header>
+<script type="application/ld+json" set:html={JSON.stringify(datos).replace(/</g, '\\u003c')} />

@@ -1,0 +1,66 @@
+---
+import Portadilla from '../components/Portadilla.astro'
+import Base from '../layouts/Base.astro'
+import { EMPRESA } from '../lib/empresa'
+// Pendiente de IMTEX: datos de inscripción en el Registro Mercantil (docs/ESTADO.md). Conviene que lo revise su asesoría.
+---
+
+<Base titulo="Aviso legal" descripcion="Aviso legal de imtexsl.com: titular del sitio, condiciones de uso y propiedad intelectual.">
+  <Portadilla titulo="Aviso legal" />
+  <div class="contenedor pb-16 lg:pb-28">
+    <div class="prosa">
+      <h2>Titular del sitio</h2>
+      <p>En cumplimiento de la Ley 34/2002, de servicios de la sociedad de la información y de comercio electrónico, se informa de que este sitio web es de:</p>
+      <ul>
+        <li>{EMPRESA.razonSocial} ({EMPRESA.nombreLargo})</li>
+        <li>CIF: {EMPRESA.cif}</li>
+        <li>Domicilio: {EMPRESA.direccion}, {EMPRESA.cp} {EMPRESA.localidad} ({EMPRESA.provincia})</li>
+        <li>Teléfono: {EMPRESA.telefono}</li>
+        <li>Correo electrónico: <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a></li>
+      </ul>
+
+      <h2>Objeto</h2>
+      <p>
+        Este sitio informa sobre la actividad de {EMPRESA.nombre} (impermeabilización, reparación y refuerzo de estructuras, y aplicación de resinas) y permite
+        pedir presupuesto. El acceso es libre y gratuito.
+      </p>
+
+      <h2>Condiciones de uso</h2>
+      <p>
+        Quien visita el sitio se compromete a usarlo conforme a la ley y a no dañar, inutilizar ni sobrecargar sus contenidos o servicios. {EMPRESA.nombre} puede
+        modificar o retirar contenidos sin previo aviso.
+      </p>
+
+      <h2>Propiedad intelectual e industrial</h2>
+      <p>
+        Los textos, las fotografías, el diseño y la marca {EMPRESA.nombre} son de {EMPRESA.razonSocial} o se usan con autorización de sus titulares. No se pueden
+        reproducir, distribuir ni transformar sin permiso por escrito. Las marcas de fabricantes que se citan pertenecen a sus dueños y se nombran solo para
+        indicar los sistemas que se aplican.
+      </p>
+
+      <h2>Créditos</h2>
+      <p>
+        El vídeo de la página <a href="/empresa">Empresa</a> usa el modelo 3D «Mercedes-Benz Sprinter», de Savelliy 07
+        (<a href="https://sketchfab.com/3d-models/mercedes-benz-sprinter-152f62800be34652af0545487129ca2e" rel="noopener">Sketchfab</a>), con licencia
+        <a href="https://creativecommons.org/licenses/by/4.0/deed.es" rel="noopener">CC BY 4.0</a>. Se ha modificado: pintura, rotulación de
+        {EMPRESA.nombre}, puertas traseras y zona de carga, y sin los emblemas del fabricante. Las texturas, el cielo y el resto de modelos de los vídeos son
+        de Poly Haven, de dominio público.
+      </p>
+
+      <h2>Responsabilidad</h2>
+      <p>
+        La información es orientativa y no sustituye a un estudio técnico de cada obra. {EMPRESA.nombre} procura que sea exacta y esté al día, pero no garantiza
+        que no haya errores, ni responde del uso que se haga de ella ni de los contenidos de sitios de terceros enlazados desde aquí.
+      </p>
+
+      <h2>Datos personales y cookies</h2>
+      <p>
+        El tratamiento de datos se explica en la <a href="/privacidad">política de privacidad</a>, y el uso de cookies, en la
+        <a href="/cookies">política de cookies</a>.
+      </p>
+
+      <h2>Legislación aplicable</h2>
+      <p>Este aviso se rige por la legislación española. Para cualquier controversia serán competentes los juzgados y tribunales que correspondan según la ley.</p>
+    </div>
+  </div>
+</Base>

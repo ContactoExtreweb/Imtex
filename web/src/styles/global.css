@@ -1,1 +1,352 @@
 @import "tailwindcss";
+/* Archivo variable (ancho y peso), autoalojada: condensada para titulares, normal para leer */
+@import "@fontsource-variable/archivo/wdth.css";
+
+/* `claro:` aplica solo en el tema claro. El oscuro es el de por defecto y no necesita variante. */
+@custom-variant claro (&:where([data-tema="claro"], [data-tema="claro"] *));
+
+@theme {
+  /* Marca IMTEX 2026 (docs/marca-imtex.jpg). Estos son los valores del tema oscuro, el de por defecto;
+     los del claro están más abajo. Los nombres dicen el papel, no el color: papel = fondo, tinta = texto. */
+  --color-papel: #131116;
+  --color-papel-2: #1b1a20;
+  --color-tinta: #f0f1f3;
+  --color-pizarra: #a9aebb;
+  --color-rojo: #ff311e;
+  /* Rojo para texto pequeño y enlaces: el de marca no llega a 4,5:1 sobre claro, y sobre oscuro va algo aclarado */
+  --color-rojo-tinta: #ff6452;
+  /* Lo que espera su turno (fases y pasos que aún no tocan): apagado, pero legible como texto grande (3:1 sobre
+     papel y papel-2). En el tema claro hace falta más pizarra para llegar. */
+  --color-apagado: color-mix(in oklab, var(--color-pizarra) 55%, transparent);
+
+  /* Los que no cambian con el tema: bloques invertidos (obras, pie), y el negro del texto sobre rojo */
+  --color-noche: #1d1b22;
+  --color-claro: #eef0f2;
+  --color-negro: #131116;
+  --color-gris: #444556;
+
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Las cosas encajan en su sitio: salida exponencial, sin rebote */
+  --ease-encaje: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  :root {
+    --alto-cabecera: 4rem;
+    /* Filete de la retícula */
+    --filete: color-mix(in oklab, var(--color-tinta) 16%, transparent);
+    color-scheme: dark;
+    scrollbar-color: var(--color-pizarra) var(--color-papel-2);
+  }
+
+  :root[data-tema="claro"] {
+    --color-papel: #eef0f2;
+    --color-papel-2: #e1e4e9;
+    --color-tinta: #131116;
+    --color-pizarra: #444556;
+    --color-rojo-tinta: #c0200f;
+    --color-apagado: color-mix(in oklab, var(--color-pizarra) 65%, transparent);
+    --color-noche: #131116;
+    color-scheme: light;
+  }
+
+  html {
+    scroll-padding-top: calc(var(--alto-cabecera) + 1rem);
+  }
+
+  body {
+    background: var(--color-papel);
+    color: var(--color-tinta);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-rojo);
+    color: var(--color-negro);
+  }
+
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 0.08em;
+  }
+
+  input,
+  textarea,
+  select {
+    caret-color: var(--color-rojo-tinta);
+  }
+}
+
+@layer components {
+  /* Titulares: la misma voz que la banda del lema */
+  .titular {
+    font-stretch: 62%;
+    font-weight: 800;
+    line-height: 0.94;
+    letter-spacing: -0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  /* Rótulos y datos: condensada, en mayúsculas, con cifras tabulares */
+  .rotulo {
+    font-stretch: 75%;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .contenedor {
+    width: 100%;
+    max-width: 84rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  /* Botón principal: rojo de marca con texto negro (5,6:1), en los dos temas */
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    white-space: nowrap;
+    min-height: 3rem;
+    padding: 0.7rem 1.4rem;
+    border: 0;
+    background: var(--color-rojo);
+    color: var(--color-negro);
+    font-stretch: 75%;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 0.25s var(--ease-encaje),
+      color 0.25s var(--ease-encaje);
+  }
+  .boton:hover {
+    background: var(--color-tinta);
+    color: var(--color-papel);
+  }
+  .boton:active {
+    transform: translateY(1px);
+  }
+  .boton:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+  /* En los bloques invertidos, al pasar por encima se aclara */
+  .sobre-noche .boton:hover {
+    background: var(--color-claro);
+    color: var(--color-negro);
+  }
+
+  .enlace {
+    color: var(--color-rojo-tinta);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .enlace:hover {
+    color: var(--color-tinta);
+  }
+
+  /* Franjas diagonales de la marca */
+  .franjas {
+    background-image: repeating-linear-gradient(
+      -55deg,
+      var(--color-rojo) 0 1.1rem,
+      transparent 1.1rem 1.6rem,
+      var(--color-gris) 1.6rem 2.1rem,
+      transparent 2.1rem 3.4rem
+    );
+  }
+
+  /* Texto corrido (empresa, legales): medida de lectura y ritmo vertical */
+  .prosa {
+    max-width: 68ch;
+  }
+  .prosa > * + * {
+    margin-top: 1.1em;
+  }
+  .prosa h2 {
+    margin-top: 2.2em;
+    font-stretch: 75%;
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.15;
+  }
+  .prosa ul {
+    padding-left: 1.2em;
+    list-style: square;
+  }
+  .prosa li + li {
+    margin-top: 0.4em;
+  }
+  .prosa li::marker {
+    color: var(--color-rojo);
+  }
+  .prosa a {
+    color: var(--color-rojo-tinta);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  /* Campos de formulario */
+  .campo {
+    display: block;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid color-mix(in oklab, var(--color-tinta) 35%, transparent);
+    background: var(--color-papel-2);
+    color: var(--color-tinta);
+    font: inherit;
+    transition: border-color 0.2s;
+  }
+  .campo::placeholder {
+    color: color-mix(in oklab, var(--color-pizarra) 80%, transparent);
+  }
+  .campo:hover {
+    border-color: var(--color-tinta);
+  }
+  .campo:focus-visible {
+    outline: 2px solid var(--color-rojo);
+    outline-offset: 1px;
+    border-color: transparent;
+  }
+  .campo:user-invalid {
+    border-color: var(--color-rojo-tinta);
+  }
+}
+
+/* --- Movimiento. Todo el contenido es visible por defecto: sin soporte o con las animaciones
+       desactivadas, simplemente no se anima. --- */
+@media (prefers-reduced-motion: no-preference) {
+  /* Paso de una página a otra: la nueva entra con un barrido, como las capas de la portada.
+     La cabecera no se mueve, y la foto de una obra viaja del listado a su ficha. */
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root) {
+    animation: 0.28s var(--ease-encaje) both pagina-sale;
+  }
+  ::view-transition-new(root) {
+    animation: 0.55s var(--ease-encaje) both pagina-entra;
+  }
+  @keyframes pagina-sale {
+    to {
+      opacity: 0.35;
+    }
+  }
+  @keyframes pagina-entra {
+    from {
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  ::view-transition-group(cabecera) {
+    z-index: 2;
+  }
+  ::view-transition-group(*) {
+    animation-duration: 0.5s;
+    animation-timing-function: var(--ease-encaje);
+  }
+
+  /* Bloques que entran solos, a su ritmo, la primera vez que se ven: no van atados al scroll.
+     Base.astro pone .anima y marca data-visto; --i escalona los de un mismo grupo.
+     Va en envoltorios, no en elementos con su propia transición (cambiaría la del hover)
+     ni en los que llevan view-transition-name (la foto que viaja llegaría invisible). */
+  .anima [data-aparece] {
+    transition:
+      opacity 0.8s var(--ease-encaje),
+      translate 0.8s var(--ease-encaje);
+    transition-delay: calc(var(--i, 0) * 90ms);
+  }
+  .anima [data-aparece]:not([data-visto]) {
+    opacity: 0;
+    translate: 0 1.75rem;
+  }
+
+  @supports (animation-timeline: view()) {
+    /* Una foto que se destapa de izquierda a derecha al entrar en pantalla */
+    .registro {
+      animation: registro linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+    @keyframes registro {
+      from {
+        clip-path: inset(0 100% 0 0);
+      }
+      to {
+        clip-path: inset(0 0 0 0);
+      }
+    }
+
+
+    /* Un filete que se traza de izquierda a derecha */
+    .traza {
+      transform-origin: left;
+      animation: traza linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 80%;
+    }
+    @keyframes traza {
+      from {
+        scale: 0 1;
+      }
+      to {
+        scale: 1 1;
+      }
+    }
+
+    /* Un número de paso que se enciende al llegar al centro de la pantalla y se apaga al pasar */
+    .paso {
+      animation: paso linear both;
+      animation-timeline: view();
+      animation-range: cover 30% cover 70%;
+    }
+    @keyframes paso {
+      0%,
+      100% {
+        color: var(--color-apagado);
+      }
+      35%,
+      65% {
+        color: var(--color-rojo-tinta);
+      }
+    }
+
+    /* Una foto que se mueve algo más despacio que la página */
+    .paralaje {
+      animation: paralaje linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+    @keyframes paralaje {
+      from {
+        translate: 0 -7%;
+      }
+      to {
+        translate: 0 7%;
+      }
+    }
+  }
+}

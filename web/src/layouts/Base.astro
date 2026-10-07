@@ -1,0 +1,135 @@
+---
+import fuente from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url'
+import Cabecera from '../components/Cabecera.astro'
+import Pie from '../components/Pie.astro'
+import { EMPRESA, rutaDe } from '../lib/empresa'
+import '../styles/global.css'
+
+interface Imagen {
+  url: string
+  ancho: number
+  alto: number
+  alt: string
+}
+interface Props {
+  titulo: string
+  descripcion: string
+  /** Imagen para compartir (URL absoluta y medidas). Sin ella, la de la marca. */
+  imagen?: Imagen
+  /** Datos estructurados (schema.org) propios de la página */
+  datos?: object[]
+  /** Páginas que no deben salir en buscadores (el 404) */
+  sinIndexar?: boolean
+}
+
+// La de la marca: public/compartir.jpg, hecha con scripts/imagen-compartir.mjs
+const MARCA: Imagen = {
+  url: `${EMPRESA.dominio}/compartir.jpg`,
+  ancho: 1200,
+  alto: 630,
+  alt: 'IMTEX: impermeabilización, reparación y refuerzo de estructuras. Membrana de poliurea en la Central Nuclear de Almaraz.',
+}
+
+const { titulo, descripcion, imagen = MARCA, datos = [], sinIndexar = false } = Astro.props
+// Un solo dominio: la canónica siempre apunta a www.imtexsl.com
+const canonica = new URL(rutaDe(Astro.url), EMPRESA.dominio).href
+const tituloCompleto = titulo.includes('IMTEX') ? titulo : `${titulo} · IMTEX`
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* Tema: oscuro por defecto. Si el visitante eligió el claro, se pone antes de pintar nada. */}
+    <script is:inline>
+      try {
+        if (localStorage.getItem('tema') === 'claro') document.documentElement.dataset.tema = 'claro'
+      } catch {}
+    </script>
+    {/* Movimiento: los bloques con data-aparece entran solos la primera vez que se ven (global.css).
+        Sin JavaScript o con las animaciones reducidas se ven sin más. */}
+    <script is:inline>
+      if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('anima')
+        addEventListener('DOMContentLoaded', () => {
+          const vista = new IntersectionObserver(
+            (entradas) => {
+              for (const e of entradas) {
+                if (!e.isIntersecting) continue
+                e.target.setAttribute('data-visto', '')
+                vista.unobserve(e.target)
+              }
+            },
+            { rootMargin: '0px 0px -8% 0px' },
+          )
+          document.querySelectorAll('[data-aparece]').forEach((el) => vista.observe(el))
+        })
+      }
+    </script>
+    {/* ¿Merece la pena el 3D en este equipo? Lo preguntan la portada (Fases) y los objetos de las páginas interiores
+        antes de pintar: así la foto no se esconde mientras se intenta un 3D que no va a ir.
+        No, con las animaciones reducidas, con ahorro de datos, con poca memoria, sin WebGL 2 (lo pide three.js)
+        o con WebGL pintado por software: sin tarjeta gráfica cada fotograma bloquea la página (escritorios remotos,
+        equipos sin aceleración y medidores como Lighthouse). Para verlo igualmente: localStorage.setItem('forzar-3d', 'si') */}
+    <script is:inline>
+      {
+        const probar = () => {
+          try {
+            if (localStorage.getItem('forzar-3d') === 'si') return true
+          } catch {}
+          const n = navigator
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches || (n.connection && n.connection.saveData) || (n.deviceMemory || 8) < 4) return false
+          try {
+            const gl = document.createElement('canvas').getContext('webgl2')
+            if (!gl) return false
+            // Chrome y Safari dan un nombre genérico; el de la tarjeta va en la extensión
+            let tarjeta = String(gl.getParameter(gl.RENDERER))
+            if (/^webkit webgl$/i.test(tarjeta)) {
+              const info = gl.getExtension('WEBGL_debug_renderer_info')
+              if (info) tarjeta = String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL))
+            }
+            const soltar = gl.getExtension('WEBGL_lose_context')
+            if (soltar) soltar.loseContext()
+            return !/swiftshader|llvmpipe|softpipe|software|basic render/i.test(tarjeta)
+          } catch {
+            return false
+          }
+        }
+        let respuesta
+        window.puede3d = () => (respuesta ??= probar())
+      }
+    </script>
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descripcion} />
+    {sinIndexar ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonica} />}
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preload" href={fuente} as="font" type="font/woff2" crossorigin />
+    <meta name="theme-color" content="#131116" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content={EMPRESA.nombre} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={canonica} />
+    <meta property="og:image" content={imagen.url} />
+    <meta property="og:image:width" content={String(imagen.ancho)} />
+    <meta property="og:image:height" content={String(imagen.alto)} />
+    <meta property="og:image:alt" content={imagen.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {datos.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d).replace(/</g, '\\u003c')} />)}
+  </head>
+  <body>
+    <a
+      href="#contenido"
+      class="rotulo sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-rojo focus:px-4 focus:py-3 focus:text-negro"
+    >
+      Saltar al contenido
+    </a>
+    <Cabecera />
+    <main id="contenido">
+      <slot />
+    </main>
+    <Pie />
+  </body>
+</html>

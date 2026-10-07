@@ -39,6 +39,113 @@ export type Database = {
   }
   public: {
     Tables: {
+      alquileres: {
+        Row: {
+          concepto: string | null
+          created_at: string
+          created_by: string | null
+          documento: string | null
+          empresa: string | null
+          fecha: string
+          id: string
+          importe: number
+          mes: string
+          obra_id: string
+          updated_at: string
+        }
+        Insert: {
+          concepto?: string | null
+          created_at?: string
+          created_by?: string | null
+          documento?: string | null
+          empresa?: string | null
+          fecha: string
+          id?: string
+          importe: number
+          mes: string
+          obra_id: string
+          updated_at?: string
+        }
+        Update: {
+          concepto?: string | null
+          created_at?: string
+          created_by?: string | null
+          documento?: string | null
+          empresa?: string | null
+          fecha?: string
+          id?: string
+          importe?: number
+          mes?: string
+          obra_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alquileres_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bajas_documentos: {
+        Row: {
+          comentario: string | null
+          id: string
+          nombre_archivo: string
+          ruta: string
+          subido_el: string
+          subido_por: string | null
+          subido_por_nombre: string
+          tamano: number
+          tipo: string
+          tipo_mime: string
+          trabajador_id: string
+        }
+        Insert: {
+          comentario?: string | null
+          id?: string
+          nombre_archivo: string
+          ruta: string
+          subido_el?: string
+          subido_por?: string | null
+          subido_por_nombre?: string
+          tamano: number
+          tipo: string
+          tipo_mime: string
+          trabajador_id: string
+        }
+        Update: {
+          comentario?: string | null
+          id?: string
+          nombre_archivo?: string
+          ruta?: string
+          subido_el?: string
+          subido_por?: string | null
+          subido_por_nombre?: string
+          tamano?: number
+          tipo?: string
+          tipo_mime?: string
+          trabajador_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bajas_documentos_subido_por_fkey"
+            columns: ["subido_por"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bajas_documentos_trabajador_id_fkey"
+            columns: ["trabajador_id"]
+            isOneToOne: false
+            referencedRelation: "trabajadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categorias_profesionales: {
         Row: {
           activa: boolean
@@ -71,6 +178,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      certificaciones: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          descripcion: string | null
+          fecha_corte: string | null
+          id: string
+          importe_origen: number
+          mes: string
+          numero: number
+          obra_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          fecha_corte?: string | null
+          id?: string
+          importe_origen: number
+          mes: string
+          numero: number
+          obra_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          fecha_corte?: string | null
+          id?: string
+          importe_origen?: number
+          mes?: string
+          numero?: number
+          obra_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificaciones_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       clientes: {
         Row: {
@@ -119,6 +273,204 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      combustible: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          fecha: string
+          id: string
+          importe: number
+          km: number
+          mes: string
+          obra_id: string
+          parte_trabajo_id: string | null
+          tarifa_km: number
+          tipo_vehiculo: string
+          updated_at: string
+          vehiculo: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          fecha: string
+          id?: string
+          importe: number
+          km?: number
+          mes: string
+          obra_id: string
+          parte_trabajo_id?: string | null
+          tarifa_km?: number
+          tipo_vehiculo: string
+          updated_at?: string
+          vehiculo?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          fecha?: string
+          id?: string
+          importe?: number
+          km?: number
+          mes?: string
+          obra_id?: string
+          parte_trabajo_id?: string | null
+          tarifa_km?: number
+          tipo_vehiculo?: string
+          updated_at?: string
+          vehiculo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "combustible_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "combustible_parte_trabajo_id_fkey"
+            columns: ["parte_trabajo_id"]
+            isOneToOne: false
+            referencedRelation: "partes_trabajo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gastos_viaje: {
+        Row: {
+          concepto: string | null
+          created_at: string
+          created_by: string | null
+          documento: string | null
+          fecha: string
+          id: string
+          importe: number
+          mes: string
+          obra_id: string
+          tercero: string | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          concepto?: string | null
+          created_at?: string
+          created_by?: string | null
+          documento?: string | null
+          fecha: string
+          id?: string
+          importe: number
+          mes: string
+          obra_id: string
+          tercero?: string | null
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          concepto?: string | null
+          created_at?: string
+          created_by?: string | null
+          documento?: string | null
+          fecha?: string
+          id?: string
+          importe?: number
+          mes?: string
+          obra_id?: string
+          tercero?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gastos_viaje_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materiales: {
+        Row: {
+          concepto: string | null
+          created_at: string
+          created_by: string | null
+          documento: string | null
+          fecha: string
+          id: string
+          importe: number
+          mes: string
+          obra_id: string
+          proveedor: string | null
+          tipo: string | null
+          updated_at: string
+        }
+        Insert: {
+          concepto?: string | null
+          created_at?: string
+          created_by?: string | null
+          documento?: string | null
+          fecha: string
+          id?: string
+          importe: number
+          mes: string
+          obra_id: string
+          proveedor?: string | null
+          tipo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          concepto?: string | null
+          created_at?: string
+          created_by?: string | null
+          documento?: string | null
+          fecha?: string
+          id?: string
+          importe?: number
+          mes?: string
+          obra_id?: string
+          proveedor?: string | null
+          tipo?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materiales_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meses_cerrados: {
+        Row: {
+          cerrado_el: string
+          cerrado_por: string | null
+          mes: string
+          obra_id: string
+        }
+        Insert: {
+          cerrado_el?: string
+          cerrado_por?: string | null
+          mes: string
+          obra_id: string
+        }
+        Update: {
+          cerrado_el?: string
+          cerrado_por?: string | null
+          mes?: string
+          obra_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meses_cerrados_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notas: {
         Row: {
@@ -222,6 +574,238 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "presupuestos_totales"
             referencedColumns: ["presupuesto_id"]
+          },
+        ]
+      }
+      partes_horas: {
+        Row: {
+          alojamiento: number
+          categoria_id: string | null
+          created_at: string
+          created_by: string | null
+          dietas: number
+          fecha: string
+          horas_ext: number
+          horas_ord: number
+          id: string
+          mes: string
+          obra_id: string
+          operario: string
+          parte_trabajo_id: string | null
+          precio_ext: number
+          precio_ord: number
+          trabajador_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          alojamiento?: number
+          categoria_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          dietas?: number
+          fecha: string
+          horas_ext?: number
+          horas_ord?: number
+          id?: string
+          mes: string
+          obra_id: string
+          operario: string
+          parte_trabajo_id?: string | null
+          precio_ext?: number
+          precio_ord?: number
+          trabajador_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alojamiento?: number
+          categoria_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          dietas?: number
+          fecha?: string
+          horas_ext?: number
+          horas_ord?: number
+          id?: string
+          mes?: string
+          obra_id?: string
+          operario?: string
+          parte_trabajo_id?: string | null
+          precio_ext?: number
+          precio_ord?: number
+          trabajador_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partes_horas_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_profesionales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partes_horas_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partes_horas_parte_trabajo_id_fkey"
+            columns: ["parte_trabajo_id"]
+            isOneToOne: false
+            referencedRelation: "partes_trabajo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partes_horas_trabajador_id_fkey"
+            columns: ["trabajador_id"]
+            isOneToOne: false
+            referencedRelation: "trabajadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partes_trabajo: {
+        Row: {
+          apuntado_el: string | null
+          apuntado_por: string | null
+          avisos: string[]
+          confirmado_el: string | null
+          correccion_pedida_el: string | null
+          created_at: string
+          enviado_por: string | null
+          estado: string
+          fecha: string | null
+          foto: string
+          id: string
+          instrucciones_calidad: string | null
+          km_llegada: number | null
+          km_salida: number | null
+          lectura: Json | null
+          lineas: Json
+          llegada_nave: string | null
+          llegada_obra: string | null
+          material_devuelto: string | null
+          material_retirado: string | null
+          material_utilizado: string | null
+          mediciones: string | null
+          medio_ambiente: string | null
+          obra_id: string | null
+          origen: string
+          salida_nave: string | null
+          salida_obra: string | null
+          subido_por: string | null
+          telefono: string | null
+          tipo_vehiculo: string | null
+          trabajos: string | null
+          updated_at: string
+          vehiculo: string | null
+          whatsapp_mensaje_id: string | null
+          whatsapp_resumen_id: string | null
+        }
+        Insert: {
+          apuntado_el?: string | null
+          apuntado_por?: string | null
+          avisos?: string[]
+          confirmado_el?: string | null
+          correccion_pedida_el?: string | null
+          created_at?: string
+          enviado_por?: string | null
+          estado?: string
+          fecha?: string | null
+          foto: string
+          id?: string
+          instrucciones_calidad?: string | null
+          km_llegada?: number | null
+          km_salida?: number | null
+          lectura?: Json | null
+          lineas?: Json
+          llegada_nave?: string | null
+          llegada_obra?: string | null
+          material_devuelto?: string | null
+          material_retirado?: string | null
+          material_utilizado?: string | null
+          mediciones?: string | null
+          medio_ambiente?: string | null
+          obra_id?: string | null
+          origen?: string
+          salida_nave?: string | null
+          salida_obra?: string | null
+          subido_por?: string | null
+          telefono?: string | null
+          tipo_vehiculo?: string | null
+          trabajos?: string | null
+          updated_at?: string
+          vehiculo?: string | null
+          whatsapp_mensaje_id?: string | null
+          whatsapp_resumen_id?: string | null
+        }
+        Update: {
+          apuntado_el?: string | null
+          apuntado_por?: string | null
+          avisos?: string[]
+          confirmado_el?: string | null
+          correccion_pedida_el?: string | null
+          created_at?: string
+          enviado_por?: string | null
+          estado?: string
+          fecha?: string | null
+          foto?: string
+          id?: string
+          instrucciones_calidad?: string | null
+          km_llegada?: number | null
+          km_salida?: number | null
+          lectura?: Json | null
+          lineas?: Json
+          llegada_nave?: string | null
+          llegada_obra?: string | null
+          material_devuelto?: string | null
+          material_retirado?: string | null
+          material_utilizado?: string | null
+          mediciones?: string | null
+          medio_ambiente?: string | null
+          obra_id?: string | null
+          origen?: string
+          salida_nave?: string | null
+          salida_obra?: string | null
+          subido_por?: string | null
+          telefono?: string | null
+          tipo_vehiculo?: string | null
+          trabajos?: string | null
+          updated_at?: string
+          vehiculo?: string | null
+          whatsapp_mensaje_id?: string | null
+          whatsapp_resumen_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partes_trabajo_apuntado_por_fkey"
+            columns: ["apuntado_por"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partes_trabajo_enviado_por_fkey"
+            columns: ["enviado_por"]
+            isOneToOne: false
+            referencedRelation: "trabajadores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partes_trabajo_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partes_trabajo_subido_por_fkey"
+            columns: ["subido_por"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -615,6 +1199,59 @@ export type Database = {
         }
         Relationships: []
       }
+      subcontratas: {
+        Row: {
+          concepto: string | null
+          created_at: string
+          created_by: string | null
+          documento: string | null
+          empresa: string | null
+          fecha: string
+          id: string
+          importe: number
+          mes: string
+          obra_id: string
+          retencion_pct: number
+          updated_at: string
+        }
+        Insert: {
+          concepto?: string | null
+          created_at?: string
+          created_by?: string | null
+          documento?: string | null
+          empresa?: string | null
+          fecha: string
+          id?: string
+          importe: number
+          mes: string
+          obra_id: string
+          retencion_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          concepto?: string | null
+          created_at?: string
+          created_by?: string | null
+          documento?: string | null
+          empresa?: string | null
+          fecha?: string
+          id?: string
+          importe?: number
+          mes?: string
+          obra_id?: string
+          retencion_pct?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontratas_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tarifas_combustible: {
         Row: {
           consumo_camion_l100: number
@@ -646,8 +1283,10 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          jornada_horas: number
           nombre: string
           perfil_id: string | null
+          telefono: string | null
           updated_at: string
         }
         Insert: {
@@ -656,8 +1295,10 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          jornada_horas?: number
           nombre: string
           perfil_id?: string | null
+          telefono?: string | null
           updated_at?: string
         }
         Update: {
@@ -666,8 +1307,10 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          jornada_horas?: number
           nombre?: string
           perfil_id?: string | null
+          telefono?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -687,8 +1330,149 @@ export type Database = {
           },
         ]
       }
+      web_fotos: {
+        Row: {
+          alt: string
+          alto: number
+          ancho: number
+          created_at: string
+          created_by: string | null
+          id: string
+          obra_id: string
+          orden: number
+          storage_path: string
+        }
+        Insert: {
+          alt?: string
+          alto: number
+          ancho: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          obra_id: string
+          orden?: number
+          storage_path: string
+        }
+        Update: {
+          alt?: string
+          alto?: number
+          ancho?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          obra_id?: string
+          orden?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "web_fotos_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "web_obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      web_obras: {
+        Row: {
+          anio: string | null
+          created_at: string
+          created_by: string | null
+          descripcion: string | null
+          destacada: boolean
+          id: string
+          obra_id: string | null
+          publicada: boolean
+          resumen: string | null
+          servicio: string | null
+          slug: string
+          titulo: string
+          ubicacion: string | null
+          updated_at: string
+        }
+        Insert: {
+          anio?: string | null
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          destacada?: boolean
+          id?: string
+          obra_id?: string | null
+          publicada?: boolean
+          resumen?: string | null
+          servicio?: string | null
+          slug: string
+          titulo: string
+          ubicacion?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anio?: string | null
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          destacada?: boolean
+          id?: string
+          obra_id?: string | null
+          publicada?: boolean
+          resumen?: string | null
+          servicio?: string | null
+          slug?: string
+          titulo?: string
+          ubicacion?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "web_obras_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: true
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
+      control_obra_mensual: {
+        Row: {
+          alquileres: number | null
+          certificacion: number | null
+          combustible: number | null
+          dietas: number | null
+          hoteles: number | null
+          materiales: number | null
+          mes: string | null
+          obra_id: string | null
+          personal: number | null
+          subcontrata: number | null
+        }
+        Relationships: []
+      }
+      presupuesto_costes_familia: {
+        Row: {
+          coste: number | null
+          familia: string | null
+          presupuesto_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presupuesto_partidas_presupuesto_id_fkey"
+            columns: ["presupuesto_id"]
+            isOneToOne: false
+            referencedRelation: "presupuestos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presupuesto_partidas_presupuesto_id_fkey"
+            columns: ["presupuesto_id"]
+            isOneToOne: false
+            referencedRelation: "presupuestos_totales"
+            referencedColumns: ["presupuesto_id"]
+          },
+        ]
+      }
       presupuestos_totales: {
         Row: {
           base: number | null
@@ -701,6 +1485,7 @@ export type Database = {
       }
     }
     Functions: {
+      apuntar_parte: { Args: { p_parte: string }; Returns: undefined }
       guardar_partida_tipo: { Args: { p: Json }; Returns: string }
       guardar_presupuesto: { Args: { p: Json }; Returns: string }
     }

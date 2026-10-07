@@ -7,11 +7,19 @@ import { ConPermiso, Layout, Protegido } from '@/components/layout'
 import { Toaster } from '@/components/ui/sonner'
 import { ProveedorSesion } from '@/components/proveedor-sesion'
 import { Login, NuevaContrasena, Recuperar } from '@/paginas/acceso'
+import { Bajas } from '@/paginas/bajas'
 import { Categorias } from '@/paginas/categorias'
 import { Clientes } from '@/paginas/clientes'
 import { Combustible } from '@/paginas/combustible'
+import { ControlObra } from '@/paginas/control-obra'
+import { ControlObraFicha } from '@/paginas/control-obra-ficha'
+import { ControlObraImprimir } from '@/paginas/control-obra-imprimir'
+import { Galeria } from '@/paginas/galeria'
+import { GaleriaFicha } from '@/paginas/galeria-ficha'
 import { Inicio } from '@/paginas/inicio'
 import { Obras } from '@/paginas/obras'
+import { ParteFicha } from '@/paginas/parte-ficha'
+import { Partes } from '@/paginas/partes'
 import { PartidasTipo } from '@/paginas/partidas-tipo'
 import { Precios } from '@/paginas/precios'
 import { Presupuesto } from '@/paginas/presupuesto'
@@ -30,7 +38,8 @@ const router = createBrowserRouter([
   {
     element: <Protegido />,
     children: [
-      // Sin menú: es la hoja que se imprime
+      // Sin menú: son las hojas que se imprimen
+      { path: 'control-obra/:id/imprimir', element: <ConPermiso modulo="control_obra"><ControlObraImprimir /></ConPermiso> },
       { path: 'presupuestos/:id/imprimir', element: <ConPermiso modulo="presupuestos"><PresupuestoImprimir /></ConPermiso> },
       {
         element: <Layout />,
@@ -38,10 +47,17 @@ const router = createBrowserRouter([
           { index: true, element: <Inicio /> },
           { path: 'clientes', element: <ConPermiso modulo="clientes"><Clientes /></ConPermiso> },
           { path: 'obras', element: <ConPermiso modulo="obras"><Obras /></ConPermiso> },
+          { path: 'control-obra', element: <ConPermiso modulo="control_obra"><ControlObra /></ConPermiso> },
+          { path: 'control-obra/:id', element: <ConPermiso modulo="control_obra"><ControlObraFicha /></ConPermiso> },
+          { path: 'partes', element: <ConPermiso modulo="partes_horas"><Partes /></ConPermiso> },
+          { path: 'partes/:id', element: <ConPermiso modulo="partes_horas"><ParteFicha /></ConPermiso> },
           { path: 'presupuestos', element: <ConPermiso modulo="presupuestos"><Presupuestos /></ConPermiso> },
           { path: 'presupuestos/:id', element: <ConPermiso modulo="presupuestos"><Presupuesto /></ConPermiso> },
           { path: 'partidas-tipo', element: <ConPermiso modulo="base_precios"><PartidasTipo /></ConPermiso> },
           { path: 'precios', element: <ConPermiso modulo="base_precios"><Precios /></ConPermiso> },
+          { path: 'galeria', element: <ConPermiso modulo="galeria"><Galeria /></ConPermiso> },
+          { path: 'galeria/:id', element: <ConPermiso modulo="galeria"><GaleriaFicha /></ConPermiso> },
+          { path: 'bajas', element: <Bajas /> },
           { path: 'ajustes/categorias', element: <ConPermiso modulo="ajustes"><Categorias /></ConPermiso> },
           { path: 'ajustes/combustible', element: <ConPermiso modulo="ajustes"><Combustible /></ConPermiso> },
           { path: 'ajustes/trabajadores', element: <ConPermiso modulo="ajustes"><Trabajadores /></ConPermiso> },

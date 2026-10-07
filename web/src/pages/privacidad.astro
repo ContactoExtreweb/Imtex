@@ -1,0 +1,52 @@
+---
+import Portadilla from '../components/Portadilla.astro'
+import Base from '../layouts/Base.astro'
+import { EMPRESA } from '../lib/empresa'
+// Redactada conforme al RGPD y a la LOPDGDD con lo que hace hoy la web. Conviene que la revise la asesoría de IMTEX.
+---
+
+<Base titulo="Política de privacidad" descripcion="Cómo trata IMTEX los datos personales que recibe a través de este sitio web.">
+  <Portadilla titulo="Política de privacidad" />
+  <div class="contenedor pb-16 lg:pb-28">
+    <div class="prosa">
+      <h2>Quién es el responsable</h2>
+      <p>
+        {EMPRESA.razonSocial} ({EMPRESA.nombreLargo}), con CIF {EMPRESA.cif} y domicilio en {EMPRESA.direccion}, {EMPRESA.cp}
+        {EMPRESA.localidad} ({EMPRESA.provincia}). Contacto: <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> · {EMPRESA.telefono}.
+      </p>
+
+      <h2>Qué datos se tratan y para qué</h2>
+      <p>
+        Los que escribes en el formulario de contacto: nombre, empresa, correo electrónico, teléfono y el mensaje. Se usan únicamente para contestarte y, si lo
+        pides, prepararte un presupuesto. Lo mismo vale para los correos y las llamadas que nos hagas.
+      </p>
+      <p>Este sitio no usa analítica ni publicidad, y no crea perfiles de quien lo visita.</p>
+
+      <h2>Con qué base legal</h2>
+      <p>
+        Tu consentimiento, que das al marcar la casilla y enviar el formulario, y la aplicación de medidas precontractuales a petición tuya cuando pides un
+        presupuesto (artículo 6.1, letras a y b, del Reglamento General de Protección de Datos).
+      </p>
+
+      <h2>Cuánto tiempo se conservan</h2>
+      <p>
+        El necesario para atender tu consulta. Si de ella sale una relación comercial, durante esa relación y, después, los plazos que marca la ley para atender
+        posibles responsabilidades.
+      </p>
+
+      <h2>Quién más los ve</h2>
+      <p>
+        No se ceden a terceros, salvo obligación legal. Para que la web funcione intervienen proveedores que actúan por cuenta de {EMPRESA.nombre}: el alojamiento
+        del sitio y el servicio que entrega el correo del formulario. Alguno puede tratar datos fuera del Espacio Económico Europeo, con las garantías que exige
+        el Reglamento. En la página de contacto hay un mapa de OpenStreetMap: al cargarlo, tu navegador se conecta a sus servidores.
+      </p>
+
+      <h2>Tus derechos</h2>
+      <p>
+        Puedes pedir el acceso a tus datos, su rectificación o supresión, la limitación u oposición a su tratamiento y su portabilidad, y retirar el consentimiento
+        cuando quieras, escribiendo a <a href={`mailto:${EMPRESA.email}`}>{EMPRESA.email}</a> o a la dirección postal de arriba. Si crees que no se han atendido
+        bien, puedes reclamar ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" rel="noopener">www.aepd.es</a>).
+      </p>
+    </div>
+  </div>
+</Base>

@@ -4,8 +4,33 @@
     {
       "name": "crm",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "crm", "--", "--port", "5173", "--strictPort"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "crm",
+        "--",
+        "--port",
+        "5173",
+        "--strictPort",
+        "--host"
+      ],
       "port": 5173
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "web",
+        "--",
+        "--port",
+        "4321",
+        "--host"
+      ],
+      "port": 4321
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { coincide, euros, fecha, leerNumero, numeroATexto } from './formato'
+import { coincide, euros, fecha, leerNumero, numeroATexto, pct } from './formato'
 
 // Intl separa importe y símbolo con un espacio duro; lo normalizamos para comparar.
 const texto = (s: string) => s.replace(/\s/g, ' ')
@@ -34,4 +34,9 @@ test('numeroATexto y leerNumero son inversos', () => {
   expect(numeroATexto(18.5)).toBe('18,5')
   expect(numeroATexto(null)).toBe('')
   expect(leerNumero(numeroATexto(1234.5678))).toBe(1234.5678)
+})
+
+test('pct con un decimal y coma', () => {
+  expect(texto(pct(16.234))).toBe('16,2 %')
+  expect(texto(pct(-3))).toBe('-3,0 %')
 })

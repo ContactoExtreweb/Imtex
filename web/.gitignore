@@ -22,3 +22,23 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# impeccable: lo de cada sesion no se sube
+.impeccable/questions/
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/build/
+.impeccable/config.local.json
+# fotos bajadas de la web antigua para importarlas
+.importacion/
+
+# Local Netlify folder
+.netlify
+# recursos de Poly Haven para los vídeos de Blender (render/recursos.mjs)
+.polyhaven/
+# fotogramas de los vídeos renderizados con Blender (render/*.py)
+.render/
+# caché de Python que deja Blender al importar render/comun.py
+__pycache__/
+# modelos 3D de fuera de Poly Haven para los vídeos (p. ej. la furgoneta de Sketchfab): sus licencias, en docs/decisiones.md
+.modelos/

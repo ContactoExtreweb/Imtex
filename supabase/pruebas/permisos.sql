@@ -29,7 +29,30 @@ declare
   f_partida uuid;
   f_linea uuid;
   f_nota uuid;
+  f_obra_costes uuid;
+  f_certificaciones uuid;
+  f_partes_horas uuid;
+  f_materiales uuid;
+  f_subcontratas uuid;
+  f_alquileres uuid;
+  f_combustible uuid;
+  f_gastos_viaje uuid;
   f_nota_ajena uuid;
+  f_web_publicada uuid;
+  f_web_borrador uuid;
+  f_foto_publicada uuid;
+  f_foto_borrador uuid;
+  f_objeto uuid;
+  f_obra_cierre uuid;
+  f_trabajador_baja uuid;
+  f_baja_ajena uuid;
+  f_baja_propia uuid;
+  f_baja_en_su_nombre uuid;
+  f_objeto_baja uuid;
+  f_objeto_baja_propio uuid;
+  f_parte uuid;
+  f_parte_apuntado uuid;
+  f_objeto_parte uuid;
   n int;
   ok boolean;
 begin
@@ -45,7 +68,8 @@ begin
         ('anon', null, null)
       ) as v(usuario, rol, activo)
     loop
-      -- Datos de prueba, creados como postgres (sin RLS)
+      -- Datos de prueba, creados como postgres (sin RLS) y sin la identidad de la vuelta anterior
+      perform set_config('request.jwt.claims', '', true);
       uid := null;
       f_propia := null;
       if u.rol is not null then
@@ -81,12 +105,77 @@ begin
       insert into public.presupuesto_lineas (partida_id, descripcion) values (f_partida, 'Línea prueba')
         returning id into f_linea;
 
+      -- Control de obra: una obra aparte (la de arriba se borra en su prueba) con un apunte de cada tipo
+      insert into public.obras (codigo, nombre) values (gen_random_uuid()::text, 'Obra con costes')
+        returning id into f_obra_costes;
+      insert into public.certificaciones (obra_id, mes, numero, importe_origen) values (f_obra_costes, date '2026-01-01', 1, 100)
+        returning id into f_certificaciones;
+      insert into public.partes_horas (obra_id, mes, fecha, operario) values (f_obra_costes, date '2026-01-01', current_date, 'x')
+        returning id into f_partes_horas;
+      insert into public.materiales (obra_id, mes, fecha, importe) values (f_obra_costes, date '2026-01-01', current_date, 1)
+        returning id into f_materiales;
+      insert into public.subcontratas (obra_id, mes, fecha, importe) values (f_obra_costes, date '2026-01-01', current_date, 1)
+        returning id into f_subcontratas;
+      insert into public.alquileres (obra_id, mes, fecha, importe) values (f_obra_costes, date '2026-01-01', current_date, 1)
+        returning id into f_alquileres;
+      insert into public.combustible (obra_id, mes, fecha, tipo_vehiculo, importe) values (f_obra_costes, date '2026-01-01', current_date, 'furgon', 1)
+        returning id into f_combustible;
+      insert into public.gastos_viaje (obra_id, mes, fecha, tipo, importe) values (f_obra_costes, date '2026-01-01', current_date, 'dietas', 1)
+        returning id into f_gastos_viaje;
+
       -- Notas: una del propio usuario (si lo hay) y otra ajena
       f_nota := null;
       if uid is not null then
         insert into public.notas (perfil_id, texto) values (uid, 'Nota propia') returning id into f_nota;
       end if;
       insert into public.notas (perfil_id, texto) values (otro, 'Nota ajena') returning id into f_nota_ajena;
+
+      -- Galería de la web: una obra publicada y un borrador, cada una con una foto, y un archivo en el bucket
+      insert into public.web_obras (slug, titulo, servicio, publicada)
+        values ('pub-' || gen_random_uuid(), 'Publicada', 'otros', true) returning id into f_web_publicada;
+      insert into public.web_obras (slug, titulo) values ('bor-' || gen_random_uuid(), 'Borrador')
+        returning id into f_web_borrador;
+      insert into public.web_fotos (obra_id, storage_path, ancho, alto)
+        values (f_web_publicada, gen_random_uuid()::text, 1, 1) returning id into f_foto_publicada;
+      insert into public.web_fotos (obra_id, storage_path, ancho, alto)
+        values (f_web_borrador, gen_random_uuid()::text, 1, 1) returning id into f_foto_borrador;
+      insert into storage.objects (bucket_id, name) values ('galeria', 'prueba/' || gen_random_uuid())
+        returning id into f_objeto;
+
+      -- Cierre de meses: una obra aparte con abril cerrado (en la de costes bloquearía sus pruebas)
+      insert into public.obras (codigo, nombre) values (gen_random_uuid()::text, 'Obra con cierre')
+        returning id into f_obra_cierre;
+      insert into public.meses_cerrados (obra_id, mes) values (f_obra_cierre, date '2026-04-01');
+
+      -- Bajas: un papel de otro trabajador y, si hay usuario, dos de su ficha: el que subió él
+      -- y el que le subieron en su nombre. Y un archivo de cada carpeta en el bucket.
+      -- Ficha aparte: la de arriba se borra en su prueba, y una ficha con papeles no se deja borrar.
+      insert into public.trabajadores (nombre) values ('Trabajador con baja') returning id into f_trabajador_baja;
+      insert into public.bajas_documentos (trabajador_id, tipo, ruta, nombre_archivo, tipo_mime, tamano, subido_por)
+        values (f_trabajador_baja, 'baja', f_trabajador_baja || '/' || gen_random_uuid(), 'x.pdf', 'application/pdf', 1, otro)
+        returning id into f_baja_ajena;
+      insert into storage.objects (bucket_id, name) values ('bajas', f_trabajador_baja || '/' || gen_random_uuid())
+        returning id into f_objeto_baja;
+      f_baja_propia := null;
+      f_baja_en_su_nombre := null;
+      f_objeto_baja_propio := null;
+      if uid is not null then
+        insert into public.bajas_documentos (trabajador_id, tipo, ruta, nombre_archivo, tipo_mime, tamano, subido_por)
+          values (f_propia, 'baja', f_propia || '/' || gen_random_uuid(), 'x.pdf', 'application/pdf', 1, uid)
+          returning id into f_baja_propia;
+        insert into public.bajas_documentos (trabajador_id, tipo, ruta, nombre_archivo, tipo_mime, tamano, subido_por)
+          values (f_propia, 'alta', f_propia || '/' || gen_random_uuid(), 'x.pdf', 'application/pdf', 1, otro)
+          returning id into f_baja_en_su_nombre;
+        insert into storage.objects (bucket_id, name) values ('bajas', f_propia || '/' || gen_random_uuid())
+          returning id into f_objeto_baja_propio;
+      end if;
+
+      -- Partes de trabajo en papel: uno por revisar y otro ya apuntado, y una foto en el bucket
+      insert into public.partes_trabajo (foto) values (gen_random_uuid()::text) returning id into f_parte;
+      insert into public.partes_trabajo (foto, estado) values (gen_random_uuid()::text, 'apuntado')
+        returning id into f_parte_apuntado;
+      insert into storage.objects (bucket_id, name) values ('partes', gen_random_uuid()::text)
+        returning id into f_objeto_parte;
 
       -- Cambio de identidad
       if u.rol is null then
@@ -127,12 +216,88 @@ begin
           ('tarifas_combustible', 'editar', 'update public.tarifas_combustible set precio_litro_ref = precio_litro_ref', null),
           ('tarifas_combustible', 'borrar', 'delete from public.tarifas_combustible', null),
 
+          ('certificaciones', 'ver', 'select from public.certificaciones where id = $1', f_certificaciones),
+          ('certificaciones', 'insertar', 'insert into public.certificaciones (obra_id, mes, numero, importe_origen) values ($1, date ''2026-02-01'', 2, 200)', f_obra_costes),
+          ('certificaciones', 'editar', 'update public.certificaciones set mes = mes where id = $1', f_certificaciones),
+          ('certificaciones', 'borrar', 'delete from public.certificaciones where id = $1', f_certificaciones),
+          ('partes_horas', 'ver', 'select from public.partes_horas where id = $1', f_partes_horas),
+          ('partes_horas', 'insertar', 'insert into public.partes_horas (obra_id, mes, fecha, operario) values ($1, date ''2026-02-01'', current_date, ''x'')', f_obra_costes),
+          ('partes_horas', 'editar', 'update public.partes_horas set mes = mes where id = $1', f_partes_horas),
+          ('partes_horas', 'borrar', 'delete from public.partes_horas where id = $1', f_partes_horas),
+          ('materiales', 'ver', 'select from public.materiales where id = $1', f_materiales),
+          ('materiales', 'insertar', 'insert into public.materiales (obra_id, mes, fecha, importe) values ($1, date ''2026-02-01'', current_date, 1)', f_obra_costes),
+          ('materiales', 'editar', 'update public.materiales set mes = mes where id = $1', f_materiales),
+          ('materiales', 'borrar', 'delete from public.materiales where id = $1', f_materiales),
+          ('subcontratas', 'ver', 'select from public.subcontratas where id = $1', f_subcontratas),
+          ('subcontratas', 'insertar', 'insert into public.subcontratas (obra_id, mes, fecha, importe) values ($1, date ''2026-02-01'', current_date, 1)', f_obra_costes),
+          ('subcontratas', 'editar', 'update public.subcontratas set mes = mes where id = $1', f_subcontratas),
+          ('subcontratas', 'borrar', 'delete from public.subcontratas where id = $1', f_subcontratas),
+          ('alquileres', 'ver', 'select from public.alquileres where id = $1', f_alquileres),
+          ('alquileres', 'insertar', 'insert into public.alquileres (obra_id, mes, fecha, importe) values ($1, date ''2026-02-01'', current_date, 1)', f_obra_costes),
+          ('alquileres', 'editar', 'update public.alquileres set mes = mes where id = $1', f_alquileres),
+          ('alquileres', 'borrar', 'delete from public.alquileres where id = $1', f_alquileres),
+          ('combustible', 'ver', 'select from public.combustible where id = $1', f_combustible),
+          ('combustible', 'insertar', 'insert into public.combustible (obra_id, mes, fecha, tipo_vehiculo, importe) values ($1, date ''2026-02-01'', current_date, ''furgon'', 1)', f_obra_costes),
+          ('combustible', 'editar', 'update public.combustible set mes = mes where id = $1', f_combustible),
+          ('combustible', 'borrar', 'delete from public.combustible where id = $1', f_combustible),
+          ('gastos_viaje', 'ver', 'select from public.gastos_viaje where id = $1', f_gastos_viaje),
+          ('gastos_viaje', 'insertar', 'insert into public.gastos_viaje (obra_id, mes, fecha, tipo, importe) values ($1, date ''2026-02-01'', current_date, ''dietas'', 1)', f_obra_costes),
+          ('gastos_viaje', 'editar', 'update public.gastos_viaje set mes = mes where id = $1', f_gastos_viaje),
+          ('gastos_viaje', 'borrar', 'delete from public.gastos_viaje where id = $1', f_gastos_viaje),
+
+          -- Cierre de meses: lo ve quien ve el control de obra; cerrar y reabrir, solo cierre_meses:editar
+          ('meses_cerrados', 'ver', 'select from public.meses_cerrados where obra_id = $1', f_obra_cierre),
+          ('meses_cerrados', 'insertar', 'insert into public.meses_cerrados (obra_id, mes) values ($1, date ''2026-05-01'')', f_obra_cierre),
+          ('meses_cerrados', 'editar', 'update public.meses_cerrados set cerrado_el = cerrado_el where obra_id = $1', f_obra_cierre),
+          ('meses_cerrados', 'borrar', 'delete from public.meses_cerrados where obra_id = $1 and mes = date ''2026-04-01''', f_obra_cierre),
+
+          -- Bajas: cada uno ve, sube y borra lo suyo; lo de los demás, con el módulo bajas. No se edita.
+          ('bajas_documentos', 'ver', 'select from public.bajas_documentos where id = $1', f_baja_ajena),
+          ('bajas_documentos', 'ver_propio', 'select from public.bajas_documentos where id = $1', f_baja_propia),
+          ('bajas_documentos', 'insertar', 'insert into public.bajas_documentos (trabajador_id, tipo, ruta, nombre_archivo, tipo_mime, tamano) values ($1, ''baja'', $1::text || ''/'' || gen_random_uuid(), ''x'', ''application/pdf'', 1)', f_trabajador_baja),
+          ('bajas_documentos', 'insertar_propio', 'insert into public.bajas_documentos (trabajador_id, tipo, ruta, nombre_archivo, tipo_mime, tamano) values ($1, ''baja'', $1::text || ''/'' || gen_random_uuid(), ''x'', ''application/pdf'', 1)', f_propia),
+          ('bajas_documentos', 'editar', 'update public.bajas_documentos set tipo = tipo where id = $1', f_baja_propia),
+          ('bajas_documentos', 'borrar_en_su_nombre', 'delete from public.bajas_documentos where id = $1', f_baja_en_su_nombre),
+          ('bajas_documentos', 'borrar_propio', 'delete from public.bajas_documentos where id = $1', f_baja_propia),
+          ('bajas_documentos', 'borrar', 'delete from public.bajas_documentos where id = $1', f_baja_ajena),
+          ('storage_bajas', 'ver', 'select from storage.objects where id = $1', f_objeto_baja),
+          ('storage_bajas', 'ver_propio', 'select from storage.objects where id = $1', f_objeto_baja_propio),
+          ('storage_bajas', 'insertar', 'insert into storage.objects (bucket_id, name) values (''bajas'', $1::text || ''/'' || gen_random_uuid())', f_trabajador_baja),
+          ('storage_bajas', 'insertar_propio', 'insert into storage.objects (bucket_id, name) values (''bajas'', coalesce($1::text, ''x'') || ''/'' || gen_random_uuid())', f_propia),
+
+          -- Partes en papel: con el módulo partes_horas. Apuntado ya no se edita, y no se borran (se descartan)
+          ('partes_trabajo', 'ver', 'select from public.partes_trabajo where id = $1', f_parte),
+          ('partes_trabajo', 'insertar', 'insert into public.partes_trabajo (foto) values (gen_random_uuid()::text)', null),
+          ('partes_trabajo', 'insertar_whatsapp', 'insert into public.partes_trabajo (foto, origen, telefono, whatsapp_mensaje_id) values (gen_random_uuid()::text, ''whatsapp'', ''34600000000'', gen_random_uuid()::text)', null),
+          ('partes_trabajo', 'editar', 'update public.partes_trabajo set trabajos = trabajos where id = $1', f_parte),
+          ('partes_trabajo', 'editar_apuntado', 'update public.partes_trabajo set trabajos = trabajos where id = $1', f_parte_apuntado),
+          ('partes_trabajo', 'borrar', 'delete from public.partes_trabajo where id = $1', f_parte),
+          ('storage_partes', 'ver', 'select from storage.objects where id = $1', f_objeto_parte),
+          ('storage_partes', 'insertar', 'insert into storage.objects (bucket_id, name) values (''partes'', gen_random_uuid()::text)', null),
+
           -- Antes que perfiles: borrar el perfil ajeno borraría su nota en cascada
           ('notas', 'ver', 'select from public.notas where id = $1', f_nota_ajena),
           ('notas', 'ver_propio', 'select from public.notas where id = $1', f_nota),
           ('notas', 'insertar', 'insert into public.notas (texto) values (''x'')', null),
           ('notas', 'editar', 'update public.notas set texto = texto where id = $1', f_nota_ajena),
           ('notas', 'borrar', 'delete from public.notas where id = $1', f_nota_ajena),
+
+          -- Galería: lo publicado lo ve todo el mundo (también sin sesión); las fotos antes que su obra
+          ('web_fotos', 'ver_publicada', 'select from public.web_fotos where id = $1', f_foto_publicada),
+          ('web_fotos', 'ver', 'select from public.web_fotos where id = $1', f_foto_borrador),
+          ('web_fotos', 'insertar', 'insert into public.web_fotos (obra_id, storage_path, ancho, alto) values ($1, gen_random_uuid()::text, 1, 1)', f_web_borrador),
+          ('web_fotos', 'editar', 'update public.web_fotos set alt = alt where id = $1', f_foto_borrador),
+          ('web_fotos', 'editar_publicada', 'update public.web_fotos set alt = alt where id = $1', f_foto_publicada),
+          ('web_fotos', 'borrar', 'delete from public.web_fotos where id = $1', f_foto_borrador),
+          ('web_obras', 'ver_publicada', 'select from public.web_obras where id = $1', f_web_publicada),
+          ('web_obras', 'ver', 'select from public.web_obras where id = $1', f_web_borrador),
+          ('web_obras', 'insertar', 'insert into public.web_obras (slug, titulo) values (''x-'' || gen_random_uuid(), ''x'')', null),
+          ('web_obras', 'editar', 'update public.web_obras set titulo = titulo where id = $1', f_web_borrador),
+          ('web_obras', 'editar_publicada', 'update public.web_obras set titulo = titulo where id = $1', f_web_publicada),
+          ('web_obras', 'borrar', 'delete from public.web_obras where id = $1', f_web_borrador),
+          -- Bucket de fotos (el borrado directo en storage.objects está bloqueado: va por la API)
+          ('storage_galeria', 'ver', 'select from storage.objects where id = $1', f_objeto),
+          ('storage_galeria', 'insertar', 'insert into storage.objects (bucket_id, name) values (''galeria'', ''prueba/'' || gen_random_uuid())', null),
 
           ('perfiles', 'ver', 'select from public.perfiles where id = $1', otro),
           ('perfiles', 'ver_propio', 'select from public.perfiles where id = $1', uid),
@@ -210,7 +375,7 @@ m (tabla, ver, editar) as (values
   ('clientes', array['clientes'], 'clientes'),
   ('obras', array['obras'], 'obras'),
   ('categorias_profesionales', array['ajustes', 'control_obra'], 'ajustes'),
-  ('trabajadores', array['ajustes', 'control_obra'], 'ajustes'),
+  ('trabajadores', array['ajustes', 'control_obra', 'bajas'], 'ajustes'),
   ('tarifas_combustible', array['ajustes', 'control_obra'], 'ajustes'),
   ('perfiles', array['usuarios'], 'usuarios'),
   ('precios', array['base_precios', 'presupuestos'], 'base_precios'),
@@ -219,6 +384,21 @@ m (tabla, ver, editar) as (values
   ('presupuestos', array['presupuestos'], 'presupuestos'),
   ('presupuesto_partidas', array['presupuestos'], 'presupuestos'),
   ('presupuesto_lineas', array['presupuestos'], 'presupuestos'),
+  ('certificaciones', array['certificaciones'], 'certificaciones'),
+  ('partes_horas', array['partes_horas'], 'partes_horas'),
+  ('materiales', array['control_obra'], 'control_obra'),
+  ('subcontratas', array['control_obra'], 'control_obra'),
+  ('alquileres', array['control_obra'], 'control_obra'),
+  ('combustible', array['control_obra'], 'control_obra'),
+  ('gastos_viaje', array['control_obra'], 'control_obra'),
+  ('web_obras', array['galeria'], 'galeria'),
+  ('web_fotos', array['galeria'], 'galeria'),
+  ('storage_galeria', array['galeria'], 'galeria'),
+  ('meses_cerrados', array['control_obra', 'cierre_meses'], 'cierre_meses'),
+  ('bajas_documentos', array['bajas'], 'bajas'),
+  ('storage_bajas', array['bajas'], 'bajas'),
+  ('partes_trabajo', array['partes_horas'], 'partes_horas'),
+  ('storage_partes', array['partes_horas'], 'partes_horas'),
   ('notas', null, null),
   ('roles', null, null),
   ('permisos_rol', null, null)
@@ -226,11 +406,19 @@ m (tabla, ver, editar) as (values
 c as (
   select r.*,
     case
+      when r.accion = 'ver_publicada' then true                       -- la web es pública
       when r.rol is null then false                                   -- anon
       when r.tabla in ('roles', 'permisos_rol') then r.accion = 'ver' -- solo lectura
       when r.tabla = 'notas' then r.accion in ('ver_propio', 'insertar') -- cada uno, solo las suyas
+      -- Bajas: lo propio, cualquier usuario activo; nadie edita un papel subido
+      when r.tabla in ('bajas_documentos', 'storage_bajas')
+        and r.accion in ('ver_propio', 'insertar_propio', 'borrar_propio') then r.activo
+      when r.tabla = 'bajas_documentos' and r.accion = 'editar' then false
       when r.accion = 'ver_propio' then true
       when r.tabla = 'tarifas_combustible' and r.accion in ('insertar', 'borrar') then false
+      when r.tabla = 'meses_cerrados' and r.accion = 'editar' then false -- se cierra o se reabre, no se edita
+      -- Partes en papel: los de WhatsApp solo los crea la Edge Function; apuntado no se toca; no se borran
+      when r.tabla = 'partes_trabajo' and r.accion in ('insertar_whatsapp', 'editar_apuntado', 'borrar') then false
       else r.activo and exists (
         select 1 from public.permisos_rol pr
         where pr.rol = r.rol

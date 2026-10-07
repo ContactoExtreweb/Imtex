@@ -1,0 +1,25 @@
+---
+// El mapa de obras en plano, en SVG y sin JavaScript: el sustituto del mapa 3D (scripts/escena3d/mapa.ts)
+// cuando el equipo no puede con él. Las obras, en rojo; la sede, un cuadrado.
+import mapa from '../lib/mapa-iberia.json'
+
+interface Props {
+  puntos: [number, number][]
+  sede: [number, number]
+}
+const { puntos, sede } = Astro.props
+// En el plano del mapa la y crece hacia el norte; en SVG, hacia abajo
+const trazo = (anillo: number[][]) => `M${anillo.map(([x, y]) => `${x},${-y}`).join('L')}Z`
+const [x0, y0, x1, y1] = mapa.marco
+---
+
+<svg viewBox="-6.4 -4.3 13.1 11.1" class="size-full" aria-hidden="true">
+  <g class="fill-papel-2 stroke-pizarra/50" stroke-width="0.025" stroke-linejoin="round">
+    {[...mapa.peninsula, ...mapa.islasCanarias].map((p) => <path d={trazo(p)} />)}
+  </g>
+  <rect x={x0} y={-y1} width={x1 - x0} height={y1 - y0} class="fill-none stroke-pizarra/40" stroke-width="0.025" />
+  <g class="fill-rojo">
+    {puntos.map(([x, y]) => <circle cx={x} cy={-y} r="0.13" />)}
+  </g>
+  <rect x={sede[0] - 0.13} y={-sede[1] - 0.13} width="0.26" height="0.26" class="fill-tinta" />
+</svg>

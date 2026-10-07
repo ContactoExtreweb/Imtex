@@ -1,0 +1,222 @@
+---
+import { EMPRESA, NAVEGACION, rutaDe } from '../lib/empresa'
+import Logo from './Logo.astro'
+
+const ruta = rutaDe(Astro.url)
+const activa = (a: string) => ruta === a || ruta.startsWith(`${a}/`)
+---
+
+{/* La cabecera no se mueve al pasar de una página a otra (view-transition-name) */}
+<header class="sticky top-0 z-40 border-b border-(--filete) bg-papel [view-transition-name:cabecera]">
+  <div class="contenedor flex h-(--alto-cabecera) items-center gap-5">
+    <a href="/" class="shrink-0" aria-label="IMTEX, inicio">
+      <Logo ancho={220} carga="eager" class="h-10 w-auto lg:h-12" />
+    </a>
+
+    <nav aria-label="Principal" class="ml-auto hidden lg:block">
+      <ul class="flex items-center gap-5 xl:gap-7">
+        {
+          NAVEGACION.map((n) => (
+            <li>
+              <a
+                href={n.a}
+                aria-current={activa(n.a) ? 'page' : undefined}
+                class="rotulo relative py-2 no-underline after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:origin-left after:scale-x-0 after:bg-rojo after:transition-transform after:duration-300 after:ease-(--ease-encaje) hover:after:scale-x-100 aria-[current=page]:after:scale-x-100"
+              >
+                {n.texto}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a
+      href={EMPRESA.telefonoEnlace}
+      class="rotulo ml-auto flex min-h-11 min-w-11 items-center justify-center gap-2 text-[0.9375rem] no-underline lg:ml-0"
+      aria-label={`Llamar al ${EMPRESA.telefono}`}
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="size-4.5 fill-none stroke-rojo-tinta stroke-2">
+        <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" stroke-linejoin="round"></path>
+      </svg>
+      {/* El número se ve en tableta y en pantallas anchas; en el móvil y justo cuando entra el menú completo, solo el icono */}
+      <span class="whitespace-nowrap max-sm:sr-only lg:max-xl:sr-only">{EMPRESA.telefono}</span>
+    </a>
+
+    {/* Tema: oscuro por defecto; el botón pasa al claro y vuelve. El texto lo pone el script. */}
+    <button type="button" data-tema-cambio class="flex size-11 items-center justify-center" aria-label="Cambiar al tema claro">
+      {/* Sol: se ve en el tema oscuro (lleva al claro) */}
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="size-5 fill-none stroke-current stroke-2 claro:hidden">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke-linecap="round"></path>
+      </svg>
+      {/* Luna: se ve en el tema claro (lleva al oscuro) */}
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="hidden size-5 fill-none stroke-current stroke-2 claro:block">
+        <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+
+    <a href="/contacto" class="boton max-lg:hidden">Pedir presupuesto</a>
+
+    {/* Móvil: el menú es un popover nativo, sin JavaScript */}
+    <button type="button" popovertarget="menu-movil" class="-mr-2 flex size-11 items-center justify-center lg:hidden" aria-label="Abrir el menú">
+      <svg aria-hidden="true" viewBox="0 0 24 24" class="size-6 fill-none stroke-current stroke-2">
+        <path d="M3 7h18M3 12h18M3 17h18"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+{/* Menú del móvil a pantalla completa: el logo arriba, los enlaces en el centro y el contacto abajo.
+    El fondo deja ver la página desenfocada; al abrir, el logo se destapa y los enlaces entran en cascada. */}
+<div
+  id="menu-movil"
+  popover
+  class="sobre-noche fixed inset-0 m-0 size-full max-h-none max-w-none overflow-y-auto bg-noche/95 p-0 text-claro backdrop-blur-md lg:hidden"
+>
+  <div class="contenedor flex min-h-full flex-col items-center pb-8 text-center">
+    <div class="flex h-(--alto-cabecera) w-full shrink-0 items-center justify-end">
+      <button type="button" popovertarget="menu-movil" popovertargetaction="hide" class="-mr-2 flex size-11 items-center justify-center" aria-label="Cerrar el menú">
+        <svg aria-hidden="true" viewBox="0 0 24 24" class="menu-cerrar size-7 fill-none stroke-current stroke-2">
+          <path d="M5 5l14 14M19 5 5 19"></path>
+        </svg>
+      </button>
+    </div>
+    <a href="/" class="menu-logo relative shrink-0" aria-label="IMTEX, inicio">
+      <Logo ancho={520} fijo class="h-auto w-[min(62vw,16rem)]" />
+    </a>
+    <nav aria-label="Principal, móvil" class="my-auto py-10">
+      <ul class="grid gap-[clamp(0.5rem,2.4svh,1.5rem)]">
+        {
+          NAVEGACION.map((n, i) => (
+            <li class="menu-enlace" style={`--i: ${i}`}>
+              <a
+                href={n.a}
+                class="titular inline-block py-1 text-[clamp(2.4rem,11vw,3.5rem)] no-underline transition-colors duration-200 hover:text-rojo aria-[current=page]:text-rojo"
+                aria-current={activa(n.a) ? 'page' : undefined}
+              >
+                {n.texto}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <div class="menu-pie grid w-full max-w-xs shrink-0 gap-1">
+      <a href="/contacto" class="boton mb-2">Pedir presupuesto</a>
+      <a href={EMPRESA.telefonoEnlace} class="rotulo py-2.5 text-base no-underline">{EMPRESA.telefono}</a>
+      <a href={`mailto:${EMPRESA.email}`} class="py-2.5 text-claro/75 no-underline hover:text-claro">{EMPRESA.email}</a>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Con el menú abierto, la página de detrás no se mueve */
+  :global(html:has(#menu-movil:popover-open)) {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Entra y sale con un fundido. Al cerrar, display y overlay esperan a que termine. */
+    #menu-movil {
+      opacity: 0;
+      transition:
+        opacity 0.3s var(--ease-encaje),
+        display 0.3s allow-discrete,
+        overlay 0.3s allow-discrete;
+    }
+    #menu-movil:popover-open {
+      opacity: 1;
+    }
+    @starting-style {
+      #menu-movil:popover-open {
+        opacity: 0;
+      }
+    }
+
+    /* Las animaciones vuelven a empezar cada vez que se abre: cerrado, el menú no se pinta */
+    .menu-cerrar {
+      animation: menu-gira 0.5s var(--ease-encaje) both;
+    }
+
+    /* El logo se destapa de izquierda a derecha tras una barra roja, como el de la maqueta 3D de la portada */
+    .menu-logo :global(img) {
+      animation: menu-destapa 0.9s var(--ease-encaje) 0.1s both;
+    }
+    .menu-logo::after {
+      content: '';
+      position: absolute;
+      inset-block: -8%;
+      width: 0.3rem;
+      background: var(--color-rojo);
+      translate: -50% 0;
+      animation: menu-barra 0.9s var(--ease-encaje) 0.1s both;
+    }
+
+    .menu-enlace {
+      animation: menu-sube 0.6s var(--ease-encaje) both;
+      animation-delay: calc(0.25s + var(--i) * 0.06s);
+    }
+    .menu-pie {
+      animation: menu-sube 0.6s var(--ease-encaje) 0.55s both;
+    }
+  }
+
+  @keyframes menu-gira {
+    from {
+      opacity: 0;
+      rotate: -90deg;
+    }
+  }
+  @keyframes menu-destapa {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  @keyframes menu-barra {
+    from {
+      left: 0;
+    }
+    80% {
+      opacity: 1;
+    }
+    to {
+      left: 100%;
+      opacity: 0;
+    }
+  }
+  @keyframes menu-sube {
+    from {
+      opacity: 0;
+      translate: 0 1.5rem;
+    }
+  }
+</style>
+
+<script>
+  const raiz = document.documentElement
+  const boton = document.querySelector<HTMLButtonElement>('[data-tema-cambio]')!
+  const pintar = () => {
+    const claro = raiz.dataset.tema === 'claro'
+    boton.setAttribute('aria-label', claro ? 'Cambiar al tema oscuro' : 'Cambiar al tema claro')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', claro ? '#eef0f2' : '#131116')
+  }
+  boton.addEventListener('click', () => {
+    const claro = raiz.dataset.tema !== 'claro'
+    if (claro) raiz.dataset.tema = 'claro'
+    else delete raiz.dataset.tema
+    try {
+      localStorage.setItem('tema', claro ? 'claro' : 'oscuro')
+    } catch {
+      // sin almacenamiento (navegación privada): el cambio vale para esta página
+    }
+    pintar()
+  })
+  pintar()
+
+  // Al volver atrás, la página que guarda el navegador no debe traer el menú abierto
+  addEventListener('pagehide', () => document.getElementById('menu-movil')?.hidePopover())
+</script>

@@ -35,7 +35,7 @@ export function PresupuestoImprimir() {
 
   const cabecera = (
     <>
-      <div className="mb-4 flex items-start justify-between gap-6 border-b-2 border-[#131116] pb-3">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-3 border-b-2 border-[#131116] pb-3">
         <div>
           {/* Solo el logo de IMTEX (sin lema ni sellos de certificación) y el contacto */}
           <img src={logoImtex} alt={EMPRESA.nombre} className="h-[70px] w-auto" />
@@ -94,7 +94,7 @@ export function PresupuestoImprimir() {
 
   return (
     <div className="min-h-dvh bg-neutral-200 print:bg-white">
-      <div className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background p-3 print:hidden">
+      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b bg-background p-3 print:hidden">
         <Button variant="outline" asChild>
           <Link to={`/presupuestos/${p.id}`}>
             <ArrowLeft /> Volver
@@ -122,7 +122,7 @@ export function PresupuestoImprimir() {
           <Hoja key={i}>
             {cabecera}
             <Seccion>Relación de partidas</Seccion>
-            <table className="tabla-presupuesto w-full border-collapse text-xs">
+            <table className="tabla-presupuesto w-full min-w-[34rem] border-collapse text-xs">
               <thead>
                 <tr>
                   <th className="text-center">Código</th>
@@ -174,9 +174,9 @@ export function PresupuestoImprimir() {
           {cabecera}
           <Seccion>Condiciones particulares</Seccion>
           <p className="whitespace-pre-wrap text-justify leading-[1.85]">{p.condiciones}</p>
-          <div className="mt-10 flex justify-between gap-12 text-center text-[11.5px] text-[#33465b]">
+          <div className="mt-10 flex justify-between gap-4 text-center text-[11.5px] text-[#33465b] sm:gap-12">
             <div className="flex w-[42%] flex-col items-center">
-              <img src={firma} alt={`Firma de ${EMPRESA.nombre}`} className="mb-1 h-20 max-w-[260px] object-contain" />
+              <img src={firma} alt={`Firma de ${EMPRESA.nombre}`} className="mb-1 h-20 max-w-full object-contain" />
               <p className="w-full border-t border-[#8896a6] pt-2">Fdo.: {EMPRESA.nombre}</p>
             </div>
             <div className="flex w-[42%] flex-col items-center">
@@ -191,7 +191,12 @@ export function PresupuestoImprimir() {
 }
 
 function Hoja({ children }: { children: ReactNode }) {
-  return <section className="hoja mb-8 rounded-lg bg-white px-10 py-9 shadow-lg">{children}</section>
+  // En el móvil la hoja tiene menos margen y la tabla de partidas se desplaza en horizontal
+  return (
+    <section className="hoja mb-8 overflow-x-auto rounded-lg bg-white px-4 py-5 shadow-lg sm:px-10 sm:py-9 print:overflow-visible">
+      {children}
+    </section>
+  )
 }
 
 function Seccion({ children }: { children: ReactNode }) {
