@@ -281,31 +281,20 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
 - Galería en producción: repetir la importación de las 22 obras contra `imtex-prod`.
 - Lighthouse en móvil ≥ 90: en local da 94–99 sin la galería. Falta medir `/obras` y las fichas con las fotos, y repetirlo en Netlify. Revisión en un iPhone.
 - En el primer despliegue de Netlify: comprobar que `/empresa` responde 200 sin redirigir y que la canónica coincide con la dirección.
-- DNS, SSL y Search Console. **Sin tocar el correo** (consulta pública del 06/10/2026):
-  - **Todo está hoy en Profesional Hosting:**
-    - El dominio, registrado desde 2005 a través del registrador Name SRS AB. **Caduca el 05/09/2027.**
-    - Los DNS (`ns110236.phdns6.es`).
-    - El correo (`mail.imtexsl.com` y `webmail`, en 185.68.110.236).
-    - La web actual, en otro servidor suyo (185.177.153.45).
-  - **Solo se cambian dos registros**, en el panel de Profesional Hosting: `imtexsl.com` (A) y `www` (CNAME), a Netlify. Se añaden `gestion` (el CRM) y los de Resend en el subdominio `avisos`.
-  - **No se toca nada más:** ni MX, ni `mail`, ni `webmail`, ni el SPF. Tampoco se cambian los servidores de nombres a Netlify: es la forma típica de perder el correo.
-  - **Antes del cambio:**
-    - Que IMTEX tenga acceso propio al área de cliente de Profesional Hosting y que el dominio esté a nombre de IMTEX S.L.
-    - Exportar la zona DNS completa.
-    - Saber qué incluye cada contrato.
-    - Hacer copia de los buzones.
-    - Bajar a 300 s el TTL de los dos registros de la web, que hoy es de 4 h.
-  - **Después:** probar a mandar y a recibir correo. No dar de baja ningún contrato hasta saber que el correo no va en él.
-  - **9Technology (Don Benito), que es el intermediario, no responde** (07/10):
-    - El dominio **no está bloqueado** para transferirlo (estado `active`), solo hace falta el código de autorización. Está pagado hasta el 05/09/2027 y el titular sale oculto en la consulta pública.
-    - El servidor de correo admite IMAP (puertos 993 y 143), así que IMTEX puede copiar sus buzones hoy mismo con sus contraseñas, sin depender de nadie.
-    - Plan:
-      1. Copia de los buzones.
-      2. Buscar en el correo de IMTEX avisos de Profesional Hosting o Name SRS (dicen a qué correo va el dominio).
-      3. Pedir por escrito a 9Technology el código y los accesos (correo y burofax, con plazo).
-      4. A la vez, pedir a Profesional Hosting, como titular, que pasen el dominio, el correo y los DNS a una cuenta a nombre de IMTEX. Así los buzones no se mueven.
-      5. Si no lo dan en 5 días, reclamar a Name SRS y después a ICANN (el registrador tiene que dar el código al titular en 5 días).
-    - Mientras tanto, el CRM y la web pueden ir en direcciones provisionales de Netlify.
+- DNS, SSL y Search Console. **Sin tocar el correo** (consultas públicas del 06 y 07/10/2026; detalle en `docs/dominio/zona-dns-publica-2026-10-07.md`):
+  - **Dónde está cada cosa:**
+    - El dominio, registrado desde 2005 a través de Profesional Hosting (registrador Name SRS AB, del mismo grupo). **Caduca el 05/09/2027.** No está bloqueado para transferirlo; el titular sale oculto.
+    - **Los DNS y el correo están en un servidor de 9Technology** (Don Benito), alquilado a Profesional Hosting y con cPanel (185.68.110.236; `ns110236.phdns6.es` es esa máquina). No es una cuenta de IMTEX en Profesional Hosting: ellos no pueden entregar el correo ni la zona.
+    - La web actual, en otra IP de Profesional Hosting (185.177.153.45).
+  - **9Technology no responde (07/10). Plan, con los escritos en `docs/dominio/` (en .md y .docx):**
+    1. IMTEX copia sus buzones por IMAP o desde Outlook, sin depender de nadie (`1-copia-del-correo`).
+    2. Correo a 9Technology pidiendo el código de autorización, los datos del titular y el acceso a cPanel o una copia de la cuenta; burofax si no contestan en 7 días (`2-escritos-a-9technology`).
+    3. El mismo día, solicitud a Profesional Hosting, como titular, de **solo el dominio**: que lo pasen a una cuenta de IMTEX sin cambiar los DNS, o que den el código (`3-solicitud-a-profesional-hosting`).
+    4. Si no lo dan en 5 días: reclamación a Name SRS y después a ICANN (el registrador tiene que dar el código al titular en 5 días).
+    5. Con el dominio en una cuenta de IMTEX: DNS nuevos con **todos** los registros actuales (el correo sigue llegando al servidor viejo), la web a Netlify y, sin prisa, el correo a un servicio a nombre de IMTEX copiando los buzones.
+  - **Si 9Technology colabora** (o IMTEX tiene el acceso a `cpanel.imtexsl.com`), basta con cambiar dos registros en su cPanel: `imtexsl.com` (A) y `www` (CNAME), a Netlify, y añadir `gestion` (el CRM) y los de Resend en `avisos`. No se toca nada más: ni MX, ni `mail`, ni `webmail`, ni el SPF.
+  - **Nunca** se cambian los servidores de nombres sin haber creado antes la zona nueva con todos los registros: es la forma típica de perder el correo. Antes de cualquier cambio, copia de los buzones y TTL de los registros que se cambien a 300 s (hoy son 4 h). Después, probar a mandar y a recibir correo. No dar de baja ni dejar de pagar nada de 9Technology hasta tener el correo fuera.
+  - Mientras tanto, el CRM y la web pueden ir en direcciones provisionales de Netlify.
   - **Mejoras para más adelante** (con el proveedor del correo): el SPF lleva `a`, que autorizaría a mandar correo a la IP de la web nueva, así que conviene quitarlo; y no hay registro DMARC.
 - Material que hay que pedir a IMTEX: logo en vector, fotos de obras a buena resolución, datos del Registro Mercantil y acceso al DNS.
 
