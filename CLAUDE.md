@@ -28,6 +28,7 @@ Qué está hecho, qué falta y cómo arrancar en otro ordenador: `docs/ESTADO.md
 3. Primer usuario de gerencia: invitarlo desde el panel (Authentication → Users → Invite user) y crearle el perfil:
    `npx supabase db query --linked "insert into public.perfiles (id, nombre, email, rol) select id, '<Nombre>', email, 'gerencia' from auth.users where email = '<email>'"`
    El resto se invita desde el CRM (Ajustes → Usuarios).
+4. Authentication → Emails: plantillas «Invite user» y «Reset password» con los asuntos de `supabase/config.toml` y el HTML de `supabase/templates/`. A mano: `supabase config push` subiría también la configuración local.
 
 ## Reglas
 1. Alcance: solo lo de `docs/PLAN.md` §0. Si algo no está, avisa de que es una ampliación antes de hacerlo.
