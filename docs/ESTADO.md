@@ -1,11 +1,20 @@
 # Estado del proyecto IMTEX
 
-Actualizado el martes 06/10/2026. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
+Actualizado el jueves 08/10/2026. Qué está hecho, qué falta y cómo seguir desde otro ordenador.
 El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [decisiones.md](decisiones.md).
 
-## Por dónde vamos (martes 06/10)
+## Por dónde vamos (miércoles 07/10)
 
-Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo anterior (`feat/web-realista`, `feat/web`, `feat/bajas`…).
+**Todo lo hecho hasta el 07/10 está en `main`** (se fusionó `feat/partes-whatsapp`, que incluía todas las ramas anteriores). Lo nuevo va en la rama **`feat/mejoras`**, sin fusionar todavía.
+
+**Miércoles 07/10: mejoras del CRM y revisión de la web** (detalle en el punto 14 de «Hecho»):
+- Comprobaciones automáticas en GitHub en cada push (tests, lint y build del CRM, y build de la web). Pasan en verde.
+- CRM instalable en el móvil, correos de invitación y de contraseña en español, y copia de seguridad semanal de la base de datos (falta activarla: repositorio privado y dos secretos).
+- La base de datos protege los presupuestos enviados, aceptados y rechazados, y guarda el historial de cada apunte del control de obra (se ve dentro del apunte).
+- El CRM arranca con 0,5 MB en vez de 1,4 MB, y en tablet los botones y casillas son de tamaño táctil.
+- Web: revisada página a página. Un título se salía a 320 px (arreglado) y se añadieron cabeceras de seguridad y caché en Netlify.
+- Dominio y correo: 9Technology no responde. Plan y escritos en `docs/dominio/` (ver «DNS» en Pendiente).
+- **⚠ El repositorio de GitHub es público** (aquí ponía «privado»). Se ve el código, la base de precios de `referencia/` y los documentos. Se cambiaron los nombres reales de trabajadores que había en una prueba, pero siguen en el historial. Hay que ponerlo en privado.
 
 **Martes 06/10 por la tarde: partes de trabajo por WhatsApp** (ampliación; detalle en el punto 13 de «Hecho»). Los trabajadores mandan la foto del parte en papel por WhatsApp, la IA la lee, se les contesta con un resumen para confirmar y, confirmado, se apunta en el control de obra. Hecho todo lo que no depende de cuentas: base de datos, funciones de Supabase (desplegadas en dev) y la bandeja «Partes de trabajo» del CRM, desde donde también se pueden subir las fotos. **Falta:** la cuenta de WhatsApp Business de Meta y la clave de la API de Anthropic (ver «Puesta en marcha» en el punto 13). El primer parte real (Mercadona, Madrid) se leyó bien.
 
@@ -35,13 +44,16 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
 - **Pie:** «Desarrollado por extreweb», con enlace a extreweb.es. Y se arregló el código postal pegado a la localidad («06700Villanueva»).
 
 **Lo que Claude necesita de ti:**
+- **Poner el repositorio en privado:** GitHub → Settings → General → Danger Zone → Change visibility. Después, para la copia semanal, los secretos `SUPABASE_DB_URL` y `COPIA_CLAVE` (cómo, en la cabecera de `.github/workflows/copia-seguridad.yml`).
+- Dominio: que IMTEX haga la copia del correo y envíe los escritos de `docs/dominio/`.
+- Probar con tu usuario el historial de un apunte (cambiar uno y abrirlo) y que un presupuesto enviado no deja guardar.
 - Partes por WhatsApp: la cuenta de Meta Business y el número, y la clave de Anthropic (los pasos, en el punto 13). Más partes rellenados de distintos trabajadores, para afinar la lectura. Y mirar las pantallas nuevas («Qué probar» → Partes de trabajo), que Claude no puede ver sin usuario.
 - Ver `/empresa` y `/particulares` con el vídeo en movimiento, en el ordenador y en el iPhone (Claude solo ve fotogramas sueltos), el lema de la portada y la cinta de los fabricantes en el móvil.
 - Mirar la imagen para compartir (`web/public/compartir.jpg`): marca, titular de la portada y la foto de Almaraz.
 - Decidir si se hace lo mismo (vídeo con Blender) en Servicios, Obras y Contacto, y después en la portada.
 - El coche del garaje, si lo compras (enlaces en el chat del 05/10; el recomendado es el «Generic Hatchback Car With Interior» de Superhive, 20 $).
 
-**Para seguir en casa:** la rama nueva es `feat/partes-whatsapp`: `git fetch` y `git switch feat/partes-whatsapp` (en casa aún no existe; después, `git pull`). En `crm/` y en `web/`, `npm install` (no hay dependencias nuevas, pero no cuesta nada) y `npm run dev`. La base de datos de dev y las funciones de Supabase son las mismas desde los dos PC y ya están al día: no hay que aplicar migraciones ni desplegar nada. Para ver la web no hace falta Blender. **Solo si hay que volver a renderizar:** instalar Blender 5.2 (`winget install --id BlenderFoundation.Blender -e --source winget`), bajar los recursos con `cd web && node render/recursos.mjs` (81 MB, no están en git) y seguir «Cómo sacar el vídeo definitivo», en el punto 12. **En el PC de casa ya está todo** (05/10 por la noche): Blender 5.2.2 y los recursos. Renderiza con la AMD RX 6650 XT (HIP) a unos 20 s por fotograma a 960 px, así que el vídeo entero tarda unas 2,5 h. Sin tarjeta gráfica, con el procesador, un fotograma tarda unos 50 s (el vídeo, unas 6 h).
+**Para seguir en casa:** la rama nueva es `feat/mejoras`: `git fetch` y `git switch feat/mejoras` (en casa aún no existe; después, `git pull`). En `crm/` y en `web/`, `npm install` (no hay dependencias nuevas, pero no cuesta nada) y `npm run dev`. La base de datos de dev y las funciones de Supabase son las mismas desde los dos PC y ya están al día (las dos migraciones del 07/10 ya están aplicadas): no hay que aplicar migraciones ni desplegar nada. Para ver la web no hace falta Blender. **Solo si hay que volver a renderizar:** instalar Blender 5.2 (`winget install --id BlenderFoundation.Blender -e --source winget`), bajar los recursos con `cd web && node render/recursos.mjs` (81 MB, no están en git) y seguir «Cómo sacar el vídeo definitivo», en el punto 12. **En el PC de casa ya está todo** (05/10 por la noche): Blender 5.2.2 y los recursos. Renderiza con la AMD RX 6650 XT (HIP) a unos 20 s por fotograma a 960 px, así que el vídeo entero tarda unas 2,5 h. Sin tarjeta gráfica, con el procesador, un fotograma tarda unos 50 s (el vídeo, unas 6 h).
 
 **Para seguir con Claude:** abre Claude Code en la carpeta del repo y dile «Lee `docs/ESTADO.md` y seguimos con la web».
 
@@ -49,9 +61,9 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
 
 | Qué | Dónde |
 |---|---|
-| Código | GitHub, `ContactoExtreweb/Imtex` (privado) |
-| Rama con todo el trabajo | **`feat/web-realista`** (escenas realistas, vídeo de Particulares con Blender, Lighthouse). Incluye `feat/web-animaciones`, `feat/web`, `feat/bajas` y las anteriores: `feat/cierre-meses`, `feat/control-obra`, `feat/galeria-crm` y `feat/avisos-portada` |
-| `main` | Llega hasta Presupuestos. Lo demás se fusiona cuando Saúl lo pruebe |
+| Código | GitHub, `ContactoExtreweb/Imtex`. **Hoy es público: hay que ponerlo en privado** |
+| Rama con todo el trabajo | **`main`**: todo lo hecho hasta el 07/10 (se fusionó `feat/partes-whatsapp`, que incluía las demás ramas) |
+| Rama en curso | **`feat/mejoras`**: mejoras del CRM y revisión de la web del 07/10. Se fusiona a `main` cuando Saúl lo vea |
 | Base de datos de desarrollo | Supabase, proyecto `imtex-dev`, ref `vrhpxwnzthenjxubagys` (Fráncfort). Tiene aplicadas todas las migraciones del repo |
 | Base de datos de producción | Sin crear todavía |
 | Usuarios de prueba en dev | `saul@prueba.es` (gerencia) y `encargado@prueba.es` (encargado). Las contraseñas las puso Saúl |
@@ -235,6 +247,25 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
   - Lo que no se confirma se queda pendiente en la bandeja.
   - Las pantallas nuevas no las ha podido ver Claude, porque hace falta entrar con un usuario.
 
+**14. Mejoras del CRM y revisión de la web** (07/10/2026, rama `feat/mejoras`)
+- **Comprobaciones en GitHub** (`.github/workflows/comprobaciones.yml`): en cada push, lint, tests y build del CRM, y build de la web, con Node 24 como Netlify. Los tests usan una URL de Supabase de mentira (algunos importan el cliente).
+- **CRM instalable** («Añadir a pantalla de inicio»): `crm/public/manifest.webmanifest`, icono normal, adaptable (Android) y de iPhone, sacados del favicon. Abre a pantalla completa.
+- **Correos en español** (`supabase/templates/`): invitación y recuperar contraseña, con la marca. Se pegan a mano en Supabase → Authentication → Emails (paso 4 de la puesta en marcha en `CLAUDE.md`); en dev no se han pegado.
+- **Copia de seguridad semanal** (`.github/workflows/copia-seguridad.yml`): los lunes, volcado de la base de datos (roles, esquema y datos), cifrado con una frase y guardado 90 días en GitHub. Solo funciona con el repositorio privado y con los secretos `SUPABASE_DB_URL` y `COPIA_CLAVE`; cómo recuperarla, en la cabecera del fichero. No incluye los archivos de los buckets (fotos, partes, bajas).
+- **Presupuestos protegidos en la base de datos** (migración `presupuestos_protegidos`): uno enviado, aceptado o rechazado no deja cambiar la cabecera, las partidas ni las líneas, ni borrarlo. Su estado sí se cambia, también de vuelta a borrador.
+- **Historial de apuntes** (migración `historial_apuntes`, tabla `historial`): cada alta, cambio y baja de certificaciones, partes de horas, materiales, subcontratas, alquileres, combustible y dietas y hoteles, con quién, cuándo y el valor anterior. Lo escribe un trigger y nadie lo puede tocar; lo ve quien ve el módulo del apunte. En el CRM, «Historial de cambios» al final de cada apunte. Lo que entra por WhatsApp sale como «automático». Solo registra desde el 07/10.
+- **Prueba nueva** `supabase/pruebas/protecciones.sql` (16 comprobaciones, 0 fallos). `permisos.sql` tiene los casos del historial: 931 comprobaciones, 0 fallos. Cierre (62) y partes (38), también a 0.
+- **CRM más ligero**: cada página se descarga al abrirla y los gráficos al abrir su pestaña. Al arrancar, 0,5 MB en vez de 1,4 MB (154 kB comprimido en vez de 412).
+- **Tablet**: los botones y casillas compactos (32 px) solo con pantalla ancha y ratón (`escritorio:` en `crm/src/index.css`). En tablet táctil se quedan como en el móvil (40 px) y el texto de las casillas a 16 px, para que el iPad no amplíe la pantalla al escribir.
+- **Pruebas del parte**: nombres de trabajadores inventados (había nombres reales en un repositorio público).
+- **Revisión de la web** (en local, con la galería de dev):
+  - Las 36 direcciones (sitemap, legales y 404) responden bien; un solo h1 por página; canónicas correctas; datos estructurados válidos; ningún enlace interno roto; las 42 redirecciones de la web antigua apuntan a páginas que existen.
+  - Sin imágenes sin texto alternativo, enlaces o botones sin nombre ni casillas sin etiqueta. Sin errores en la consola.
+  - Fotos: `/obras` carga 28 miniaturas (unos 500 KB, en diferido); una ficha, unos 400 KB, con la foto grande en prioridad. Las fotos de la web antigua miden 1.000 px: en pantallas grandes se ven algo blandas.
+  - Móvil: nada se sale a 375 px. A 320 px se salía el título «Impermeabilización»; arreglado solo para pantallas así de estrechas.
+  - Netlify: cabeceras de seguridad (nosniff, marcos, referer, permisos) y caché de un año para los archivos con huella, en la web y en el CRM. Sin CSP: el 3D y las transiciones usan scripts en línea.
+  - Las descripciones de 8 páginas pasan de 160 caracteres y Google las cortará: portada, Empresa, Obras, Particulares y las cuatro de servicios.
+
 ## Pendiente
 
 **De Saúl, ahora: probar lo que no ha visto con la sesión iniciada.** Claude no puede entrar con los usuarios, así que las pantallas de los puntos 5 a 8 solo están comprobadas con tests y con los datos de dev. Los pasos están en «Qué probar».
@@ -247,11 +278,10 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
 **Del CRM, para ponerlo en producción** (PLAN.md, parte C y hitos H4 y H5)
 - Netlify: crear el sitio `imtex-crm` con base `crm/` y sus variables de entorno.
 - Resend: dominio de envío `avisos.imtexsl.com` y SMTP en Supabase Auth. Sin esto, las invitaciones solo llegan a emails del equipo de Supabase. Hace falta acceso al DNS de `imtexsl.com`.
-- Plantillas de correo de invitación y recuperación en español.
+- Pegar en Supabase las plantillas de correo en español (hechas, en `supabase/templates/`), cuando esté Resend.
 - Proyecto Supabase de producción (`imtex-prod`, plan Pro): aplicar migraciones, desactivar el registro público, activar la protección de contraseñas filtradas y dar de alta al primer usuario de gerencia. Los pasos están en `CLAUDE.md`.
 - Dominio `gestion.imtexsl.com`.
-- App instalable (PWA): manifest e iconos.
-- Copias de seguridad externas semanales.
+- Activar la copia semanal: repositorio privado y secretos (punto 14). Falta copiar también los archivos de los buckets: necesita un almacén externo (R2, B2…).
 - Carga de datos reales: categorías, tarifas, obras en curso y usuarios. Formación y guía rápida por perfil.
 - Contrato de encargado del tratamiento (RGPD) firmado antes de cargar datos personales. Con las bajas, el programa guarda **datos de salud** (categoría especial): el contrato tiene que decirlo.
 - Avisar a IMTEX: desde abril de 2023 el servicio de salud comunica los partes a la empresa por vía telemática y el trabajador ya no está obligado a entregar el papel. El apartado de bajas sirve como archivo interno.
@@ -266,13 +296,9 @@ Todo está en GitHub en la rama **`feat/partes-whatsapp`**, que incluye todo lo 
 - Seguimiento comercial de presupuestos (envío por correo, recordatorios y versiones): se hace cuando esté Resend.
 
 **Mejoras técnicas propuestas por Claude, sin hacer**
-- Comprobaciones automáticas en GitHub (build, lint y tests en cada PR).
-- Proteger en la base de datos los presupuestos enviados y aceptados: hoy solo lo impide la pantalla.
-- Guardar quién modificó cada apunte y el valor anterior.
-- Tablet en vertical (768 px o más): los botones y las casillas tienen el tamaño de escritorio (32 px). Si IMTEX va a usar tablets, se agrandan según el tipo de puntero (`pointer-coarse`) en vez de según el ancho.
-- Cargar los gráficos solo al entrar en Control de obra: el JavaScript pesa 1,3 MB.
-- Pruebas de recorrido completo con un usuario de prueba.
-- Actualizar las dependencias de `web/`: `npm audit` da 15 avisos altos, casi todos en las herramientas de desarrollo local del adaptador de Netlify. No llegan a la web publicada.
+- Pruebas de recorrido completo con un usuario de prueba (el usuario lo tiene que crear Saúl).
+- Dependencias de `web/`: `npm audit` da 16 avisos altos, todos en las herramientas de desarrollo local del adaptador de Netlify (no llegan a la web publicada). Su «arreglo» baja el adaptador a una versión que no sirve con Astro 7, y la 8.2.7 del adaptador rompe la compilación (falta `@netlify/blobs`): se queda en Astro 7.3.5 y adaptador 8.2.6 hasta que lo corrijan.
+- Acortar las descripciones de 8 páginas de la web a unos 155 caracteres (punto 14).
 
 **Web corporativa, para ponerla en producción** (PLAN.md C1). El desarrollo está hecho (punto 12 de «Hecho»).
 - Visto bueno de Saúl y de IMTEX a textos, fotos y legales.
