@@ -45,6 +45,7 @@ export function Clientes() {
         busqueda={busqueda}
         onBuscar={setBusqueda}
         onNuevo={editable ? () => setAbierto('nuevo') : undefined}
+        importarCsv
         cargando={lista.isPending}
         vacio={filas.length === 0}
       >

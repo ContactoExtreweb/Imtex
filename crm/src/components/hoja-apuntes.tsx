@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { Campo, Selector } from '@/components/campo'
-import { ConfirmarBorrado, DialogoFormulario, FilaListado } from '@/components/listado'
+import { BotonImportarCsv, ConfirmarBorrado, DialogoFormulario, FilaListado } from '@/components/listado'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { etiquetaMes, mesDeFecha } from '@/lib/calculos/control-obra'
@@ -87,6 +87,7 @@ export function HojaApuntes({
           ))}
         </Selector>
         <span className="mr-auto text-sm font-medium tabular-nums">Total: {euros(total)}</span>
+        {editable && <BotonImportarCsv />}
         {editable && (
           <Button onClick={() => setAbierto('nuevo')}>
             <Plus /> Añadir
