@@ -67,7 +67,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 | Base de datos de desarrollo | Supabase, proyecto `imtex-dev`, ref `vrhpxwnzthenjxubagys` (Fráncfort). Tiene aplicadas todas las migraciones del repo |
 | Base de datos de producción | Sin crear todavía |
 | Usuarios de prueba en dev | `saul@prueba.es` (gerencia) y `encargado@prueba.es` (encargado). Las contraseñas las puso Saúl |
-| Netlify | `imtex-web.netlify.app` e `imtex-crm.netlify.app`, publican `main` (comprobado el 15/10) |
+| Netlify | `imtex-web.netlify.app` e `imtex-crm.netlify.app`, creados, pero **sin enlazar a este repositorio**: el push a `main` del 15/10 no los actualizó y GitHub no recibe avisos de Netlify. Hay que enlazarlos (Saúl, desde su cuenta) |
 
 ## Hecho
 
@@ -276,7 +276,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 - Qué otros cargos, además de gerencia y administración, ven las bajas de todos. Es una fila en `permisos_rol`, con migración.
 
 **Del CRM, para ponerlo en producción** (PLAN.md, parte C y hitos H4 y H5)
-- Netlify: el sitio `imtex-crm` ya existe y publica `main`; al pasar a producción, sus variables apuntarán a `imtex-prod`.
+- Netlify: el sitio `imtex-crm` ya existe; falta enlazarlo al repositorio (`main`, base `crm/`). Al pasar a producción, sus variables apuntarán a `imtex-prod`.
 - Resend: dominio de envío `avisos.imtexsl.com` y SMTP en Supabase Auth. Sin esto, las invitaciones solo llegan a emails del equipo de Supabase. Hace falta acceso al DNS de `imtexsl.com`.
 - Pegar en Supabase las plantillas de correo en español (hechas, en `supabase/templates/`), cuando esté Resend.
 - Proyecto Supabase de producción (`imtex-prod`, plan Pro): aplicar migraciones, desactivar el registro público, activar la protección de contraseñas filtradas y dar de alta al primer usuario de gerencia. Los pasos están en `CLAUDE.md`.
@@ -303,7 +303,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 
 **Web corporativa, para ponerla en producción** (PLAN.md C1). El desarrollo está hecho (punto 12 de «Hecho»).
 - Visto bueno de Saúl y de IMTEX a textos, fotos y legales.
-- Netlify: el sitio `imtex-web` ya existe y publica `main`; revisar sus variables (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `RESEND_API_KEY`, `CONTACTO_EMAIL_DESTINO`).
+- Netlify: el sitio `imtex-web` ya existe; falta enlazarlo al repositorio (`main`, base `web/`) y revisar sus variables (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `RESEND_API_KEY`, `CONTACTO_EMAIL_DESTINO`).
 - Resend: sin la cuenta y el dominio de envío, el formulario no manda correos.
 - Galería en producción: repetir la importación de las 22 obras contra `imtex-prod`.
 - Lighthouse en móvil ≥ 90: en local da 94–99 sin la galería. Falta medir `/obras` y las fichas con las fotos, y repetirlo en Netlify. Revisión en un iPhone.
