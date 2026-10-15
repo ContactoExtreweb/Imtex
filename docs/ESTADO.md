@@ -294,6 +294,7 @@ El plan completo está en [PLAN.md](PLAN.md) y el porqué de cada decisión en [
 
 **Ampliación aprobada que espera**
 - Seguimiento comercial de presupuestos (envío por correo, recordatorios y versiones): se hace cuando esté Resend.
+- Importar CSV (no prioritaria): el botón ya está, deshabilitado, en Obras, Clientes y las hojas del control de obra (`BotonImportarCsv` en `crm/src/components/listado.tsx`). Falta que IMTEX pase el modelo de CSV con el que trabaja administración para enlazar sus columnas con las tablas.
 
 **Mejoras técnicas propuestas por Claude, sin hacer**
 - Pruebas de recorrido completo con un usuario de prueba (el usuario lo tiene que crear Saúl).
