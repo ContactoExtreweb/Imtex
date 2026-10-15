@@ -1,9 +1,8 @@
 import { ArrowLeft, Download, Lock, LockOpen, Printer } from 'lucide-react'
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { Cifras } from '@/components/cifras'
 import { ComparativaObra } from '@/components/comparativa-obra'
-import { GraficosObra } from '@/components/graficos-obra'
 import { HojaApuntes } from '@/components/hoja-apuntes'
 import { Confirmar } from '@/components/listado'
 import { Pestanas } from '@/components/pestanas'
@@ -26,6 +25,9 @@ import { useHojas, type IdHoja } from './control-obra-hojas'
 
 type Pestana = 'resumen' | 'graficos' | 'comparativa' | IdHoja
 type Cierre = ReturnType<typeof useMesesCerrados>
+
+// Los gráficos (recharts, más de 1 MB) solo se descargan al abrir su pestaña
+const GraficosObra = lazy(() => import('@/components/graficos-obra').then((m) => ({ default: m.GraficosObra })))
 
 const SIN_CIERRES: ReadonlySet<string> = new Set()
 
@@ -123,7 +125,9 @@ export function ControlObraFicha() {
           cierre={cierre}
         />
       ) : activa === 'graficos' ? (
-        <GraficosObra datos={control.data} />
+        <Suspense fallback={<p className="text-sm text-muted-foreground">Cargando gráficos…</p>}>
+          <GraficosObra datos={control.data} />
+        </Suspense>
       ) : activa === 'comparativa' ? (
         obra.presupuesto_id && <ComparativaObra presupuestoId={obra.presupuesto_id} datos={control.data} />
       ) : (

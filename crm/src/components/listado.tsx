@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react'
+import { FileUp, Plus, Trash2 } from 'lucide-react'
 import type { FormEventHandler, ReactNode } from 'react'
 import {
   AlertDialog,
@@ -22,6 +22,7 @@ export function PaginaListado({
   busqueda,
   onBuscar,
   onNuevo,
+  importarCsv,
   filtros,
   cargando,
   vacio,
@@ -32,6 +33,8 @@ export function PaginaListado({
   onBuscar: (texto: string) => void
   /** Sin permiso de edición no se pasa y no sale el botón */
   onNuevo?: () => void
+  /** Con permiso de edición, sale también «Importar CSV» */
+  importarCsv?: boolean
   /** Controles extra junto al buscador (por ejemplo, un desplegable) */
   filtros?: ReactNode
   cargando: boolean
@@ -42,6 +45,7 @@ export function PaginaListado({
     <div className="mx-auto grid w-full max-w-4xl gap-4 p-4">
       <div className="flex items-center gap-2">
         <h1 className="mr-auto text-xl font-semibold">{titulo}</h1>
+        {onNuevo && importarCsv && <BotonImportarCsv />}
         {onNuevo && (
           <Button onClick={onNuevo}>
             <Plus /> Nuevo
@@ -67,6 +71,15 @@ export function PaginaListado({
         <ul className="divide-y rounded-lg border">{children}</ul>
       )}
     </div>
+  )
+}
+
+// Deshabilitado hasta que IMTEX pase el modelo de CSV con el que trabaja administración (decisiones.md, 15/10/2026)
+export function BotonImportarCsv() {
+  return (
+    <Button variant="outline" disabled title="Próximamente">
+      <FileUp /> Importar CSV
+    </Button>
   )
 }
 

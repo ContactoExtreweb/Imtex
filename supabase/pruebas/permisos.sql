@@ -245,6 +245,12 @@ begin
           ('gastos_viaje', 'editar', 'update public.gastos_viaje set mes = mes where id = $1', f_gastos_viaje),
           ('gastos_viaje', 'borrar', 'delete from public.gastos_viaje where id = $1', f_gastos_viaje),
 
+          -- Historial de apuntes: lo escribe el trigger; se ve con el módulo del apunte y nadie lo toca
+          ('historial', 'ver', 'select from public.historial where fila_id = $1', f_materiales),
+          ('historial', 'insertar', 'insert into public.historial (tabla, fila_id, modulo, accion) values (''materiales'', gen_random_uuid(), ''control_obra'', ''alta'')', null),
+          ('historial', 'editar', 'update public.historial set accion = accion where fila_id = $1', f_materiales),
+          ('historial', 'borrar', 'delete from public.historial where fila_id = $1', f_materiales),
+
           -- Cierre de meses: lo ve quien ve el control de obra; cerrar y reabrir, solo cierre_meses:editar
           ('meses_cerrados', 'ver', 'select from public.meses_cerrados where obra_id = $1', f_obra_cierre),
           ('meses_cerrados', 'insertar', 'insert into public.meses_cerrados (obra_id, mes) values ($1, date ''2026-05-01'')', f_obra_cierre),
@@ -391,6 +397,7 @@ m (tabla, ver, editar) as (values
   ('alquileres', array['control_obra'], 'control_obra'),
   ('combustible', array['control_obra'], 'control_obra'),
   ('gastos_viaje', array['control_obra'], 'control_obra'),
+  ('historial', array['control_obra'], null),
   ('web_obras', array['galeria'], 'galeria'),
   ('web_fotos', array['galeria'], 'galeria'),
   ('storage_galeria', array['galeria'], 'galeria'),
@@ -416,6 +423,7 @@ c as (
       when r.tabla = 'bajas_documentos' and r.accion = 'editar' then false
       when r.accion = 'ver_propio' then true
       when r.tabla = 'tarifas_combustible' and r.accion in ('insertar', 'borrar') then false
+      when r.tabla = 'historial' and r.accion <> 'ver' then false     -- solo lo escribe el trigger
       when r.tabla = 'meses_cerrados' and r.accion = 'editar' then false -- se cierra o se reabre, no se edita
       -- Partes en papel: los de WhatsApp solo los crea la Edge Function; apuntado no se toca; no se borran
       when r.tabla = 'partes_trabajo' and r.accion in ('insertar_whatsapp', 'editar_apuntado', 'borrar') then false

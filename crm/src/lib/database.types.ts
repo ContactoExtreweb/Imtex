@@ -390,6 +390,48 @@ export type Database = {
           },
         ]
       }
+      historial: {
+        Row: {
+          accion: string
+          antes: Json | null
+          despues: Json | null
+          fecha: string
+          fila_id: string
+          id: number
+          modulo: string
+          obra_id: string | null
+          tabla: string
+          usuario_id: string | null
+          usuario_nombre: string | null
+        }
+        Insert: {
+          accion: string
+          antes?: Json | null
+          despues?: Json | null
+          fecha?: string
+          fila_id: string
+          id?: never
+          modulo: string
+          obra_id?: string | null
+          tabla: string
+          usuario_id?: string | null
+          usuario_nombre?: string | null
+        }
+        Update: {
+          accion?: string
+          antes?: Json | null
+          despues?: Json | null
+          fecha?: string
+          fila_id?: string
+          id?: never
+          modulo?: string
+          obra_id?: string | null
+          tabla?: string
+          usuario_id?: string | null
+          usuario_nombre?: string | null
+        }
+        Relationships: []
+      }
       materiales: {
         Row: {
           concepto: string | null

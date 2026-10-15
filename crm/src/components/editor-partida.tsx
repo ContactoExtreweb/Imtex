@@ -94,7 +94,7 @@ export function EditorPartida({
               <span className="pb-2.5 text-muted-foreground md:pb-1.5">×</span>
               <Campo etiqueta="Coste unitario (€)" className="min-w-0 flex-1 basis-24 sm:max-w-32">
                 {l.precio_id ? (
-                  <span className="flex h-10 items-center tabular-nums md:h-8">{euros(l.coste_unitario)}</span>
+                  <span className="flex h-10 items-center tabular-nums escritorio:h-8">{euros(l.coste_unitario)}</span>
                 ) : (
                   <EntradaNumero
                     valor={l.coste_unitario}

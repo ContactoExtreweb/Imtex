@@ -4,6 +4,9 @@
 @import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
+/* Botones y casillas compactos solo con pantalla ancha y ratón: en tablet (táctil) se quedan del tamaño del
+   móvil, y el texto de las casillas en 16 px para que el iPad no amplíe la página al escribir */
+@custom-variant escritorio (@media (width >= 48rem) and (pointer: fine));
 
 @theme inline {
     --color-marca: var(--marca);

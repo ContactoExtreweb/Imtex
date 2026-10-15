@@ -55,6 +55,7 @@ export function Obras() {
         busqueda={busqueda}
         onBuscar={setBusqueda}
         onNuevo={editable ? () => setAbierto('nuevo') : undefined}
+        importarCsv
         cargando={lista.isPending}
         vacio={filas.length === 0}
       >

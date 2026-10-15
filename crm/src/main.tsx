@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { StrictMode } from 'react'
+import { lazy, StrictMode, Suspense, type ComponentType } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, Navigate } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
@@ -7,27 +7,32 @@ import { ConPermiso, Layout, Protegido } from '@/components/layout'
 import { Toaster } from '@/components/ui/sonner'
 import { ProveedorSesion } from '@/components/proveedor-sesion'
 import { Login, NuevaContrasena, Recuperar } from '@/paginas/acceso'
-import { Bajas } from '@/paginas/bajas'
-import { Categorias } from '@/paginas/categorias'
-import { Clientes } from '@/paginas/clientes'
-import { Combustible } from '@/paginas/combustible'
-import { ControlObra } from '@/paginas/control-obra'
-import { ControlObraFicha } from '@/paginas/control-obra-ficha'
-import { ControlObraImprimir } from '@/paginas/control-obra-imprimir'
-import { Galeria } from '@/paginas/galeria'
-import { GaleriaFicha } from '@/paginas/galeria-ficha'
 import { Inicio } from '@/paginas/inicio'
-import { Obras } from '@/paginas/obras'
-import { ParteFicha } from '@/paginas/parte-ficha'
-import { Partes } from '@/paginas/partes'
-import { PartidasTipo } from '@/paginas/partidas-tipo'
-import { Precios } from '@/paginas/precios'
-import { Presupuesto } from '@/paginas/presupuesto'
-import { PresupuestoImprimir } from '@/paginas/presupuesto-imprimir'
-import { Presupuestos } from '@/paginas/presupuestos'
-import { Trabajadores } from '@/paginas/trabajadores'
-import { Usuarios } from '@/paginas/usuarios'
 import './index.css'
+
+// Cada página se descarga al abrirla: la entrada (acceso e inicio) carga mucho menos
+function pagina<T extends Record<string, unknown>>(cargar: () => Promise<T>, nombre: keyof T) {
+  return lazy(() => cargar().then((m) => ({ default: m[nombre] as ComponentType })))
+}
+const Bajas = pagina(() => import('@/paginas/bajas'), 'Bajas')
+const Categorias = pagina(() => import('@/paginas/categorias'), 'Categorias')
+const Clientes = pagina(() => import('@/paginas/clientes'), 'Clientes')
+const Combustible = pagina(() => import('@/paginas/combustible'), 'Combustible')
+const ControlObra = pagina(() => import('@/paginas/control-obra'), 'ControlObra')
+const ControlObraFicha = pagina(() => import('@/paginas/control-obra-ficha'), 'ControlObraFicha')
+const ControlObraImprimir = pagina(() => import('@/paginas/control-obra-imprimir'), 'ControlObraImprimir')
+const Galeria = pagina(() => import('@/paginas/galeria'), 'Galeria')
+const GaleriaFicha = pagina(() => import('@/paginas/galeria-ficha'), 'GaleriaFicha')
+const Obras = pagina(() => import('@/paginas/obras'), 'Obras')
+const ParteFicha = pagina(() => import('@/paginas/parte-ficha'), 'ParteFicha')
+const Partes = pagina(() => import('@/paginas/partes'), 'Partes')
+const PartidasTipo = pagina(() => import('@/paginas/partidas-tipo'), 'PartidasTipo')
+const Precios = pagina(() => import('@/paginas/precios'), 'Precios')
+const Presupuesto = pagina(() => import('@/paginas/presupuesto'), 'Presupuesto')
+const PresupuestoImprimir = pagina(() => import('@/paginas/presupuesto-imprimir'), 'PresupuestoImprimir')
+const Presupuestos = pagina(() => import('@/paginas/presupuestos'), 'Presupuestos')
+const Trabajadores = pagina(() => import('@/paginas/trabajadores'), 'Trabajadores')
+const Usuarios = pagina(() => import('@/paginas/usuarios'), 'Usuarios')
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } })
 
@@ -73,7 +78,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ProveedorSesion>
-        <RouterProvider router={router} />
+        <Suspense>
+          <RouterProvider router={router} />
+        </Suspense>
         <Toaster />
       </ProveedorSesion>
     </QueryClientProvider>

@@ -19,6 +19,8 @@ Qué está hecho, qué falta y cómo arrancar en otro ordenador: `docs/ESTADO.md
 - Prueba de permisos por rol (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/permisos.sql`. Tabla nueva → añade sus casos en ese fichero.
 - Prueba del cierre de meses (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/cierre.sql`
 - Prueba de apuntar partes en papel (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/partes.sql`
+- Prueba de presupuestos protegidos e historial de apuntes (solo dev, debe dar 0 fallos): `npx supabase db query --linked -f supabase/pruebas/protecciones.sql`
+- Comprobaciones en GitHub en cada push (`.github/workflows/comprobaciones.yml`): lint, tests y build del CRM y build de la web.
 - Advisors de seguridad y rendimiento: `npx supabase db advisors --linked --type all`
 - Edge Functions (sin Docker): `npx supabase functions deploy <nombre> --use-api` (`invitar-usuario`, `leer-parte`, `whatsapp`; secrets en `supabase/functions/.env.example`). Lo que comparten el CRM y las funciones de partes está en `supabase/functions/_shared/partes.ts`, sin nada de Deno.
 
@@ -28,6 +30,7 @@ Qué está hecho, qué falta y cómo arrancar en otro ordenador: `docs/ESTADO.md
 3. Primer usuario de gerencia: invitarlo desde el panel (Authentication → Users → Invite user) y crearle el perfil:
    `npx supabase db query --linked "insert into public.perfiles (id, nombre, email, rol) select id, '<Nombre>', email, 'gerencia' from auth.users where email = '<email>'"`
    El resto se invita desde el CRM (Ajustes → Usuarios).
+4. Authentication → Emails: plantillas «Invite user» y «Reset password» con los asuntos de `supabase/config.toml` y el HTML de `supabase/templates/`. A mano: `supabase config push` subiría también la configuración local.
 
 ## Reglas
 1. Alcance: solo lo de `docs/PLAN.md` §0. Si algo no está, avisa de que es una ampliación antes de hacerlo.
